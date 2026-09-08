@@ -82,9 +82,13 @@
   .bar .search{flex:1;min-width:220px;max-width:340px}
   .bar .grow{flex:1}
   .count{color:var(--muted);font-size:13.5px}
+  .clearbtn{border:0;background:none;color:var(--green);font-family:inherit;
+    font-size:13.5px;cursor:pointer;font-weight:500;padding:6px 4px}
+  .clearbtn:hover{text-decoration:underline}
 
   .card{background:#fff;border:1px solid var(--hair);border-radius:14px;overflow:hidden}
   table{width:100%;border-collapse:collapse;font-size:14px}
+  table.users{min-width:1140px}
   th{text-align:left;font-weight:600;color:var(--ink-2);font-size:12.5px;
     padding:12px 14px;background:var(--surface-2);border-bottom:1px solid var(--hair);
     white-space:nowrap}
@@ -101,6 +105,14 @@
     background:var(--surface-2);color:var(--ink-2)}
   .chip.green{background:var(--green-tint);color:#0a7a3f}
   .empty{padding:40px;text-align:center;color:var(--muted);font-size:14px}
+
+  /* ===== per-column filter row ===== */
+  thead tr.filters th{background:#fff;padding:9px 10px;border-bottom:1px solid var(--hair)}
+  thead tr.filters input{font-size:12.5px;font-weight:400;padding:7px 10px;
+    border:1px solid #e1e5e9;border-radius:8px;min-width:120px}
+  thead tr.filters input::placeholder{color:#a8adb5}
+  thead tr.filters input:focus{outline:2px solid var(--green);border-color:transparent}
+  thead tr.filters input.active{border-color:var(--green);background:var(--green-tint)}
 
   /* ===== modal ===== */
   .backdrop{position:fixed;inset:0;background:rgba(20,25,35,.42);display:none;
@@ -183,15 +195,28 @@
       <div class="bar">
         <input class="search" id="userSearch" placeholder="ค้นหาชื่อ รหัสพนักงาน หรือสาขา" />
         <span class="count" id="userCount"></span>
+        <button class="clearbtn" id="clearUserFilters" hidden>ล้างตัวกรอง</button>
         <span class="grow"></span>
         <button class="solid" id="addUserBtn">เพิ่มผู้ใช้งาน</button>
       </div>
       <div class="card"><div class="tablewrap">
-        <table>
-          <thead><tr>
-            <th>รหัสพนักงาน</th><th>ชื่อ (ไทย)</th><th>ชื่อ (อังกฤษ)</th>
-            <th>เลขบัตรประชาชน</th><th>ตำแหน่ง</th><th>สาขา</th><th>บริษัท</th><th></th>
-          </tr></thead>
+        <table class="users">
+          <thead>
+            <tr class="filters">
+              <th><input data-uf="emp"     placeholder="ค้นหารหัสพนักงาน" /></th>
+              <th><input data-uf="th"      placeholder="ค้นหาชื่อ (ไทย)" /></th>
+              <th><input data-uf="en"      placeholder="ค้นหาชื่อ (อังกฤษ)" /></th>
+              <th><input data-uf="nid"     placeholder="ค้นหาเลขบัตรประชาชน" /></th>
+              <th><input data-uf="pos"     placeholder="ค้นหาตำแหน่ง" /></th>
+              <th><input data-uf="branch"  placeholder="ค้นหาสาขา" /></th>
+              <th><input data-uf="company" placeholder="ค้นหาบริษัท" /></th>
+              <th></th>
+            </tr>
+            <tr>
+              <th>รหัสพนักงาน</th><th>ชื่อ (ไทย)</th><th>ชื่อ (อังกฤษ)</th>
+              <th>เลขบัตรประชาชน</th><th>ตำแหน่ง</th><th>สาขา</th><th>บริษัท</th><th></th>
+            </tr>
+          </thead>
           <tbody id="userRows"></tbody>
         </table>
       </div></div>
@@ -384,12 +409,32 @@ document.querySelectorAll('nav.tabs button').forEach(b => {
 /* ═══════════════ users ═══════════════ */
 const maskNid = n => n ? n.slice(0,4) + "•••••" + n.slice(-2) : "—";
 
+function userFilters(){
+  const f = {};
+  document.querySelectorAll("[data-uf]").forEach(el => {
+    const v = el.value.trim().toLowerCase();
+    f[el.dataset.uf] = v;
+    el.classList.toggle("active", !!v);
+  });
+  return f;
+}
+
 function renderUsers(){
   const q = $("userSearch").value.trim().toLowerCase();
-  const list = users.filter(u =>
-    !q || [u.emp,u.th,u.en,u.branch,u.pos].join(" ").toLowerCase().includes(q));
-  $("userCount").textContent = list.length + " คน";
-  $("userRows").innerHTML = list.length ? list.map((u,i) => `
+  const f = userFilters();
+  const filtering = !!q || Object.values(f).some(Boolean);
+  $("clearUserFilters").hidden = !filtering;
+
+  const list = users.filter(u => {
+    if (q && ![u.emp,u.th,u.en,u.branch,u.pos,u.company].join(" ").toLowerCase().includes(q)) return false;
+    return Object.keys(f).every(k => !f[k] || String(u[k] || "").toLowerCase().includes(f[k]));
+  });
+
+  $("userCount").textContent = filtering
+    ? `${list.length} จาก ${users.length} คน`
+    : `${users.length} คน`;
+
+  $("userRows").innerHTML = list.length ? list.map(u => `
     <tr>
       <td class="num">${u.emp}</td>
       <td>${u.th}</td>
@@ -400,9 +445,15 @@ function renderUsers(){
       <td>${u.company}</td>
       <td><button class="linkbtn" data-edit-user="${users.indexOf(u)}">แก้ไข</button></td>
     </tr>`).join("")
-    : `<tr><td colspan="8"><div class="empty">ไม่พบผู้ใช้งานที่ตรงกับคำค้น</div></td></tr>`;
+    : `<tr><td colspan="8"><div class="empty">ไม่พบผู้ใช้งานที่ตรงกับเงื่อนไข</div></td></tr>`;
 }
 $("userSearch").addEventListener("input", renderUsers);
+document.querySelectorAll("[data-uf]").forEach(el => el.addEventListener("input", renderUsers));
+$("clearUserFilters").addEventListener("click", () => {
+  $("userSearch").value = "";
+  document.querySelectorAll("[data-uf]").forEach(el => { el.value = ""; el.classList.remove("active"); });
+  renderUsers();
+});
 
 const USER_FIELDS = [
   ["th","ชื่อ (ไทย)","text"], ["en","ชื่อ (อังกฤษ)","text"],
