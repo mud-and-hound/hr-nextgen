@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HR NextGen — ระบบจัดการ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#06c755; --green-press:#05a648; --green-tint:#edf9f2;
+    --ink:#16181c; --ink-2:#3c4043; --muted:#8b9099;
+    --hair:#e6e9ed; --surface:#fff; --surface-2:#f6f7f9; --page:#f2f4f6;
+    --amber:#d97a00; --amber-bg:#fdf4e6;
+    --red:#c0392b; --red-bg:#fdecea;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--page);color:var(--ink);
+    font-family:"IBM Plex Sans Thai",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased}
+
+  /* ===== demo banner ===== */
+  .demobar{background:var(--amber-bg);color:var(--amber);
+    padding:9px 16px;font-size:13px;text-align:center;font-weight:500}
+
+  /* ===== login ===== */
+  .login-wrap{min-height:calc(100vh - 40px);display:grid;place-items:center;padding:24px}
+  .login{background:#fff;border-radius:18px;padding:36px 32px;width:100%;max-width:400px;
+    box-shadow:0 2px 20px rgba(20,25,35,.07)}
+  .login .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .login .brand .mark{width:38px;height:38px;border-radius:11px;background:var(--green);
+    display:grid;place-items:center;color:#fff}
+  .login h1{font-size:20px;margin:0;font-weight:600}
+  .login .lead{color:var(--muted);font-size:13.5px;margin:2px 0 26px}
+  label{display:block;font-size:13px;color:var(--ink-2);font-weight:500;margin-bottom:6px}
+  .field{margin-bottom:18px}
+  input,select{width:100%;font-family:inherit;font-size:15px;padding:12px 14px;
+    border:1px solid #dbdfe4;border-radius:11px;background:#fff;color:var(--ink)}
+  input:focus,select:focus{outline:2px solid var(--green);border-color:transparent}
+  input:disabled{background:var(--surface-2);color:var(--muted)}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  .hint.live{color:var(--green)}
+  button.primary{width:100%;border:0;border-radius:11px;background:var(--green);color:#fff;
+    font-family:inherit;font-size:15.5px;font-weight:600;padding:14px;cursor:pointer;
+    transition:background .15s}
+  button.primary:active{background:var(--green-press)}
+  button.primary:disabled{background:#ccd0d5;cursor:not-allowed}
+  .alert{border-radius:11px;padding:12px 14px;font-size:13.5px;line-height:1.6;margin-bottom:18px}
+  .alert.err{background:var(--red-bg);color:var(--red)}
+  .alert.warn{background:var(--amber-bg);color:var(--amber)}
+  .alert strong{font-weight:600}
+
+  /* ===== shell ===== */
+  .shell{display:none}
+  .shell.on{display:block}
+  header.top{background:#fff;border-bottom:1px solid var(--hair);
+    padding:0 20px;display:flex;align-items:center;gap:16px;height:60px;
+    position:sticky;top:0;z-index:10}
+  header .mark{width:32px;height:32px;border-radius:9px;background:var(--green);
+    display:grid;place-items:center;color:#fff;flex:none}
+  header .name{font-weight:600;font-size:16px}
+  header .spacer{flex:1}
+  header .who{font-size:13px;color:var(--muted);text-align:right;line-height:1.4}
+  header .who b{display:block;color:var(--ink);font-weight:600;font-size:13.5px}
+  button.ghost{border:1px solid #dbdfe4;background:#fff;border-radius:9px;
+    font-family:inherit;font-size:13.5px;padding:8px 14px;cursor:pointer;color:var(--ink-2)}
+  button.ghost:hover{background:var(--surface-2)}
+
+  nav.tabs{background:#fff;border-bottom:1px solid var(--hair);padding:0 20px;
+    display:flex;gap:4px}
+  nav.tabs button{border:0;background:none;font-family:inherit;font-size:14.5px;
+    padding:14px 16px;cursor:pointer;color:var(--muted);font-weight:500;
+    border-bottom:2px solid transparent;margin-bottom:-1px}
+  nav.tabs button[aria-selected="true"]{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+
+  main{padding:24px 20px 60px;max-width:1180px;margin:0 auto}
+  .panel{display:none}
+  .panel.on{display:block}
+
+  .bar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .bar .search{flex:1;min-width:220px;max-width:340px}
+  .bar .grow{flex:1}
+  .count{color:var(--muted);font-size:13.5px}
+
+  .card{background:#fff;border:1px solid var(--hair);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;font-weight:600;color:var(--ink-2);font-size:12.5px;
+    padding:12px 14px;background:var(--surface-2);border-bottom:1px solid var(--hair);
+    white-space:nowrap}
+  td{padding:13px 14px;border-bottom:1px solid #f0f2f4;vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#fafbfc}
+  td.num{font-variant-numeric:tabular-nums}
+  .tablewrap{overflow-x:auto}
+  .masked{letter-spacing:1px;color:var(--muted)}
+  .linkbtn{border:0;background:none;color:var(--green);font-family:inherit;
+    font-size:13.5px;cursor:pointer;padding:4px 6px;font-weight:500}
+  .linkbtn:hover{text-decoration:underline}
+  .chip{display:inline-block;font-size:12px;padding:3px 9px;border-radius:6px;
+    background:var(--surface-2);color:var(--ink-2)}
+  .chip.green{background:var(--green-tint);color:#0a7a3f}
+  .empty{padding:40px;text-align:center;color:var(--muted);font-size:14px}
+
+  /* ===== modal ===== */
+  .backdrop{position:fixed;inset:0;background:rgba(20,25,35,.42);display:none;
+    place-items:center;padding:20px;z-index:50}
+  .backdrop.on{display:grid}
+  .modal{background:#fff;border-radius:16px;width:100%;max-width:560px;
+    max-height:88vh;overflow:auto}
+  .modal .head{padding:20px 24px 0}
+  .modal h2{margin:0;font-size:18px;font-weight:600}
+  .modal .body{padding:20px 24px}
+  .modal .foot{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-end;
+    border-top:1px solid var(--hair);margin-top:4px;position:sticky;bottom:0;background:#fff}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+  button.solid{border:0;border-radius:10px;background:var(--green);color:#fff;
+    font-family:inherit;font-size:14.5px;font-weight:600;padding:11px 20px;cursor:pointer}
+  button.solid:active{background:var(--green-press)}
+
+  .note{background:var(--surface-2);border-radius:11px;padding:13px 15px;
+    font-size:13px;color:var(--ink-2);line-height:1.65;margin-bottom:18px}
+  .note b{font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="demobar" id="demobar">
+  โหมดสาธิต — ข้อมูลทั้งหมดเป็นตัวอย่าง ยังไม่เชื่อมฐานข้อมูลจริง
+</div>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div class="login-wrap" id="loginView">
+  <form class="login" id="loginForm" autocomplete="off">
+    <div class="brand">
+      <span class="mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </span>
+      <h1>HR NextGen</h1>
+    </div>
+    <p class="lead">ระบบจัดการข้อมูลพนักงานและสาขา</p>
+
+    <div id="loginAlert"></div>
+
+    <div class="field">
+      <label for="empId">รหัสพนักงาน</label>
+      <input id="empId" inputmode="numeric" maxlength="8" placeholder="เช่น 123" />
+      <div class="hint" id="empHint">พิมพ์เลขได้เลย ระบบเติมศูนย์ให้ครบ 8 หลักอัตโนมัติ</div>
+    </div>
+
+    <div class="field">
+      <label for="pw">รหัสผ่าน</label>
+      <input id="pw" type="password" inputmode="numeric" maxlength="13" placeholder="เลขบัตรประชาชน 13 หลัก" />
+    </div>
+
+    <button class="primary" type="submit" id="loginBtn">เข้าสู่ระบบ</button>
+  </form>
+</div>
+
+<!-- ══════════ ADMIN SHELL ══════════ -->
+<div class="shell" id="shell">
+  <header class="top">
+    <span class="mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    </span>
+    <span class="name">HR NextGen</span>
+    <span class="spacer"></span>
+    <span class="who"><b id="whoName">—</b><span id="whoId">—</span></span>
+    <button class="ghost" id="logoutBtn">ออกจากระบบ</button>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true"  data-panel="users">ผู้ใช้งาน</button>
+    <button role="tab" aria-selected="false" data-panel="branches">สาขา</button>
+  </nav>
+
+  <main>
+    <!-- ===== USERS ===== -->
+    <section class="panel on" id="panel-users">
+      <div class="bar">
+        <input class="search" id="userSearch" placeholder="ค้นหาชื่อ รหัสพนักงาน หรือสาขา" />
+        <span class="count" id="userCount"></span>
+        <span class="grow"></span>
+        <button class="solid" id="addUserBtn">เพิ่มผู้ใช้งาน</button>
+      </div>
+      <div class="card"><div class="tablewrap">
+        <table>
+          <thead><tr>
+            <th>รหัสพนักงาน</th><th>ชื่อ (ไทย)</th><th>ชื่อ (อังกฤษ)</th>
+            <th>เลขบัตรประชาชน</th><th>ตำแหน่ง</th><th>สาขา</th><th>บริษัท</th><th></th>
+          </tr></thead>
+          <tbody id="userRows"></tbody>
+        </table>
+      </div></div>
+    </section>
+
+    <!-- ===== BRANCHES ===== -->
+    <section class="panel" id="panel-branches">
+      <div class="note">
+        <b>ปรับรัศมีหลายสาขาพร้อมกัน</b> — ติ๊กเลือกสาขาในตาราง แล้วกดปุ่มปรับรัศมีที่จะขึ้นมา
+        หรือกดแก้ไขรายสาขาเพื่อตั้งค่าเฉพาะจุด
+      </div>
+      <div class="bar">
+        <input class="search" id="branchSearch" placeholder="ค้นหารหัสหรือชื่อสาขา" />
+        <span class="count" id="branchCount"></span>
+        <span class="grow"></span>
+        <button class="ghost" id="bulkBtn" hidden>ปรับรัศมีที่เลือก</button>
+        <button class="solid" id="addBranchBtn">เพิ่มสาขา</button>
+      </div>
+      <div class="card"><div class="tablewrap">
+        <table>
+          <thead><tr>
+            <th style="width:38px"><input type="checkbox" id="checkAll" style="width:auto" /></th>
+            <th>รหัสสาขา</th><th>ชื่อสาขา</th><th>สถานที่ใกล้เคียง</th>
+            <th>Latitude</th><th>Longitude</th><th>รัศมี</th><th></th>
+          </tr></thead>
+          <tbody id="branchRows"></tbody>
+        </table>
+      </div></div>
+    </section>
+  </main>
+</div>
+
+<!-- ══════════ MODAL ══════════ -->
+<div class="backdrop" id="backdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="head"><h2 id="modalTitle">แก้ไข</h2></div>
+    <div class="body" id="modalBody"></div>
+    <div class="foot">
+      <button class="ghost" id="modalCancel">ยกเลิก</button>
+      <button class="solid" id="modalSave">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════ config ═══════════════ */
+const API_BASE = "";           // ใส่ https://timemud.mobile1234.site เมื่อ backend พร้อม
+const DEMO      = !API_BASE;   // ไม่มี API = โหมดสาธิต
+
+const LOCK_STEP_MIN = 30;      // ล็อกครั้งแรก 30 นาที แล้ว +30 ทุกครั้งถัดไป
+const MAX_FAILS     = 3;
+
+const $ = id => document.getElementById(id);
+
+/* ═══════════════ demo data ═══════════════ */
+let users = [
+  {emp:"00000123", th:"สมชาย ใจดี",     en:"Somchai Jaidee",   nid:"1100154978543", pos:"ผู้จัดการสาขา", branch:"สาขาทดสอบ (สำนักงานใหญ่)", company:"Mud & Hound"},
+  {emp:"00005347", th:"อารีย์ พงษ์ทอง",  en:"Aree Pongthong",   nid:"3200987654321", pos:"พนักงานขาย",   branch:"สาขาทดสอบ (สำนักงานใหญ่)", company:"Mud & Hound"},
+  {emp:"00015478", th:"ธนภัทร วัฒนกุล",  en:"Thanapat Wattanakul", nid:"1409900123456", pos:"หัวหน้ากะ",  branch:"สาขาทดสอบ (สำนักงานใหญ่)", company:"Greyhound Café"}
+];
+
+let branches = [
+  {code:"HQ001", name:"สาขาทดสอบ (สำนักงานใหญ่)", near:"อาคารสำนักงานใหญ่", lat:13.7305693, lng:100.6071918, radius:150},
+  {code:"GHC712", name:"สาขาเซ็นทรัลเวิลด์",        near:"ชั้น 2 โซนอาหาร",   lat:null, lng:null, radius:150},
+  {code:"GHC714", name:"สาขาสยามพารากอน",           near:"ชั้น G",            lat:null, lng:null, radius:150}
+];
+
+/* ═══════════════ login ═══════════════ */
+const LS = "hrng_admin_lock";
+let padTimer = null;
+
+function lockState(){
+  try { return JSON.parse(localStorage.getItem(LS)) || {fails:0, offense:0, until:0}; }
+  catch(_){ return {fails:0, offense:0, until:0}; }
+}
+function saveLock(s){ localStorage.setItem(LS, JSON.stringify(s)); }
+
+function pad8(v){
+  const digits = String(v).replace(/\D/g,"").slice(0,8);
+  return digits ? digits.padStart(8,"0") : "";
+}
+
+$("empId").addEventListener("input", () => {
+  clearTimeout(padTimer);
+  $("empHint").textContent = "หยุดพิมพ์ 2 วินาที ระบบจะเติมศูนย์ให้เอง";
+  $("empHint").className = "hint";
+  padTimer = setTimeout(() => {
+    const v = $("empId").value;
+    if (!v) return;
+    $("empId").value = pad8(v);
+    $("empHint").textContent = "เติมเป็น " + $("empId").value + " แล้ว";
+    $("empHint").className = "hint live";
+  }, 2000);
+});
+$("empId").addEventListener("blur", () => {
+  clearTimeout(padTimer);
+  if ($("empId").value) $("empId").value = pad8($("empId").value);
+});
+
+function showAlert(kind, html){
+  $("loginAlert").innerHTML = html ? `<div class="alert ${kind}">${html}</div>` : "";
+}
+
+function minsLeft(until){ return Math.max(1, Math.ceil((until - Date.now())/60000)); }
+
+function checkLocked(){
+  const s = lockState();
+  if (s.until > Date.now()){
+    showAlert("warn", `<strong>บัญชีถูกล็อกชั่วคราว</strong><br>ลองใหม่ได้ในอีก ${minsLeft(s.until)} นาที`);
+    $("loginBtn").disabled = true;
+    setTimeout(checkLocked, 20000);
+    return true;
+  }
+  $("loginBtn").disabled = false;
+  return false;
+}
+
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (checkLocked()) return;
+
+  const emp = pad8($("empId").value);
+  const pw  = $("pw").value.replace(/\D/g,"");
+  $("empId").value = emp;
+
+  if (emp.length !== 8 || pw.length !== 13){
+    showAlert("err", "กรอกรหัสพนักงานและเลขบัตรประชาชน 13 หลักให้ครบ");
+    return;
+  }
+
+  let ok = false, person = null;
+  if (DEMO){
+    person = users.find(u => u.emp === emp && u.nid === pw);
+    ok = !!person;
+  } else {
+    try{
+      const r = await fetch(API_BASE + "/api/admin/login", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({employee_code: emp, credential: pw})
+      });
+      const d = await r.json();
+      ok = r.ok; person = d.user;
+      if (!ok && d.locked_until){
+        saveLock({fails:0, offense:d.offense_no||1, until:new Date(d.locked_until).getTime()});
+        checkLocked(); return;
+      }
+    }catch(_){ showAlert("err","เชื่อมต่อเซิร์ฟเวอร์ไม่ได้"); return; }
+  }
+
+  if (ok){
+    saveLock({fails:0, offense:0, until:0});
+    enterAdmin(person);
+    return;
+  }
+
+  const s = lockState();
+  s.fails += 1;
+  if (s.fails >= MAX_FAILS){
+    s.offense += 1;
+    s.fails = 0;
+    s.until = Date.now() + s.offense * LOCK_STEP_MIN * 60000;
+    saveLock(s);
+    checkLocked();
+  } else {
+    saveLock(s);
+    showAlert("err", `<strong>รหัสไม่ถูกต้อง</strong><br>เหลืออีก ${MAX_FAILS - s.fails} ครั้งก่อนถูกล็อก`);
+  }
+});
+
+function enterAdmin(person){
+  $("loginView").style.display = "none";
+  $("shell").classList.add("on");
+  $("whoName").textContent = person ? person.th : "ผู้ดูแลระบบ";
+  $("whoId").textContent   = person ? person.emp : "";
+  renderUsers(); renderBranches();
+}
+
+$("logoutBtn").addEventListener("click", () => location.reload());
+
+/* ═══════════════ tabs ═══════════════ */
+document.querySelectorAll('nav.tabs button').forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll('nav.tabs button').forEach(x => x.setAttribute("aria-selected","false"));
+    b.setAttribute("aria-selected","true");
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove("on"));
+    $("panel-" + b.dataset.panel).classList.add("on");
+  });
+});
+
+/* ═══════════════ users ═══════════════ */
+const maskNid = n => n ? n.slice(0,4) + "•••••" + n.slice(-2) : "—";
+
+function renderUsers(){
+  const q = $("userSearch").value.trim().toLowerCase();
+  const list = users.filter(u =>
+    !q || [u.emp,u.th,u.en,u.branch,u.pos].join(" ").toLowerCase().includes(q));
+  $("userCount").textContent = list.length + " คน";
+  $("userRows").innerHTML = list.length ? list.map((u,i) => `
+    <tr>
+      <td class="num">${u.emp}</td>
+      <td>${u.th}</td>
+      <td>${u.en}</td>
+      <td class="num masked">${maskNid(u.nid)}</td>
+      <td>${u.pos}</td>
+      <td><span class="chip">${u.branch}</span></td>
+      <td>${u.company}</td>
+      <td><button class="linkbtn" data-edit-user="${users.indexOf(u)}">แก้ไข</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="8"><div class="empty">ไม่พบผู้ใช้งานที่ตรงกับคำค้น</div></td></tr>`;
+}
+$("userSearch").addEventListener("input", renderUsers);
+
+const USER_FIELDS = [
+  ["th","ชื่อ (ไทย)","text"], ["en","ชื่อ (อังกฤษ)","text"],
+  ["nid","เลขบัตรประชาชน","text"], ["emp","รหัสพนักงาน","text"],
+  ["pos","ตำแหน่ง","text"], ["branch","สาขา","select"], ["company","บริษัท","text"]
+];
+
+function openUser(idx){
+  const u = idx == null
+    ? {th:"",en:"",nid:"",emp:"",pos:"",branch:branches[0]?.name||"",company:""}
+    : {...users[idx]};
+  $("modalTitle").textContent = idx == null ? "เพิ่มผู้ใช้งาน" : "แก้ไขผู้ใช้งาน";
+  $("modalBody").innerHTML = `<div class="grid2">` + USER_FIELDS.map(([k,label,type]) => {
+    if (type === "select"){
+      const opts = branches.map(b => `<option${b.name===u.branch?" selected":""}>${b.name}</option>`).join("");
+      return `<div class="field"><label>${label}</label><select data-k="${k}">${opts}</select></div>`;
+    }
+    const extra = k==="nid" ? ' maxlength="13" inputmode="numeric"'
+                : k==="emp" ? ' maxlength="8" inputmode="numeric"' : '';
+    return `<div class="field"><label>${label}</label>
+      <input data-k="${k}" value="${u[k]||""}"${extra} /></div>`;
+  }).join("") + `</div>`;
+  openModal(() => {
+    const out = {};
+    $("modalBody").querySelectorAll("[data-k]").forEach(el => out[el.dataset.k] = el.value.trim());
+    out.emp = pad8(out.emp);
+    if (!out.th || !out.emp){ alert("กรอกชื่อไทยและรหัสพนักงานอย่างน้อย"); return false; }
+    if (idx == null) users.push(out); else users[idx] = out;
+    renderUsers(); return true;
+  });
+}
+$("addUserBtn").addEventListener("click", () => openUser(null));
+$("userRows").addEventListener("click", e => {
+  const b = e.target.closest("[data-edit-user]");
+  if (b) openUser(+b.dataset.editUser);
+});
+
+/* ═══════════════ branches ═══════════════ */
+function renderBranches(){
+  const q = $("branchSearch").value.trim().toLowerCase();
+  const list = branches.filter(b => !q || (b.code+" "+b.name+" "+(b.near||"")).toLowerCase().includes(q));
+  $("branchCount").textContent = list.length + " สาขา";
+  $("branchRows").innerHTML = list.length ? list.map(b => {
+    const i = branches.indexOf(b);
+    const noGeo = b.lat == null || b.lng == null;
+    return `<tr>
+      <td><input type="checkbox" class="pick" data-i="${i}" style="width:auto" /></td>
+      <td class="num">${b.code}</td>
+      <td>${b.name}</td>
+      <td>${b.near || "—"}</td>
+      <td class="num">${noGeo ? '<span class="chip">ยังไม่มีพิกัด</span>' : b.lat.toFixed(6)}</td>
+      <td class="num">${noGeo ? "" : b.lng.toFixed(6)}</td>
+      <td class="num"><span class="chip green">${b.radius} ม.</span></td>
+      <td><button class="linkbtn" data-edit-branch="${i}">แก้ไข</button></td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="8"><div class="empty">ไม่พบสาขาที่ตรงกับคำค้น</div></td></tr>`;
+  syncBulk();
+}
+$("branchSearch").addEventListener("input", renderBranches);
+
+function picked(){ return [...document.querySelectorAll(".pick:checked")].map(el => +el.dataset.i); }
+function syncBulk(){
+  const n = picked().length;
+  $("bulkBtn").hidden = n === 0;
+  $("bulkBtn").textContent = `ปรับรัศมี ${n} สาขาที่เลือก`;
+}
+$("branchRows").addEventListener("change", syncBulk);
+$("checkAll").addEventListener("change", e => {
+  document.querySelectorAll(".pick").forEach(el => el.checked = e.target.checked);
+  syncBulk();
+});
+$("branchRows").addEventListener("click", e => {
+  const b = e.target.closest("[data-edit-branch]");
+  if (b) openBranch(+b.dataset.editBranch);
+});
+
+const BR_FIELDS = [
+  ["code","รหัสสาขา","text"], ["name","ชื่อสาขา","text"],
+  ["near","สถานที่ใกล้เคียง","text"], ["radius","รัศมี (เมตร)","number"],
+  ["lat","Latitude","number"], ["lng","Longitude","number"]
+];
+
+function openBranch(idx){
+  const b = idx == null ? {code:"",name:"",near:"",lat:"",lng:"",radius:150} : {...branches[idx]};
+  $("modalTitle").textContent = idx == null ? "เพิ่มสาขา" : "แก้ไขสาขา";
+  $("modalBody").innerHTML = `<div class="grid2">` + BR_FIELDS.map(([k,label,type]) =>
+    `<div class="field"><label>${label}</label>
+      <input data-k="${k}" type="${type}" ${type==="number"?'step="any"':''} value="${b[k] ?? ""}" /></div>`
+  ).join("") + `</div>
+    <div class="note">พิกัดเว้นว่างได้ ระบบจะแสดงเป็น <b>ยังไม่มีพิกัด</b> และข้ามการตรวจ GPS สำหรับสาขานั้น</div>`;
+  openModal(() => {
+    const out = {};
+    $("modalBody").querySelectorAll("[data-k]").forEach(el => {
+      const v = el.value.trim();
+      out[el.dataset.k] = (el.type === "number") ? (v === "" ? null : Number(v)) : v;
+    });
+    if (!out.code || !out.name){ alert("กรอกรหัสสาขาและชื่อสาขา"); return false; }
+    out.radius = out.radius || 150;
+    if (idx == null) branches.push(out); else branches[idx] = out;
+    renderBranches(); return true;
+  });
+}
+$("addBranchBtn").addEventListener("click", () => openBranch(null));
+
+$("bulkBtn").addEventListener("click", () => {
+  const sel = picked();
+  $("modalTitle").textContent = `ปรับรัศมี ${sel.length} สาขา`;
+  $("modalBody").innerHTML = `
+    <div class="field"><label>รัศมีใหม่ (เมตร)</label>
+      <input data-k="radius" type="number" step="10" value="150" /></div>
+    <div class="note">จะเปลี่ยนรัศมีของสาขาที่เลือกทั้งหมดเป็นค่าเดียวกัน<br>
+      <b>สาขาที่จะถูกแก้:</b> ${sel.map(i => branches[i].name).join(", ")}</div>`;
+  openModal(() => {
+    const v = Number($("modalBody").querySelector("[data-k=radius]").value);
+    if (!v || v < 10){ alert("รัศมีต้องมากกว่า 10 เมตร"); return false; }
+    sel.forEach(i => branches[i].radius = v);
+    document.querySelectorAll(".pick").forEach(el => el.checked = false);
+    $("checkAll").checked = false;
+    renderBranches(); return true;
+  });
+});
+
+/* ═══════════════ modal helper ═══════════════ */
+let onSave = null;
+function openModal(handler){ onSave = handler; $("backdrop").classList.add("on"); }
+function closeModal(){ $("backdrop").classList.remove("on"); onSave = null; }
+$("modalCancel").addEventListener("click", closeModal);
+$("modalSave").addEventListener("click", () => { if (!onSave || onSave() !== false) closeModal(); });
+$("backdrop").addEventListener("click", e => { if (e.target === $("backdrop")) closeModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+/* ═══════════════ init ═══════════════ */
+if (!DEMO) $("demobar").hidden = true;
+checkLocked();
+</script>
+</body>
+</html>
