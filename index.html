@@ -149,6 +149,8 @@
   [data-dev-login]{cursor:pointer;user-select:none;touch-action:manipulation}
   [data-dev-login]:focus-visible{outline:2px solid var(--green);outline-offset:4px}
 </style>
+<link rel="stylesheet" href="https://timemud.mobile1234.site/vendor/leaflet-1.9.4/leaflet.css">
+<link rel="stylesheet" href="https://timemud.mobile1234.site/branch-map.css?v=20260915-1">
 </head>
 <body>
 
@@ -266,7 +268,7 @@
 
 <!-- ══════════ MODAL ══════════ -->
 <div class="backdrop" id="backdrop">
-  <div class="modal" role="dialog" aria-modal="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="head"><h2 id="modalTitle">แก้ไข</h2></div>
     <div class="body" id="modalBody"></div>
     <div id="modalError" class="alert err" role="alert" hidden></div>
@@ -277,12 +279,14 @@
   </div>
 </div>
 
+<script src="https://timemud.mobile1234.site/vendor/leaflet-1.9.4/leaflet.js"></script>
+<script src="https://timemud.mobile1234.site/branch-map.js?v=20260915-1"></script>
 <script>
 'use strict';
 const API_BASE='https://timemud.mobile1234.site';
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let devSession=false,token=null,users=[],branches=[],onSave=null,saving=false,lastFocus=null;
+let devSession=false,token=null,users=[],branches=[],onSave=null,saving=false,lastFocus=null,branchMapController=null;
 function banner(message,error=false){$('demobar').textContent=message;$('demobar').classList.toggle('error',error);}
 function showError(id,message){const el=$(id);el.textContent=message;el.hidden=!message;}
 function sessionEnded(){devSession=false;token=null;users=[];branches=[];saving=false;closeModal();$('shell').classList.remove('on');$('loginView').style.display='grid';$('userRows').replaceChildren();$('branchRows').replaceChildren();$('auditRows').replaceChildren();$('modalBody').replaceChildren();showError('loginAlert','หมดเวลาใช้งาน กรุณาเข้าสู่ระบบใหม่');}
@@ -371,12 +375,17 @@ function openUser(id){
 function openBranch(id){
  const b=id?branches.find(x=>x.id===id):{code:'',name:'',near:'',lat:null,lng:null,radius_m:150,is_active:true};if(!b)return;
  $('modalTitle').textContent=id?'แก้ไขสาขา':'เพิ่มสาขา';
- $('modalBody').innerHTML='<div class="grid2">'+inputField('code','รหัสสาขา',b.code,'text','maxlength="32"')+inputField('name','ชื่อสาขา',b.name,'text','maxlength="200"')+inputField('near','สถานที่ใกล้เคียง',b.near)+inputField('radius_m','รัศมี (เมตร)',b.radius_m,'number','min="10" max="10000" step="1"')+inputField('lat','Latitude',b.lat??'','number','min="-90" max="90" step="any"')+inputField('lng','Longitude',b.lng??'','number','min="-180" max="180" step="any"')+activeField(b.is_active)+'</div><div class="note">สาขาที่เปิดใช้งานต้องระบุพิกัดครบ รัศมี 10–10,000 เมตร หากยังไม่พร้อมให้เลือกปิดใช้งาน</div>';
+ const mapMarkup=window.HRNGBranchMap?.markup||'<div class="note">โหลดเครื่องมือแผนที่ไม่สำเร็จ กรุณาโหลดหน้าใหม่ หรือกรอกพิกัดด้านล่าง</div>';
+ $('modalBody').innerHTML='<div class="grid2">'+inputField('code','รหัสสาขา',b.code,'text','maxlength="32"')+inputField('name','ชื่อสาขา',b.name,'text','maxlength="200"')+inputField('near','สถานที่ใกล้เคียง',b.near)+activeField(b.is_active)+'</div>'+mapMarkup+'<div class="branch-coordinates">'+inputField('lat','Latitude',b.lat??'','number','min="-90" max="90" step="any"')+inputField('lng','Longitude',b.lng??'','number','min="-180" max="180" step="any"')+inputField('radius_m','รัศมี (เมตร)',b.radius_m,'number','min="10" max="10000" step="1"')+'</div><div class="note">สาขาที่เปิดใช้งานต้องระบุพิกัดครบ รัศมี 10–10,000 เมตร · ตำแหน่งจะเปลี่ยนเมื่อกดบันทึก</div>';
  openModal(async()=>{
+  if(branchMapController?.busy)throw new Error('รอค้นหาพิกัดให้เสร็จก่อนกดบันทึก');
   const body={code:value('code'),name:value('name'),near:value('near'),radius_m:Number(value('radius_m')),lat:value('lat')===''?null:Number(value('lat')),lng:value('lng')===''?null:Number(value('lng')),is_active:value('is_active')==='true'};if(id)body.version=b.version;
   if(!body.code||!body.name)throw new Error('กรอกรหัสสาขาและชื่อสาขา');
-  await api('/branches'+(id?'/'+id:''),{method:id?'PUT':'POST',body:JSON.stringify(body)});
+  const updated=await api('/branches'+(id?'/'+id:''),{method:id?'PUT':'POST',body:JSON.stringify(body)});
+  branches=id?branches.map(row=>row.id===id?updated:row):[...branches,updated];renderBranches();
  });
+ $('backdrop').querySelector('.modal').classList.add('branch-editor');
+ if(window.HRNGBranchMap)branchMapController=HRNGBranchMap.mount({root:$('modalBody'),resolve:url=>api('/maps/resolve',{method:'POST',body:JSON.stringify({url})})});
 }
 $('addUserBtn').addEventListener('click',()=>openUser());$('addBranchBtn').addEventListener('click',()=>openBranch());
 $('userRows').addEventListener('click',e=>{const b=e.target.closest('[data-edit-user]');if(b)openUser(Number(b.dataset.editUser));});
@@ -390,8 +399,8 @@ async function loadAudit(){
  $('auditRows').textContent='กำลังโหลดประวัติ…';
  try{const d=await api('/audit');$('auditRows').innerHTML=d.items.length?d.items.map(a=>`<tr><td>${esc(new Date(a.created_at).toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}</td><td>${esc(a.username)}</td><td>${esc(({create:'เพิ่ม',update:'แก้ไข',bulk_radius:'ปรับรัศมีหลายสาขา'})[a.action]||a.action)}</td><td>${esc(a.entity_type==='employee'?'พนักงาน':'สาขา')} #${a.entity_id}</td><td><details><summary>รายละเอียด</summary><pre>${esc(JSON.stringify({ก่อนแก้:a.before_data,หลังแก้:a.after_data},null,2))}</pre></details></td></tr>`).join(''):'<tr><td colspan="5"><div class="empty">ยังไม่มีประวัติการแก้ไข</div></td></tr>';}catch(e){$('auditRows').textContent=e.message;}
 }
-function openModal(handler){lastFocus=document.activeElement;onSave=handler;showError('modalError','');$('backdrop').classList.add('on');$('shell').inert=true;$('modalSave').disabled=false;setTimeout(()=>$('modalBody').querySelector('input,select')?.focus(),0);}
-function closeModal(){if(saving)return;$('backdrop').classList.remove('on');$('shell').inert=false;onSave=null;lastFocus?.focus();}
+function openModal(handler){branchMapController?.destroy();branchMapController=null;$('backdrop').querySelector('.modal').classList.remove('branch-editor');lastFocus=document.activeElement;onSave=handler;showError('modalError','');$('backdrop').classList.add('on');$('shell').inert=true;$('modalSave').disabled=false;setTimeout(()=>$('modalBody').querySelector('input,select')?.focus(),0);}
+function closeModal(){if(saving)return;branchMapController?.destroy();branchMapController=null;$('backdrop').querySelector('.modal').classList.remove('branch-editor');$('backdrop').classList.remove('on');$('shell').inert=false;onSave=null;lastFocus?.focus();}
 $('modalCancel').addEventListener('click',closeModal);
 $('modalSave').addEventListener('click',async()=>{
  if(saving||!onSave)return;let saved=false;saving=true;$('modalSave').disabled=true;$('modalCancel').disabled=true;showError('modalError','');
@@ -404,7 +413,7 @@ document.addEventListener('keydown',e=>{
  if(!$('backdrop').classList.contains('on'))return;
  if(e.key==='Escape'){e.preventDefault();closeModal();}
  if(e.key==='Tab'){
-  const items=[...$('backdrop').querySelectorAll('input,select,button')].filter(el=>!el.disabled),first=items[0],last=items.at(-1);
+  const items=[...$('backdrop').querySelectorAll('input,select,button,a[href],[tabindex]')].filter(el=>!el.disabled&&el.tabIndex>=0&&el.getClientRects().length),first=items[0],last=items.at(-1);
   if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
  }
 });
