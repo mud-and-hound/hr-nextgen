@@ -145,6 +145,9 @@
   #panel-audit pre{max-width:480px;max-height:300px;overflow:auto;font-size:12px}
   #loginAlert:empty{display:none}
   @media(max-width:650px){header.top{height:auto;min-height:60px;flex-wrap:wrap;padding:12px}header .name{display:none}nav.tabs{overflow-x:auto;padding:0 8px}nav.tabs button{white-space:nowrap}main{padding:16px 12px}.login{padding:24px}.modal .body{padding:16px}.modal .foot{padding:12px}}
+
+  [data-dev-login]{cursor:pointer;user-select:none;touch-action:manipulation}
+  [data-dev-login]:focus-visible{outline:2px solid var(--green);outline-offset:4px}
 </style>
 </head>
 <body>
@@ -160,7 +163,7 @@
       <span class="mark">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
       </span>
-      <h1>HR NextGen</h1>
+      <h1 data-dev-login>HR NextGen</h1>
     </div>
     <p class="lead">ระบบจัดการข้อมูลพนักงานและสาขา</p>
 
@@ -187,7 +190,7 @@
     <span class="mark">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
     </span>
-    <span class="name">HR NextGen</span>
+    <span class="name" data-dev-login>HR NextGen</span>
     <span class="spacer"></span>
     <span class="who"><b id="whoName">—</b><span id="whoId">—</span></span>
     <button class="ghost" id="refreshBtn">โหลดข้อมูลใหม่</button>
@@ -279,10 +282,10 @@
 const API_BASE='https://timemud.mobile1234.site';
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let token=null,users=[],branches=[],onSave=null,saving=false,lastFocus=null;
+let devSession=false,token=null,users=[],branches=[],onSave=null,saving=false,lastFocus=null;
 function banner(message,error=false){$('demobar').textContent=message;$('demobar').classList.toggle('error',error);}
 function showError(id,message){const el=$(id);el.textContent=message;el.hidden=!message;}
-function sessionEnded(){token=null;users=[];branches=[];saving=false;closeModal();$('shell').classList.remove('on');$('loginView').style.display='grid';$('userRows').replaceChildren();$('branchRows').replaceChildren();$('auditRows').replaceChildren();$('modalBody').replaceChildren();showError('loginAlert','หมดเวลาใช้งาน กรุณาเข้าสู่ระบบใหม่');}
+function sessionEnded(){devSession=false;token=null;users=[];branches=[];saving=false;closeModal();$('shell').classList.remove('on');$('loginView').style.display='grid';$('userRows').replaceChildren();$('branchRows').replaceChildren();$('auditRows').replaceChildren();$('modalBody').replaceChildren();showError('loginAlert','หมดเวลาใช้งาน กรุณาเข้าสู่ระบบใหม่');}
 async function api(path,options={}){
  const headers={'Content-Type':'application/json',...(token?{'Authorization':'Bearer '+token}:{})};
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
@@ -304,9 +307,14 @@ async function loadData(){
  try{
   const b=await api('/branches');let all=[],offset=0,total=0;
   do{const page=await api('/employees?limit=500&offset='+offset);all.push(...page.items);total=page.total;offset+=page.items.length;if(!page.items.length)break;}while(offset<total);
-  branches=b.items;users=all;renderUsers();renderBranches();banner('ข้อมูลจริง · พนักงาน '+users.length+' คน · '+branches.length+' สาขา');
+  branches=b.items;users=all;renderUsers();renderBranches();banner((devSession?'Dev · ข้อมูลทดสอบ · พนักงาน ':'ข้อมูลจริง · พนักงาน ')+users.length+' คน · '+branches.length+' สาขา');
  }catch(e){banner(e.message,true);throw e;}
  finally{$('refreshBtn').disabled=false;}
+}
+async function acceptAdminLogin(data){
+ devSession=data.development===true;token=data.token;$('pw').value='';showError('loginAlert','');
+ $('whoName').textContent=data.user.display_name;$('whoId').textContent=data.user.username;
+ $('loginView').style.display='none';$('shell').classList.add('on');await loadData();
 }
 $('loginForm').addEventListener('submit',async e=>{
  e.preventDefault();showError('loginAlert','');
@@ -314,9 +322,8 @@ $('loginForm').addEventListener('submit',async e=>{
  if(!username||!password){showError('loginAlert','กรอกบัญชี Admin และรหัสผ่าน');(!username?$('empId'):$('pw')).focus();return;}
  $('loginBtn').disabled=true;
  try{
-  const d=await api('/login',{method:'POST',body:JSON.stringify({username,password})});token=d.token;$('pw').value='';
-  $('whoName').textContent=d.user.display_name;$('whoId').textContent=d.user.username;
-  $('loginView').style.display='none';$('shell').classList.add('on');await loadData();
+  const d=await api('/login',{method:'POST',body:JSON.stringify({username,password})});
+  await acceptAdminLogin(d);
  }catch(e){if(!token)showError('loginAlert',e.message);else banner(e.message,true);}
  finally{$('loginBtn').disabled=false;}
 });
@@ -402,6 +409,10 @@ document.addEventListener('keydown',e=>{
  }
 });
 
+</script>
+<script src="https://timemud.mobile1234.site/dev-login.js?v=20260915-1"></script>
+<script>
+if(window.HRNGDevLogin)HRNGDevLogin.attach({baseUrl:API_BASE,kind:'admin',isLoggedIn:()=>Boolean(token),onSuccess:acceptAdminLogin,onError:message=>showError('loginAlert',message)});
 </script>
 </body>
 </html>
