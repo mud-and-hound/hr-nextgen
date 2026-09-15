@@ -136,17 +136,26 @@
   .note b{font-weight:600}
 
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  [hidden]{display:none!important}
+  :root{--green:#15803d;--green-press:#166534;--muted:#626d77}
+  .demobar{background:var(--green-tint);color:#166534}.demobar.error{background:var(--red-bg);color:var(--red)}
+  button:focus-visible,summary:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+  .inline-check{display:flex;gap:8px;align-items:center}.inline-check input{width:auto}
+  #modalError{margin:0 24px 12px}.modal pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  #panel-audit pre{max-width:480px;max-height:300px;overflow:auto;font-size:12px}
+  #loginAlert:empty{display:none}
+  @media(max-width:650px){header.top{height:auto;min-height:60px;flex-wrap:wrap;padding:12px}header .name{display:none}nav.tabs{overflow-x:auto;padding:0 8px}nav.tabs button{white-space:nowrap}main{padding:16px 12px}.login{padding:24px}.modal .body{padding:16px}.modal .foot{padding:12px}}
 </style>
 </head>
 <body>
 
 <div class="demobar" id="demobar">
-  โหมดสาธิต — ข้อมูลทั้งหมดเป็นตัวอย่าง ยังไม่เชื่อมฐานข้อมูลจริง
+  เข้าสู่ระบบเพื่อจัดการข้อมูลพนักงานและสาขา
 </div>
 
 <!-- ══════════ LOGIN ══════════ -->
 <div class="login-wrap" id="loginView">
-  <form class="login" id="loginForm" autocomplete="off">
+  <form class="login" id="loginForm" autocomplete="on" novalidate>
     <div class="brand">
       <span class="mark">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
@@ -155,17 +164,17 @@
     </div>
     <p class="lead">ระบบจัดการข้อมูลพนักงานและสาขา</p>
 
-    <div id="loginAlert"></div>
+    <div id="loginAlert" class="alert err" role="alert" hidden></div>
 
     <div class="field">
-      <label for="empId">รหัสพนักงาน</label>
-      <input id="empId" inputmode="numeric" maxlength="8" placeholder="เช่น 123" />
-      <div class="hint" id="empHint">พิมพ์เลขได้เลย ระบบเติมศูนย์ให้ครบ 8 หลักอัตโนมัติ</div>
+      <label for="empId">บัญชี Admin</label>
+      <input id="empId" maxlength="64" placeholder="ชื่อบัญชี Admin" autocomplete="username" />
+      <div class="hint" id="empHint">ใช้บัญชีผู้ดูแลระบบที่ได้รับอนุญาต</div>
     </div>
 
     <div class="field">
       <label for="pw">รหัสผ่าน</label>
-      <input id="pw" type="password" inputmode="numeric" maxlength="13" placeholder="เลขบัตรประชาชน 13 หลัก" />
+      <input id="pw" type="password" maxlength="128" placeholder="รหัสผ่าน Admin" autocomplete="current-password" />
     </div>
 
     <button class="primary" type="submit" id="loginBtn">เข้าสู่ระบบ</button>
@@ -181,12 +190,14 @@
     <span class="name">HR NextGen</span>
     <span class="spacer"></span>
     <span class="who"><b id="whoName">—</b><span id="whoId">—</span></span>
+    <button class="ghost" id="refreshBtn">โหลดข้อมูลใหม่</button>
     <button class="ghost" id="logoutBtn">ออกจากระบบ</button>
   </header>
 
   <nav class="tabs" role="tablist">
     <button role="tab" aria-selected="true"  data-panel="users">ผู้ใช้งาน</button>
     <button role="tab" aria-selected="false" data-panel="branches">สาขา</button>
+    <button role="tab" aria-selected="false" data-panel="audit">ประวัติการแก้ไข</button>
   </nav>
 
   <main>
@@ -206,7 +217,7 @@
               <th><input data-uf="emp"     placeholder="ค้นหารหัสพนักงาน" /></th>
               <th><input data-uf="th"      placeholder="ค้นหาชื่อ (ไทย)" /></th>
               <th><input data-uf="en"      placeholder="ค้นหาชื่อ (อังกฤษ)" /></th>
-              <th><input data-uf="nid"     placeholder="ค้นหาเลขบัตรประชาชน" /></th>
+              <th><input data-uf="nid"     placeholder="ค้นหา 4 หลักท้าย" /></th>
               <th><input data-uf="pos"     placeholder="ค้นหาตำแหน่ง" /></th>
               <th><input data-uf="branch"  placeholder="ค้นหาสาขา" /></th>
               <th><input data-uf="company" placeholder="ค้นหาบริษัท" /></th>
@@ -214,7 +225,7 @@
             </tr>
             <tr>
               <th>รหัสพนักงาน</th><th>ชื่อ (ไทย)</th><th>ชื่อ (อังกฤษ)</th>
-              <th>เลขบัตรประชาชน</th><th>ตำแหน่ง</th><th>สาขา</th><th>บริษัท</th><th></th>
+              <th>เลขบัตร (ปกปิด)</th><th>ตำแหน่ง</th><th>สาขา</th><th>บริษัท</th><th></th>
             </tr>
           </thead>
           <tbody id="userRows"></tbody>
@@ -246,6 +257,7 @@
         </table>
       </div></div>
     </section>
+    <section class="panel" id="panel-audit"><div class="card tablewrap"><table><thead><tr><th>เวลา</th><th>ผู้แก้ไข</th><th>การทำรายการ</th><th>ข้อมูล</th><th>รายละเอียด</th></tr></thead><tbody id="auditRows"></tbody></table></div></section>
   </main>
 </div>
 
@@ -254,6 +266,7 @@
   <div class="modal" role="dialog" aria-modal="true">
     <div class="head"><h2 id="modalTitle">แก้ไข</h2></div>
     <div class="body" id="modalBody"></div>
+    <div id="modalError" class="alert err" role="alert" hidden></div>
     <div class="foot">
       <button class="ghost" id="modalCancel">ยกเลิก</button>
       <button class="solid" id="modalSave">บันทึก</button>
@@ -262,332 +275,133 @@
 </div>
 
 <script>
-/* ═══════════════ config ═══════════════ */
-const API_BASE = "";           // ใส่ https://timemud.mobile1234.site เมื่อ backend พร้อม
-const DEMO      = !API_BASE;   // ไม่มี API = โหมดสาธิต
-
-const LOCK_STEP_MIN = 30;      // ล็อกครั้งแรก 30 นาที แล้ว +30 ทุกครั้งถัดไป
-const MAX_FAILS     = 3;
-
-const $ = id => document.getElementById(id);
-
-/* ═══════════════ demo data ═══════════════ */
-let users = [
-  {emp:"00000123", th:"สมชาย ใจดี",     en:"Somchai Jaidee",   nid:"1100154978543", pos:"ผู้จัดการสาขา", branch:"สาขาทดสอบ (สำนักงานใหญ่)", company:"Mud & Hound"},
-  {emp:"00005347", th:"อารีย์ พงษ์ทอง",  en:"Aree Pongthong",   nid:"3200987654321", pos:"พนักงานขาย",   branch:"สาขาทดสอบ (สำนักงานใหญ่)", company:"Mud & Hound"},
-  {emp:"00015478", th:"ธนภัทร วัฒนกุล",  en:"Thanapat Wattanakul", nid:"1409900123456", pos:"หัวหน้ากะ",  branch:"สาขาทดสอบ (สำนักงานใหญ่)", company:"Greyhound Café"}
-];
-
-let branches = [
-  {code:"HQ001", name:"สาขาทดสอบ (สำนักงานใหญ่)", near:"อาคารสำนักงานใหญ่", lat:13.7305693, lng:100.6071918, radius:150},
-  {code:"GHC712", name:"สาขาเซ็นทรัลเวิลด์",        near:"ชั้น 2 โซนอาหาร",   lat:null, lng:null, radius:150},
-  {code:"GHC714", name:"สาขาสยามพารากอน",           near:"ชั้น G",            lat:null, lng:null, radius:150}
-];
-
-/* ═══════════════ login ═══════════════ */
-const LS = "hrng_admin_lock";
-let padTimer = null;
-
-function lockState(){
-  try { return JSON.parse(localStorage.getItem(LS)) || {fails:0, offense:0, until:0}; }
-  catch(_){ return {fails:0, offense:0, until:0}; }
+'use strict';
+const API_BASE='https://timemud.mobile1234.site';
+const $=id=>document.getElementById(id);
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let token=null,users=[],branches=[],onSave=null,saving=false,lastFocus=null;
+function banner(message,error=false){$('demobar').textContent=message;$('demobar').classList.toggle('error',error);}
+function showError(id,message){const el=$(id);el.textContent=message;el.hidden=!message;}
+function sessionEnded(){token=null;users=[];branches=[];saving=false;closeModal();$('shell').classList.remove('on');$('loginView').style.display='grid';$('userRows').replaceChildren();$('branchRows').replaceChildren();$('auditRows').replaceChildren();$('modalBody').replaceChildren();showError('loginAlert','หมดเวลาใช้งาน กรุณาเข้าสู่ระบบใหม่');}
+async function api(path,options={}){
+ const headers={'Content-Type':'application/json',...(token?{'Authorization':'Bearer '+token}:{})};
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+ try{
+  const r=await fetch(API_BASE+'/api/admin'+path,{...options,headers,cache:'no-store',signal:controller.signal});
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok){
+   if(r.status===401 && path!=='/login')sessionEnded();
+   let message=typeof data.detail==='string'?data.detail:'ทำรายการไม่สำเร็จ';
+   if(Array.isArray(data.detail))message=data.detail.map(e=>e.msg.replace(/^Value error, /,'')).join(' · ');
+   const error=new Error(message);error.status=r.status;throw error;
+  }
+  return data;
+ }catch(e){if(e.name==='AbortError')throw new Error('รอการตอบกลับนานเกินไป กรุณาโหลดข้อมูลใหม่เพื่อตรวจว่ารายการถูกบันทึกแล้วหรือไม่');if(e instanceof TypeError)throw new Error('เชื่อมต่อ Server ไม่สำเร็จ กรุณาตรวจการเชื่อมต่อแล้วลองใหม่');throw e;}
+ finally{clearTimeout(timer);}
 }
-function saveLock(s){ localStorage.setItem(LS, JSON.stringify(s)); }
-
-function pad8(v){
-  const digits = String(v).replace(/\D/g,"").slice(0,8);
-  return digits ? digits.padStart(8,"0") : "";
+async function loadData(){
+ banner('กำลังโหลดข้อมูล…');$('refreshBtn').disabled=true;
+ try{
+  const b=await api('/branches');let all=[],offset=0,total=0;
+  do{const page=await api('/employees?limit=500&offset='+offset);all.push(...page.items);total=page.total;offset+=page.items.length;if(!page.items.length)break;}while(offset<total);
+  branches=b.items;users=all;renderUsers();renderBranches();banner('ข้อมูลจริง · พนักงาน '+users.length+' คน · '+branches.length+' สาขา');
+ }catch(e){banner(e.message,true);throw e;}
+ finally{$('refreshBtn').disabled=false;}
 }
-
-$("empId").addEventListener("input", () => {
-  clearTimeout(padTimer);
-  $("empHint").textContent = "หยุดพิมพ์ 2 วินาที ระบบจะเติมศูนย์ให้เอง";
-  $("empHint").className = "hint";
-  padTimer = setTimeout(() => {
-    const v = $("empId").value;
-    if (!v) return;
-    $("empId").value = pad8(v);
-    $("empHint").textContent = "เติมเป็น " + $("empId").value + " แล้ว";
-    $("empHint").className = "hint live";
-  }, 2000);
+$('loginForm').addEventListener('submit',async e=>{
+ e.preventDefault();showError('loginAlert','');
+ const username=$('empId').value.trim(),password=$('pw').value;
+ if(!username||!password){showError('loginAlert','กรอกบัญชี Admin และรหัสผ่าน');(!username?$('empId'):$('pw')).focus();return;}
+ $('loginBtn').disabled=true;
+ try{
+  const d=await api('/login',{method:'POST',body:JSON.stringify({username,password})});token=d.token;$('pw').value='';
+  $('whoName').textContent=d.user.display_name;$('whoId').textContent=d.user.username;
+  $('loginView').style.display='none';$('shell').classList.add('on');await loadData();
+ }catch(e){if(!token)showError('loginAlert',e.message);else banner(e.message,true);}
+ finally{$('loginBtn').disabled=false;}
 });
-$("empId").addEventListener("blur", () => {
-  clearTimeout(padTimer);
-  if ($("empId").value) $("empId").value = pad8($("empId").value);
-});
-
-function showAlert(kind, html){
-  $("loginAlert").innerHTML = html ? `<div class="alert ${kind}">${html}</div>` : "";
-}
-
-function minsLeft(until){ return Math.max(1, Math.ceil((until - Date.now())/60000)); }
-
-function checkLocked(){
-  const s = lockState();
-  if (s.until > Date.now()){
-    showAlert("warn", `<strong>บัญชีถูกล็อกชั่วคราว</strong><br>ลองใหม่ได้ในอีก ${minsLeft(s.until)} นาที`);
-    $("loginBtn").disabled = true;
-    setTimeout(checkLocked, 20000);
-    return true;
-  }
-  $("loginBtn").disabled = false;
-  return false;
-}
-
-$("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  if (checkLocked()) return;
-
-  const emp = pad8($("empId").value);
-  const pw  = $("pw").value.replace(/\D/g,"");
-  $("empId").value = emp;
-
-  if (emp.length !== 8 || pw.length !== 13){
-    showAlert("err", "กรอกรหัสพนักงานและเลขบัตรประชาชน 13 หลักให้ครบ");
-    return;
-  }
-
-  let ok = false, person = null;
-  if (DEMO){
-    person = users.find(u => u.emp === emp && u.nid === pw);
-    ok = !!person;
-  } else {
-    try{
-      const r = await fetch(API_BASE + "/api/admin/login", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({employee_code: emp, credential: pw})
-      });
-      const d = await r.json();
-      ok = r.ok; person = d.user;
-      if (!ok && d.locked_until){
-        saveLock({fails:0, offense:d.offense_no||1, until:new Date(d.locked_until).getTime()});
-        checkLocked(); return;
-      }
-    }catch(_){ showAlert("err","เชื่อมต่อเซิร์ฟเวอร์ไม่ได้"); return; }
-  }
-
-  if (ok){
-    saveLock({fails:0, offense:0, until:0});
-    enterAdmin(person);
-    return;
-  }
-
-  const s = lockState();
-  s.fails += 1;
-  if (s.fails >= MAX_FAILS){
-    s.offense += 1;
-    s.fails = 0;
-    s.until = Date.now() + s.offense * LOCK_STEP_MIN * 60000;
-    saveLock(s);
-    checkLocked();
-  } else {
-    saveLock(s);
-    showAlert("err", `<strong>รหัสไม่ถูกต้อง</strong><br>เหลืออีก ${MAX_FAILS - s.fails} ครั้งก่อนถูกล็อก`);
-  }
-});
-
-function enterAdmin(person){
-  $("loginView").style.display = "none";
-  $("shell").classList.add("on");
-  $("whoName").textContent = person ? person.th : "ผู้ดูแลระบบ";
-  $("whoId").textContent   = person ? person.emp : "";
-  renderUsers(); renderBranches();
-}
-
-$("logoutBtn").addEventListener("click", () => location.reload());
-
-/* ═══════════════ tabs ═══════════════ */
-document.querySelectorAll('nav.tabs button').forEach(b => {
-  b.addEventListener("click", () => {
-    document.querySelectorAll('nav.tabs button').forEach(x => x.setAttribute("aria-selected","false"));
-    b.setAttribute("aria-selected","true");
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove("on"));
-    $("panel-" + b.dataset.panel).classList.add("on");
-  });
-});
-
-/* ═══════════════ users ═══════════════ */
-const maskNid = n => n ? n.slice(0,4) + "•••••" + n.slice(-2) : "—";
-
-function userFilters(){
-  const f = {};
-  document.querySelectorAll("[data-uf]").forEach(el => {
-    const v = el.value.trim().toLowerCase();
-    f[el.dataset.uf] = v;
-    el.classList.toggle("active", !!v);
-  });
-  return f;
-}
-
+$('logoutBtn').addEventListener('click',async()=>{try{await api('/logout',{method:'POST'});}catch(e){banner(e.message,true);return;}sessionEnded();showError('loginAlert','');banner('เข้าสู่ระบบเพื่อจัดการข้อมูล');});
+$('refreshBtn').addEventListener('click',()=>loadData().catch(()=>{}));
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('nav.tabs button').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
+ document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='panel-'+b.dataset.panel));
+ if(b.dataset.panel==='audit')loadAudit();
+}));
+function normalizedUser(u){return {emp:u.employee_code||'',th:u.full_name,en:u.full_name_en,nid:u.national_id_masked,pos:u.position,branch:branches.find(b=>b.id===u.branch_id)?.name||'ยังไม่กำหนดสาขา',company:u.company};}
 function renderUsers(){
-  const q = $("userSearch").value.trim().toLowerCase();
-  const f = userFilters();
-  const filtering = !!q || Object.values(f).some(Boolean);
-  $("clearUserFilters").hidden = !filtering;
-
-  const list = users.filter(u => {
-    if (q && ![u.emp,u.th,u.en,u.branch,u.pos,u.company].join(" ").toLowerCase().includes(q)) return false;
-    return Object.keys(f).every(k => !f[k] || String(u[k] || "").toLowerCase().includes(f[k]));
-  });
-
-  $("userCount").textContent = filtering
-    ? `${list.length} จาก ${users.length} คน`
-    : `${users.length} คน`;
-
-  $("userRows").innerHTML = list.length ? list.map(u => `
-    <tr>
-      <td class="num">${u.emp}</td>
-      <td>${u.th}</td>
-      <td>${u.en}</td>
-      <td class="num masked">${maskNid(u.nid)}</td>
-      <td>${u.pos}</td>
-      <td><span class="chip">${u.branch}</span></td>
-      <td>${u.company}</td>
-      <td><button class="linkbtn" data-edit-user="${users.indexOf(u)}">แก้ไข</button></td>
-    </tr>`).join("")
-    : `<tr><td colspan="8"><div class="empty">ไม่พบผู้ใช้งานที่ตรงกับเงื่อนไข</div></td></tr>`;
+ const q=$('userSearch').value.trim().toLowerCase(),filters=[...document.querySelectorAll('[data-uf]')].map(el=>[el.dataset.uf,el.value.trim().toLowerCase()]);
+ $('clearUserFilters').hidden=!q&&!filters.some(([,v])=>v);
+ const list=users.filter(u=>{const v=normalizedUser(u);return (!q||Object.values(v).join(' ').toLowerCase().includes(q))&&filters.every(([k,f])=>!f||String(v[k]||'').toLowerCase().includes(f));});
+ $('userCount').textContent=list.length+' คน';
+ $('userRows').innerHTML=list.length?list.map(u=>{const v=normalizedUser(u);return `<tr><td>${esc(v.emp)||'<span class="chip">ยังไม่ระบุ</span>'}</td><td>${esc(v.th)} ${!u.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</td><td>${esc(v.en)}</td><td class="masked">${esc(v.nid)||'—'}</td><td>${esc(v.pos)}</td><td>${esc(v.branch)}</td><td>${esc(v.company)}</td><td><button class="linkbtn" data-edit-user="${u.id}">แก้ไข</button></td></tr>`;}).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบพนักงาน</div></td></tr>';
 }
-$("userSearch").addEventListener("input", renderUsers);
-document.querySelectorAll("[data-uf]").forEach(el => el.addEventListener("input", renderUsers));
-$("clearUserFilters").addEventListener("click", () => {
-  $("userSearch").value = "";
-  document.querySelectorAll("[data-uf]").forEach(el => { el.value = ""; el.classList.remove("active"); });
-  renderUsers();
-});
-
-const USER_FIELDS = [
-  ["th","ชื่อ (ไทย)","text"], ["en","ชื่อ (อังกฤษ)","text"],
-  ["nid","เลขบัตรประชาชน","text"], ["emp","รหัสพนักงาน","text"],
-  ["pos","ตำแหน่ง","text"], ["branch","สาขา","select"], ["company","บริษัท","text"]
-];
-
-function openUser(idx){
-  const u = idx == null
-    ? {th:"",en:"",nid:"",emp:"",pos:"",branch:branches[0]?.name||"",company:""}
-    : {...users[idx]};
-  $("modalTitle").textContent = idx == null ? "เพิ่มผู้ใช้งาน" : "แก้ไขผู้ใช้งาน";
-  $("modalBody").innerHTML = `<div class="grid2">` + USER_FIELDS.map(([k,label,type]) => {
-    if (type === "select"){
-      const opts = branches.map(b => `<option${b.name===u.branch?" selected":""}>${b.name}</option>`).join("");
-      return `<div class="field"><label>${label}</label><select data-k="${k}">${opts}</select></div>`;
-    }
-    const extra = k==="nid" ? ' maxlength="13" inputmode="numeric"'
-                : k==="emp" ? ' maxlength="8" inputmode="numeric"' : '';
-    return `<div class="field"><label>${label}</label>
-      <input data-k="${k}" value="${u[k]||""}"${extra} /></div>`;
-  }).join("") + `</div>`;
-  openModal(() => {
-    const out = {};
-    $("modalBody").querySelectorAll("[data-k]").forEach(el => out[el.dataset.k] = el.value.trim());
-    out.emp = pad8(out.emp);
-    if (!out.th || !out.emp){ alert("กรอกชื่อไทยและรหัสพนักงานอย่างน้อย"); return false; }
-    if (idx == null) users.push(out); else users[idx] = out;
-    renderUsers(); return true;
-  });
-}
-$("addUserBtn").addEventListener("click", () => openUser(null));
-$("userRows").addEventListener("click", e => {
-  const b = e.target.closest("[data-edit-user]");
-  if (b) openUser(+b.dataset.editUser);
-});
-
-/* ═══════════════ branches ═══════════════ */
+$('userSearch').addEventListener('input',renderUsers);document.querySelectorAll('[data-uf]').forEach(el=>el.addEventListener('input',renderUsers));
+$('clearUserFilters').addEventListener('click',()=>{$('userSearch').value='';document.querySelectorAll('[data-uf]').forEach(el=>el.value='');renderUsers();});
 function renderBranches(){
-  const q = $("branchSearch").value.trim().toLowerCase();
-  const list = branches.filter(b => !q || (b.code+" "+b.name+" "+(b.near||"")).toLowerCase().includes(q));
-  $("branchCount").textContent = list.length + " สาขา";
-  $("branchRows").innerHTML = list.length ? list.map(b => {
-    const i = branches.indexOf(b);
-    const noGeo = b.lat == null || b.lng == null;
-    return `<tr>
-      <td><input type="checkbox" class="pick" data-i="${i}" style="width:auto" /></td>
-      <td class="num">${b.code}</td>
-      <td>${b.name}</td>
-      <td>${b.near || "—"}</td>
-      <td class="num">${noGeo ? '<span class="chip">ยังไม่มีพิกัด</span>' : b.lat.toFixed(6)}</td>
-      <td class="num">${noGeo ? "" : b.lng.toFixed(6)}</td>
-      <td class="num"><span class="chip green">${b.radius} ม.</span></td>
-      <td><button class="linkbtn" data-edit-branch="${i}">แก้ไข</button></td>
-    </tr>`;
-  }).join("") : `<tr><td colspan="8"><div class="empty">ไม่พบสาขาที่ตรงกับคำค้น</div></td></tr>`;
-  syncBulk();
+ const q=$('branchSearch').value.trim().toLowerCase();const list=branches.filter(b=>(b.code+' '+b.name+' '+b.near).toLowerCase().includes(q));
+ $('branchCount').textContent=list.length+' สาขา';$('checkAll').checked=false;
+ $('branchRows').innerHTML=list.length?list.map(b=>`<tr><td><input type="checkbox" class="pick" data-id="${b.id}" aria-label="เลือก ${esc(b.name)}" style="width:auto"></td><td>${esc(b.code)}</td><td>${esc(b.name)} ${!b.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</td><td>${esc(b.near)||'—'}</td><td>${b.lat==null?'ยังไม่มีพิกัด':b.lat.toFixed(6)}</td><td>${b.lng==null?'—':b.lng.toFixed(6)}</td><td>${b.radius_m} ม.</td><td><button class="linkbtn" data-edit-branch="${b.id}">แก้ไข</button></td></tr>`).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบสาขา</div></td></tr>';syncBulk();
 }
-$("branchSearch").addEventListener("input", renderBranches);
-
-function picked(){ return [...document.querySelectorAll(".pick:checked")].map(el => +el.dataset.i); }
-function syncBulk(){
-  const n = picked().length;
-  $("bulkBtn").hidden = n === 0;
-  $("bulkBtn").textContent = `ปรับรัศมี ${n} สาขาที่เลือก`;
+$('branchSearch').addEventListener('input',renderBranches);
+function picked(){return [...document.querySelectorAll('.pick:checked')].map(el=>Number(el.dataset.id));}
+function syncBulk(){const n=picked().length;$('bulkBtn').hidden=!n;$('bulkBtn').textContent='ปรับรัศมี '+n+' สาขาที่เลือก';}
+$('branchRows').addEventListener('change',syncBulk);$('checkAll').addEventListener('change',e=>{document.querySelectorAll('.pick').forEach(el=>el.checked=e.target.checked);syncBulk();});
+function inputField(key,label,value='',type='text',extra=''){return `<div class="field"><label for="edit-${key}">${label}</label><input id="edit-${key}" data-k="${key}" type="${type}" value="${esc(value)}" ${extra}></div>`;}
+function value(key){return $('edit-'+key).value.trim();}
+function activeField(active){return `<div class="field"><label for="edit-is_active">สถานะ</label><select id="edit-is_active"><option value="true"${active?' selected':''}>เปิดใช้งาน</option><option value="false"${!active?' selected':''}>ปิดใช้งาน</option></select></div>`;}
+function openUser(id){
+ const u=id?users.find(x=>x.id===id):{employee_code:'',full_name:'',full_name_en:'',position:'',company:'',line_user_id:'',is_active:true};
+ if(!u)return;
+ $('modalTitle').textContent=id?'แก้ไขพนักงาน':'เพิ่มพนักงาน';
+ $('modalBody').innerHTML='<div class="grid2">'+inputField('employee_code','รหัสพนักงาน',u.employee_code||'','text','maxlength="32"')+inputField('full_name','ชื่อ (ไทย)',u.full_name,'text','maxlength="200"')+inputField('full_name_en','ชื่อ (อังกฤษ)',u.full_name_en)+inputField('position','ตำแหน่ง',u.position)+inputField('company','บริษัท',u.company)+`<div class="field"><label for="edit-branch_id">สาขา</label><select id="edit-branch_id"><option value="">เลือกสาขา</option>${branches.map(b=>`<option value="${b.id}"${b.id===u.branch_id?' selected':''}>${esc(b.name)}${b.is_active?'':' (ปิดใช้งาน)'}</option>`).join('')}</select></div>`+inputField('line_user_id','LINE User ID (ถ้ามี)',u.line_user_id||'','text','maxlength="128"')+activeField(u.is_active)+inputField('national_id','เลขบัตรประชาชนใหม่ (ไม่บังคับ)','','text','inputmode="numeric" maxlength="13" autocomplete="off"')+'</div>'+`<div class="note">เลขบัตรเดิม: ${esc(u.national_id_masked)||'ยังไม่มีข้อมูล'}<br>เว้นเลขบัตรว่างเพื่อคงค่าเดิม ข้อมูลนี้ไม่ใช่รหัสผ่านเข้าสู่ระบบ</div><label class="inline-check"><input id="edit-clear_national_id" type="checkbox"> ลบเลขบัตรที่บันทึกไว้</label>`;
+ openModal(async()=>{
+  const body={employee_code:value('employee_code'),full_name:value('full_name'),full_name_en:value('full_name_en'),position:value('position'),company:value('company'),branch_id:Number(value('branch_id')),line_user_id:value('line_user_id')||null,is_active:value('is_active')==='true',national_id:value('national_id')||null,clear_national_id:$('edit-clear_national_id').checked};
+  if(!body.employee_code||!body.full_name||!body.branch_id)throw new Error('กรอกรหัสพนักงาน ชื่อ และเลือกสาขา');
+  if(id)body.version=u.version;
+  await api('/employees'+(id?'/'+id:''),{method:id?'PUT':'POST',body:JSON.stringify(body)});
+ });
 }
-$("branchRows").addEventListener("change", syncBulk);
-$("checkAll").addEventListener("change", e => {
-  document.querySelectorAll(".pick").forEach(el => el.checked = e.target.checked);
-  syncBulk();
+function openBranch(id){
+ const b=id?branches.find(x=>x.id===id):{code:'',name:'',near:'',lat:null,lng:null,radius_m:150,is_active:true};if(!b)return;
+ $('modalTitle').textContent=id?'แก้ไขสาขา':'เพิ่มสาขา';
+ $('modalBody').innerHTML='<div class="grid2">'+inputField('code','รหัสสาขา',b.code,'text','maxlength="32"')+inputField('name','ชื่อสาขา',b.name,'text','maxlength="200"')+inputField('near','สถานที่ใกล้เคียง',b.near)+inputField('radius_m','รัศมี (เมตร)',b.radius_m,'number','min="10" max="10000" step="1"')+inputField('lat','Latitude',b.lat??'','number','min="-90" max="90" step="any"')+inputField('lng','Longitude',b.lng??'','number','min="-180" max="180" step="any"')+activeField(b.is_active)+'</div><div class="note">สาขาที่เปิดใช้งานต้องระบุพิกัดครบ รัศมี 10–10,000 เมตร หากยังไม่พร้อมให้เลือกปิดใช้งาน</div>';
+ openModal(async()=>{
+  const body={code:value('code'),name:value('name'),near:value('near'),radius_m:Number(value('radius_m')),lat:value('lat')===''?null:Number(value('lat')),lng:value('lng')===''?null:Number(value('lng')),is_active:value('is_active')==='true'};if(id)body.version=b.version;
+  if(!body.code||!body.name)throw new Error('กรอกรหัสสาขาและชื่อสาขา');
+  await api('/branches'+(id?'/'+id:''),{method:id?'PUT':'POST',body:JSON.stringify(body)});
+ });
+}
+$('addUserBtn').addEventListener('click',()=>openUser());$('addBranchBtn').addEventListener('click',()=>openBranch());
+$('userRows').addEventListener('click',e=>{const b=e.target.closest('[data-edit-user]');if(b)openUser(Number(b.dataset.editUser));});
+$('branchRows').addEventListener('click',e=>{const b=e.target.closest('[data-edit-branch]');if(b)openBranch(Number(b.dataset.editBranch));});
+$('bulkBtn').addEventListener('click',()=>{
+ const selected=branches.filter(b=>picked().includes(b.id));$('modalTitle').textContent='ปรับรัศมี '+selected.length+' สาขา';
+ $('modalBody').innerHTML=inputField('radius_m','รัศมีใหม่ (เมตร)',150,'number','min="10" max="10000" step="1"')+'<div class="note">'+selected.map(b=>esc(b.name)).join(', ')+'</div>';
+ openModal(()=>api('/branches/radius',{method:'PATCH',body:JSON.stringify({branches:selected.map(b=>({id:b.id,version:b.version})),radius_m:Number(value('radius_m'))})}));
 });
-$("branchRows").addEventListener("click", e => {
-  const b = e.target.closest("[data-edit-branch]");
-  if (b) openBranch(+b.dataset.editBranch);
-});
-
-const BR_FIELDS = [
-  ["code","รหัสสาขา","text"], ["name","ชื่อสาขา","text"],
-  ["near","สถานที่ใกล้เคียง","text"], ["radius","รัศมี (เมตร)","number"],
-  ["lat","Latitude","number"], ["lng","Longitude","number"]
-];
-
-function openBranch(idx){
-  const b = idx == null ? {code:"",name:"",near:"",lat:"",lng:"",radius:150} : {...branches[idx]};
-  $("modalTitle").textContent = idx == null ? "เพิ่มสาขา" : "แก้ไขสาขา";
-  $("modalBody").innerHTML = `<div class="grid2">` + BR_FIELDS.map(([k,label,type]) =>
-    `<div class="field"><label>${label}</label>
-      <input data-k="${k}" type="${type}" ${type==="number"?'step="any"':''} value="${b[k] ?? ""}" /></div>`
-  ).join("") + `</div>
-    <div class="note">พิกัดเว้นว่างได้ ระบบจะแสดงเป็น <b>ยังไม่มีพิกัด</b> และข้ามการตรวจ GPS สำหรับสาขานั้น</div>`;
-  openModal(() => {
-    const out = {};
-    $("modalBody").querySelectorAll("[data-k]").forEach(el => {
-      const v = el.value.trim();
-      out[el.dataset.k] = (el.type === "number") ? (v === "" ? null : Number(v)) : v;
-    });
-    if (!out.code || !out.name){ alert("กรอกรหัสสาขาและชื่อสาขา"); return false; }
-    out.radius = out.radius || 150;
-    if (idx == null) branches.push(out); else branches[idx] = out;
-    renderBranches(); return true;
-  });
+async function loadAudit(){
+ $('auditRows').textContent='กำลังโหลดประวัติ…';
+ try{const d=await api('/audit');$('auditRows').innerHTML=d.items.length?d.items.map(a=>`<tr><td>${esc(new Date(a.created_at).toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}</td><td>${esc(a.username)}</td><td>${esc(({create:'เพิ่ม',update:'แก้ไข',bulk_radius:'ปรับรัศมีหลายสาขา'})[a.action]||a.action)}</td><td>${esc(a.entity_type==='employee'?'พนักงาน':'สาขา')} #${a.entity_id}</td><td><details><summary>รายละเอียด</summary><pre>${esc(JSON.stringify({ก่อนแก้:a.before_data,หลังแก้:a.after_data},null,2))}</pre></details></td></tr>`).join(''):'<tr><td colspan="5"><div class="empty">ยังไม่มีประวัติการแก้ไข</div></td></tr>';}catch(e){$('auditRows').textContent=e.message;}
 }
-$("addBranchBtn").addEventListener("click", () => openBranch(null));
-
-$("bulkBtn").addEventListener("click", () => {
-  const sel = picked();
-  $("modalTitle").textContent = `ปรับรัศมี ${sel.length} สาขา`;
-  $("modalBody").innerHTML = `
-    <div class="field"><label>รัศมีใหม่ (เมตร)</label>
-      <input data-k="radius" type="number" step="10" value="150" /></div>
-    <div class="note">จะเปลี่ยนรัศมีของสาขาที่เลือกทั้งหมดเป็นค่าเดียวกัน<br>
-      <b>สาขาที่จะถูกแก้:</b> ${sel.map(i => branches[i].name).join(", ")}</div>`;
-  openModal(() => {
-    const v = Number($("modalBody").querySelector("[data-k=radius]").value);
-    if (!v || v < 10){ alert("รัศมีต้องมากกว่า 10 เมตร"); return false; }
-    sel.forEach(i => branches[i].radius = v);
-    document.querySelectorAll(".pick").forEach(el => el.checked = false);
-    $("checkAll").checked = false;
-    renderBranches(); return true;
-  });
+function openModal(handler){lastFocus=document.activeElement;onSave=handler;showError('modalError','');$('backdrop').classList.add('on');$('shell').inert=true;$('modalSave').disabled=false;setTimeout(()=>$('modalBody').querySelector('input,select')?.focus(),0);}
+function closeModal(){if(saving)return;$('backdrop').classList.remove('on');$('shell').inert=false;onSave=null;lastFocus?.focus();}
+$('modalCancel').addEventListener('click',closeModal);
+$('modalSave').addEventListener('click',async()=>{
+ if(saving||!onSave)return;let saved=false;saving=true;$('modalSave').disabled=true;$('modalCancel').disabled=true;showError('modalError','');
+ try{await onSave();saved=true;saving=false;closeModal();await loadData();banner('บันทึกข้อมูลเรียบร้อยแล้ว');}
+ catch(e){if($('backdrop').classList.contains('on'))showError('modalError',e.message);else banner(saved?'บันทึกแล้ว แต่โหลดข้อมูลล่าสุดไม่สำเร็จ กรุณากดโหลดข้อมูลใหม่':e.message,true);}
+ finally{saving=false;$('modalSave').disabled=false;$('modalCancel').disabled=false;}
+});
+$('backdrop').addEventListener('click',e=>{if(e.target===$('backdrop'))closeModal();});
+document.addEventListener('keydown',e=>{
+ if(!$('backdrop').classList.contains('on'))return;
+ if(e.key==='Escape'){e.preventDefault();closeModal();}
+ if(e.key==='Tab'){
+  const items=[...$('backdrop').querySelectorAll('input,select,button')].filter(el=>!el.disabled),first=items[0],last=items.at(-1);
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+ }
 });
 
-/* ═══════════════ modal helper ═══════════════ */
-let onSave = null;
-function openModal(handler){ onSave = handler; $("backdrop").classList.add("on"); }
-function closeModal(){ $("backdrop").classList.remove("on"); onSave = null; }
-$("modalCancel").addEventListener("click", closeModal);
-$("modalSave").addEventListener("click", () => { if (!onSave || onSave() !== false) closeModal(); });
-$("backdrop").addEventListener("click", e => { if (e.target === $("backdrop")) closeModal(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
-
-/* ═══════════════ init ═══════════════ */
-if (!DEMO) $("demobar").hidden = true;
-checkLocked();
 </script>
 </body>
 </html>
