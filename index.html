@@ -41,6 +41,9 @@
   input:disabled{background:var(--surface-2);color:var(--muted)}
   .hint{font-size:12px;color:var(--muted);margin-top:6px}
   .hint.live{color:var(--green)}
+  a.dev-chat-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;color:var(--green);font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+  .login .dev-chat-link{display:flex;margin-top:12px}
+  a.dev-chat-link:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:6px}
   button.primary{width:100%;border:0;border-radius:11px;background:var(--green);color:#fff;
     font-family:inherit;font-size:15.5px;font-weight:600;padding:14px;cursor:pointer;
     transition:background .15s}
@@ -183,6 +186,7 @@
     </div>
 
     <button class="primary" type="submit" id="loginBtn">เข้าสู่ระบบ</button>
+    <a class="dev-chat-link" href="https://timemud.mobile1234.site/dev/">Dev Chat · คุยและสั่งแก้โปรเจ็กต์ ↗</a>
   </form>
 </div>
 
@@ -194,6 +198,7 @@
     </span>
     <span class="name" data-dev-login>HR NextGen</span>
     <span class="spacer"></span>
+    <a class="dev-chat-link" href="https://timemud.mobile1234.site/dev/">Dev Chat ↗</a>
     <span class="who"><b id="whoName">—</b><span id="whoId">—</span></span>
     <button class="ghost" id="refreshBtn">โหลดข้อมูลใหม่</button>
     <button class="ghost" id="logoutBtn">ออกจากระบบ</button>
