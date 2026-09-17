@@ -154,6 +154,7 @@
 </style>
 <link rel="stylesheet" href="https://timemud.mobile1234.site/vendor/leaflet-1.9.4/leaflet.css">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/branch-map.css?v=20260915-1">
+<link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=20260917-1">
 </head>
 <body>
 
@@ -218,6 +219,7 @@
         <span class="count" id="userCount"></span>
         <button class="clearbtn" id="clearUserFilters" hidden>ล้างตัวกรอง</button>
         <span class="grow"></span>
+        <div id="nameLanguageControl"></div>
         <button class="solid" id="addUserBtn">เพิ่มผู้ใช้งาน</button>
       </div>
       <div class="card"><div class="tablewrap">
@@ -225,7 +227,7 @@
           <thead>
             <tr class="filters">
               <th><input data-uf="emp"     placeholder="ค้นหารหัสพนักงาน" /></th>
-              <th><input data-uf="th"      placeholder="ค้นหาชื่อ (ไทย)" /></th>
+              <th><input data-uf="th"      placeholder="ค้นหาชื่อ LINE / ไทย" /></th>
               <th><input data-uf="en"      placeholder="ค้นหาชื่อ (อังกฤษ)" /></th>
               <th><input data-uf="nid"     placeholder="ค้นหา 4 หลักท้าย" /></th>
               <th><input data-uf="pos"     placeholder="ค้นหาตำแหน่ง" /></th>
@@ -234,7 +236,7 @@
               <th></th>
             </tr>
             <tr>
-              <th>รหัสพนักงาน</th><th>ชื่อ (ไทย)</th><th>ชื่อ (อังกฤษ)</th>
+              <th>รหัสพนักงาน</th><th>LINE / ชื่อพนักงาน</th><th>ชื่อ (อังกฤษ)</th>
               <th>เลขบัตร (ปกปิด)</th><th>ตำแหน่ง</th><th>สาขา</th><th>บริษัท</th><th></th>
             </tr>
           </thead>
@@ -286,6 +288,7 @@
 
 <script src="https://timemud.mobile1234.site/vendor/leaflet-1.9.4/leaflet.js"></script>
 <script src="https://timemud.mobile1234.site/branch-map.js?v=20260915-1"></script>
+<script src="https://timemud.mobile1234.site/line-profile.js?v=20260917-1"></script>
 <script>
 'use strict';
 const API_BASE='https://timemud.mobile1234.site';
@@ -343,14 +346,17 @@ document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('clic
  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='panel-'+b.dataset.panel));
  if(b.dataset.panel==='audit')loadAudit();
 }));
-function normalizedUser(u){return {emp:u.employee_code||'',th:u.full_name,en:u.full_name_en,nid:u.national_id_masked,pos:u.position,branch:branches.find(b=>b.id===u.branch_id)?.name||'ยังไม่กำหนดสาขา',company:u.company};}
+function normalizedUser(u){return {emp:u.employee_code||'',th:(u.line_display_name||'')+' '+u.full_name,en:u.full_name_en,nid:u.national_id_masked,pos:u.position,branch:branches.find(b=>b.id===u.branch_id)?.name||'ยังไม่กำหนดสาขา',company:u.company};}
 function renderUsers(){
  const q=$('userSearch').value.trim().toLowerCase(),filters=[...document.querySelectorAll('[data-uf]')].map(el=>[el.dataset.uf,el.value.trim().toLowerCase()]);
  $('clearUserFilters').hidden=!q&&!filters.some(([,v])=>v);
  const list=users.filter(u=>{const v=normalizedUser(u);return (!q||Object.values(v).join(' ').toLowerCase().includes(q))&&filters.every(([k,f])=>!f||String(v[k]||'').toLowerCase().includes(f));});
  $('userCount').textContent=list.length+' คน';
- $('userRows').innerHTML=list.length?list.map(u=>{const v=normalizedUser(u);return `<tr><td>${esc(v.emp)||'<span class="chip">ยังไม่ระบุ</span>'}</td><td>${esc(v.th)} ${!u.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</td><td>${esc(v.en)}</td><td class="masked">${esc(v.nid)||'—'}</td><td>${esc(v.pos)}</td><td>${esc(v.branch)}</td><td>${esc(v.company)}</td><td><button class="linkbtn" data-edit-user="${u.id}">แก้ไข</button></td></tr>`;}).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบพนักงาน</div></td></tr>';
+ $('userRows').innerHTML=list.length?list.map(u=>{const v=normalizedUser(u);return `<tr><td>${esc(v.emp)||'<span class="chip">ยังไม่ระบุ</span>'}</td><td><div class="hrng-person"><span class="hrng-person-avatar" data-profile-avatar="${u.id}"></span><span class="hrng-person-name">${esc(HRNGProfile.name(u))} ${!u.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</span></div></td><td>${esc(v.en)}</td><td class="masked">${esc(v.nid)||'—'}</td><td>${esc(v.pos)}</td><td>${esc(v.branch)}</td><td>${esc(v.company)}</td><td><button class="linkbtn" data-edit-user="${u.id}">แก้ไข</button></td></tr>`;}).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบพนักงาน</div></td></tr>';
+ document.querySelectorAll('[data-profile-avatar]').forEach(el=>HRNGProfile.avatar(el,list.find(u=>String(u.id)===el.dataset.profileAvatar)));
 }
+HRNGProfile.languageControl($('nameLanguageControl'));
+window.addEventListener('hrng:name-language',renderUsers);
 $('userSearch').addEventListener('input',renderUsers);document.querySelectorAll('[data-uf]').forEach(el=>el.addEventListener('input',renderUsers));
 $('clearUserFilters').addEventListener('click',()=>{$('userSearch').value='';document.querySelectorAll('[data-uf]').forEach(el=>el.value='');renderUsers();});
 function renderBranches(){
@@ -424,7 +430,7 @@ document.addEventListener('keydown',e=>{
 });
 
 </script>
-<script src="https://timemud.mobile1234.site/dev-login.js?v=20260915-1"></script>
+<script src="https://timemud.mobile1234.site/dev-login.js?v=20260917-2"></script>
 <script>
 if(window.HRNGDevLogin)HRNGDevLogin.attach({baseUrl:API_BASE,kind:'admin',isLoggedIn:()=>Boolean(token),onSuccess:acceptAdminLogin,onError:message=>showError('loginAlert',message)});
 </script>
