@@ -147,7 +147,30 @@
   #modalError{margin:0 24px 12px}.modal pre{white-space:pre-wrap;overflow-wrap:anywhere}
   #panel-audit pre{max-width:480px;max-height:300px;overflow:auto;font-size:12px}
   #loginAlert:empty{display:none}
-  @media(max-width:650px){header.top{height:auto;min-height:60px;flex-wrap:wrap;padding:12px}header .name{display:none}nav.tabs{overflow-x:auto;padding:0 8px}nav.tabs button{white-space:nowrap}main{padding:16px 12px}.login{padding:24px}.modal .body{padding:16px}.modal .foot{padding:12px}}
+  /* ===== phone-sized screens: header actions collapse behind the menu button ===== */
+  header .actions{display:flex;align-items:center;gap:16px}
+  header .menubtn{display:none;border:1px solid #dbdfe4;background:#fff;border-radius:9px;
+    padding:7px 9px;cursor:pointer;color:var(--ink-2);line-height:0}
+  header .menubtn:hover{background:var(--surface-2)}
+  @media(max-width:799px),(max-height:599px){
+    header.top{min-height:56px;height:auto;padding:10px 12px;gap:10px}
+    header .name{font-size:15px}
+    header .menubtn{display:inline-flex}
+    header .actions{display:none;position:absolute;top:calc(100% + 6px);right:10px;left:10px;
+      flex-direction:column;align-items:stretch;gap:8px;background:#fff;
+      border:1px solid var(--hair);border-radius:12px;padding:12px;
+      box-shadow:0 14px 30px rgba(20,25,35,.18);z-index:20}
+    header .actions.on{display:flex}
+    header .who{order:-1;text-align:left;padding-bottom:8px;border-bottom:1px solid var(--hair)}
+    header .actions button.ghost,header .actions .dev-chat-link{width:100%;text-align:center;padding:10px 14px}
+    nav.tabs{overflow-x:auto;padding:0 8px}
+    nav.tabs button{white-space:nowrap;padding:12px 14px}
+    main{padding:14px 12px 48px}
+    .bar{gap:8px;margin-bottom:12px}
+    .bar .search{flex:1 1 100%;min-width:0;max-width:none}
+    .bar .grow{display:none}
+    .login{padding:24px}.modal .body{padding:16px}.modal .foot{padding:12px}
+  }
 
   [data-dev-login]{cursor:pointer;user-select:none;touch-action:manipulation}
   [data-dev-login]:focus-visible{outline:2px solid var(--green);outline-offset:4px}
@@ -199,10 +222,16 @@
     </span>
     <span class="name" data-dev-login>HR NextGen</span>
     <span class="spacer"></span>
-    <a class="dev-chat-link" href="https://timemud.mobile1234.site/dev/">Dev Chat ↗</a>
-    <span class="who"><b id="whoName">—</b><span id="whoId">—</span></span>
-    <button class="ghost" id="refreshBtn">โหลดข้อมูลใหม่</button>
-    <button class="ghost" id="logoutBtn">ออกจากระบบ</button>
+    <button class="menubtn" id="menuBtn" type="button" aria-expanded="false" aria-controls="headerActions" aria-label="เมนู">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <!-- Quick-login appends its revoke button to the logout button's parent, so it lands here too. -->
+    <div class="actions" id="headerActions">
+      <a class="dev-chat-link" href="https://timemud.mobile1234.site/dev/">Dev Chat ↗</a>
+      <span class="who"><b id="whoName">—</b><span id="whoId">—</span></span>
+      <button class="ghost" id="refreshBtn">โหลดข้อมูลใหม่</button>
+      <button class="ghost" id="logoutBtn">ออกจากระบบ</button>
+    </div>
   </header>
 
   <nav class="tabs" role="tablist">
@@ -341,6 +370,15 @@ $('loginForm').addEventListener('submit',async e=>{
 });
 $('logoutBtn').addEventListener('click',async()=>{try{await api('/logout',{method:'POST'});}catch(e){banner(e.message,true);return;}sessionEnded();showError('loginAlert','');banner('เข้าสู่ระบบเพื่อจัดการข้อมูล');});
 $('refreshBtn').addEventListener('click',()=>loadData().catch(()=>{}));
+// Header menu: only visible on phone-sized screens, where CSS turns .actions into a dropdown.
+(function(){
+ const panel=$('headerActions'),button=$('menuBtn');
+ const setOpen=open=>{panel.classList.toggle('on',open);button.setAttribute('aria-expanded',String(open));};
+ button.addEventListener('click',event=>{event.stopPropagation();setOpen(!panel.classList.contains('on'));});
+ panel.addEventListener('click',event=>{if(event.target.closest('a,button'))setOpen(false);});
+ document.addEventListener('click',event=>{if(!panel.contains(event.target)&&!button.contains(event.target))setOpen(false);});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false);});
+})();
 document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{
  document.querySelectorAll('nav.tabs button').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='panel-'+b.dataset.panel));
