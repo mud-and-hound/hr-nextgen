@@ -134,6 +134,12 @@
     font-family:inherit;font-size:14.5px;font-weight:600;padding:11px 20px;cursor:pointer}
   button.solid:active{background:var(--green-press)}
 
+  .pagesize label{display:flex;align-items:center;gap:8px;margin:0;font-size:13.5px;
+    color:var(--ink-2);white-space:nowrap}
+  .pagesize select{width:auto;padding:9px 12px;font-size:14px}
+  .pager{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .pager button.ghost:disabled{color:#b6bbc2;cursor:not-allowed;background:#fff}
+
   .note{background:var(--surface-2);border-radius:11px;padding:13px 15px;
     font-size:13px;color:var(--ink-2);line-height:1.65;margin-bottom:18px}
   .note b{font-weight:600}
@@ -275,6 +281,7 @@
         <span class="count" id="userCount"></span>
         <button class="clearbtn" id="clearUserFilters" hidden>ล้างตัวกรอง</button>
         <span class="grow"></span>
+        <div class="pagesize" id="usersPageSize"></div>
         <div id="nameLanguageControl"></div>
         <button class="solid" id="addUserBtn">เพิ่มผู้ใช้งาน</button>
       </div>
@@ -299,6 +306,7 @@
           <tbody id="userRows"></tbody>
         </table>
       </div></div>
+      <div class="pager" id="usersPager"></div>
     </section>
 
     <!-- ===== BRANCHES ===== -->
@@ -311,6 +319,7 @@
         <input class="search" id="branchSearch" placeholder="ค้นหารหัสหรือชื่อสาขา" />
         <span class="count" id="branchCount"></span>
         <span class="grow"></span>
+        <div class="pagesize" id="branchesPageSize"></div>
         <button class="ghost" id="bulkBtn" hidden>ปรับรัศมีที่เลือก</button>
         <button class="solid" id="addBranchBtn">เพิ่มสาขา</button>
       </div>
@@ -324,8 +333,13 @@
           <tbody id="branchRows"></tbody>
         </table>
       </div></div>
+      <div class="pager" id="branchesPager"></div>
     </section>
-    <section class="panel" id="panel-audit"><div class="card tablewrap"><table class="cards"><thead><tr><th>เวลา</th><th>ผู้แก้ไข</th><th>การทำรายการ</th><th>ข้อมูล</th><th>รายละเอียด</th></tr></thead><tbody id="auditRows"></tbody></table></div></section>
+    <section class="panel" id="panel-audit">
+      <div class="bar"><span class="count" id="auditCount"></span><span class="grow"></span><div class="pagesize" id="auditPageSize"></div></div>
+      <div class="card tablewrap"><table class="cards"><thead><tr><th>เวลา</th><th>ผู้แก้ไข</th><th>การทำรายการ</th><th>ข้อมูล</th><th>รายละเอียด</th></tr></thead><tbody id="auditRows"></tbody></table></div>
+      <div class="pager" id="auditPager"></div>
+    </section>
   </main>
 </div>
 
@@ -424,14 +438,56 @@ document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('clic
  if(b.dataset.panel==='audit')loadAudit();
 }));
 function normalizedUser(u){return {emp:u.employee_code||'',th:(u.line_display_name||'')+' '+u.full_name,en:u.full_name_en,nid:u.national_id_masked,pos:u.position,branch:branches.find(b=>b.id===u.branch_id)?.name||'ยังไม่กำหนดสาขา',company:u.company};}
+// ===== how many rows to show, per list and per browser =====
+const PAGE_SIZES=[5,10,15,20,30,50,100];
+const paging={users:{size:20,page:1},branches:{size:20,page:1},audit:{size:20,page:1}};
+function pageSizeSetup(key,rerender){
+ let stored=20;
+ try{const raw=localStorage.getItem('hrng-admin-rows-'+key);if(raw!==null&&(raw==='0'||PAGE_SIZES.includes(Number(raw))))stored=Number(raw);}catch(_){}
+ paging[key].size=stored;
+ const host=$(key+'PageSize');
+ host.innerHTML='<label>แสดง <select>'+PAGE_SIZES.map(v=>`<option value="${v}">${v}</option>`).join('')+'<option value="0">ทั้งหมด</option></select> รายการ</label>';
+ const select=host.querySelector('select');
+ select.value=String(stored);
+ select.addEventListener('change',()=>{
+  paging[key].size=Number(select.value);paging[key].page=1;
+  try{localStorage.setItem('hrng-admin-rows-'+key,select.value);}catch(_){}
+  rerender();
+ });
+}
+function paginate(key,list){
+ const state=paging[key],size=state.size;
+ const pages=size?Math.max(1,Math.ceil(list.length/size)):1;
+ if(state.page>pages)state.page=pages;
+ if(state.page<1)state.page=1;
+ const start=size?(state.page-1)*size:0;
+ const rows=size?list.slice(start,start+size):list;
+ return {rows,start,pages,total:list.length};
+}
+function renderPager(key,info,rerender){
+ const host=$(key+'Pager');
+ if(!info.total){host.replaceChildren();return;}
+ const to=info.start+info.rows.length;
+ host.innerHTML=`<span class="count">แสดง ${info.start+1}–${to} จาก ${info.total} รายการ</span><span class="grow"></span>`+
+  (info.pages>1?`<button class="ghost" data-page="prev"${paging[key].page<=1?' disabled':''}>ก่อนหน้า</button>`+
+   `<span class="count">หน้า ${paging[key].page} / ${info.pages}</span>`+
+   `<button class="ghost" data-page="next"${paging[key].page>=info.pages?' disabled':''}>ถัดไป</button>`:'');
+ host.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>{
+  paging[key].page+=button.dataset.page==='next'?1:-1;rerender();
+  document.querySelector('.panel.on')?.scrollIntoView({block:'start',behavior:'smooth'});
+ }));
+}
 function renderUsers(){
  const q=$('userSearch').value.trim().toLowerCase(),filters=[...document.querySelectorAll('[data-uf]')].map(el=>[el.dataset.uf,el.value.trim().toLowerCase()]);
  $('clearUserFilters').hidden=!q&&!filters.some(([,v])=>v);
  const list=users.filter(u=>{const v=normalizedUser(u);return (!q||Object.values(v).join(' ').toLowerCase().includes(q))&&filters.every(([k,f])=>!f||String(v[k]||'').toLowerCase().includes(f));});
  $('userCount').textContent=list.length+' คน';
- $('userRows').innerHTML=list.length?list.map(u=>{const v=normalizedUser(u);return `<tr><td class="cardsub" data-label="รหัสพนักงาน">${esc(v.emp)||'<span class="chip">ยังไม่ระบุ</span>'}</td><td class="cardtitle" data-label="LINE / ชื่อพนักงาน"><div class="hrng-person"><span class="hrng-person-avatar" data-profile-avatar="${u.id}"></span><span class="hrng-person-name">${esc(HRNGProfile.name(u))} ${!u.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</span></div></td><td data-label="ชื่อ (อังกฤษ)">${esc(v.en)}</td><td class="masked" data-label="เลขบัตร (ปกปิด)">${esc(v.nid)||'—'}</td><td data-label="ตำแหน่ง">${esc(v.pos)}</td><td data-label="สาขา">${esc(v.branch)}</td><td data-label="บริษัท">${esc(v.company)}</td><td class="rowact"><button class="linkbtn" data-edit-user="${u.id}">แก้ไข</button></td></tr>`;}).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบพนักงาน</div></td></tr>';
- document.querySelectorAll('[data-profile-avatar]').forEach(el=>HRNGProfile.avatar(el,list.find(u=>String(u.id)===el.dataset.profileAvatar)));
+ const info=paginate('users',list);
+ $('userRows').innerHTML=info.rows.length?info.rows.map(u=>{const v=normalizedUser(u);return `<tr><td class="cardsub" data-label="รหัสพนักงาน">${esc(v.emp)||'<span class="chip">ยังไม่ระบุ</span>'}</td><td class="cardtitle" data-label="LINE / ชื่อพนักงาน"><div class="hrng-person"><span class="hrng-person-avatar" data-profile-avatar="${u.id}"></span><span class="hrng-person-name">${esc(HRNGProfile.name(u))} ${!u.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</span></div></td><td data-label="ชื่อ (อังกฤษ)">${esc(v.en)}</td><td class="masked" data-label="เลขบัตร (ปกปิด)">${esc(v.nid)||'—'}</td><td data-label="ตำแหน่ง">${esc(v.pos)}</td><td data-label="สาขา">${esc(v.branch)}</td><td data-label="บริษัท">${esc(v.company)}</td><td class="rowact"><button class="linkbtn" data-edit-user="${u.id}">แก้ไข</button></td></tr>`;}).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบพนักงาน</div></td></tr>';
+ document.querySelectorAll('[data-profile-avatar]').forEach(el=>HRNGProfile.avatar(el,info.rows.find(u=>String(u.id)===el.dataset.profileAvatar)));
+ renderPager('users',info,renderUsers);
 }
+pageSizeSetup('users',renderUsers);pageSizeSetup('branches',renderBranches);pageSizeSetup('audit',renderAudit);
 HRNGProfile.languageControl($('nameLanguageControl'));
 window.addEventListener('hrng:name-language',renderUsers);
 $('userSearch').addEventListener('input',renderUsers);document.querySelectorAll('[data-uf]').forEach(el=>el.addEventListener('input',renderUsers));
@@ -439,7 +495,9 @@ $('clearUserFilters').addEventListener('click',()=>{$('userSearch').value='';doc
 function renderBranches(){
  const q=$('branchSearch').value.trim().toLowerCase();const list=branches.filter(b=>(b.code+' '+b.name+' '+b.near).toLowerCase().includes(q));
  $('branchCount').textContent=list.length+' สาขา';$('checkAll').checked=false;
- $('branchRows').innerHTML=list.length?list.map(b=>`<tr><td class="cardpick"><input type="checkbox" class="pick" data-id="${b.id}" aria-label="เลือก ${esc(b.name)}" style="width:auto"></td><td class="cardsub" data-label="รหัสสาขา">${esc(b.code)}</td><td class="cardtitle" data-label="ชื่อสาขา">${esc(b.name)} ${!b.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</td><td data-label="สถานที่ใกล้เคียง">${esc(b.near)||'—'}</td><td data-label="Latitude">${b.lat==null?'ยังไม่มีพิกัด':b.lat.toFixed(6)}</td><td data-label="Longitude">${b.lng==null?'—':b.lng.toFixed(6)}</td><td data-label="รัศมี">${b.radius_m} ม.</td><td class="rowact"><button class="linkbtn" data-edit-branch="${b.id}">แก้ไข</button></td></tr>`).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบสาขา</div></td></tr>';syncBulk();
+ const info=paginate('branches',list);
+ $('branchRows').innerHTML=info.rows.length?info.rows.map(b=>`<tr><td class="cardpick"><input type="checkbox" class="pick" data-id="${b.id}" aria-label="เลือก ${esc(b.name)}" style="width:auto"></td><td class="cardsub" data-label="รหัสสาขา">${esc(b.code)}</td><td class="cardtitle" data-label="ชื่อสาขา">${esc(b.name)} ${!b.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</td><td data-label="สถานที่ใกล้เคียง">${esc(b.near)||'—'}</td><td data-label="Latitude">${b.lat==null?'ยังไม่มีพิกัด':b.lat.toFixed(6)}</td><td data-label="Longitude">${b.lng==null?'—':b.lng.toFixed(6)}</td><td data-label="รัศมี">${b.radius_m} ม.</td><td class="rowact"><button class="linkbtn" data-edit-branch="${b.id}">แก้ไข</button></td></tr>`).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบสาขา</div></td></tr>';syncBulk();
+ renderPager('branches',info,renderBranches);
 }
 $('branchSearch').addEventListener('input',renderBranches);
 function picked(){return [...document.querySelectorAll('.pick:checked')].map(el=>Number(el.dataset.id));}
@@ -483,9 +541,16 @@ $('bulkBtn').addEventListener('click',()=>{
  $('modalBody').innerHTML=inputField('radius_m','รัศมีใหม่ (เมตร)',150,'number','min="10" max="10000" step="1"')+'<div class="note">'+selected.map(b=>esc(b.name)).join(', ')+'</div>';
  openModal(()=>api('/branches/radius',{method:'PATCH',body:JSON.stringify({branches:selected.map(b=>({id:b.id,version:b.version})),radius_m:Number(value('radius_m'))})}));
 });
+let auditItems=[];
 async function loadAudit(){
  $('auditRows').textContent='กำลังโหลดประวัติ…';
- try{const d=await api('/audit');$('auditRows').innerHTML=d.items.length?d.items.map(a=>`<tr><td class="cardsub" data-label="เวลา">${esc(new Date(a.created_at).toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}</td><td data-label="ผู้แก้ไข">${esc(a.username)}</td><td class="cardtitle" data-label="การทำรายการ">${esc(({create:'เพิ่ม',update:'แก้ไข',bulk_radius:'ปรับรัศมีหลายสาขา'})[a.action]||a.action)}</td><td data-label="ข้อมูล">${esc(a.entity_type==='employee'?'พนักงาน':'สาขา')} #${a.entity_id}</td><td data-label="รายละเอียด"><details><summary>รายละเอียด</summary><pre>${esc(JSON.stringify({ก่อนแก้:a.before_data,หลังแก้:a.after_data},null,2))}</pre></details></td></tr>`).join(''):'<tr><td colspan="5"><div class="empty">ยังไม่มีประวัติการแก้ไข</div></td></tr>';}catch(e){$('auditRows').textContent=e.message;}
+ try{const d=await api('/audit');auditItems=d.items;paging.audit.page=1;renderAudit();}catch(e){$('auditRows').textContent=e.message;}
+}
+function renderAudit(){
+ $('auditCount').textContent=auditItems.length+' รายการ';
+ const info=paginate('audit',auditItems);
+ $('auditRows').innerHTML=info.rows.length?info.rows.map(a=>`<tr><td class="cardsub" data-label="เวลา">${esc(new Date(a.created_at).toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}</td><td data-label="ผู้แก้ไข">${esc(a.username)}</td><td class="cardtitle" data-label="การทำรายการ">${esc(({create:'เพิ่ม',update:'แก้ไข',bulk_radius:'ปรับรัศมีหลายสาขา'})[a.action]||a.action)}</td><td data-label="ข้อมูล">${esc(a.entity_type==='employee'?'พนักงาน':'สาขา')} #${a.entity_id}</td><td data-label="รายละเอียด"><details><summary>รายละเอียด</summary><pre>${esc(JSON.stringify({ก่อนแก้:a.before_data,หลังแก้:a.after_data},null,2))}</pre></details></td></tr>`).join(''):'<tr><td colspan="5"><div class="empty">ยังไม่มีประวัติการแก้ไข</div></td></tr>';
+ renderPager('audit',info,renderAudit);
 }
 function openModal(handler){branchMapController?.destroy();branchMapController=null;$('backdrop').querySelector('.modal').classList.remove('branch-editor');lastFocus=document.activeElement;onSave=handler;showError('modalError','');$('backdrop').classList.add('on');$('shell').inert=true;$('modalSave').disabled=false;setTimeout(()=>$('modalBody').querySelector('input,select')?.focus(),0);}
 function closeModal(){if(saving)return;branchMapController?.destroy();branchMapController=null;$('backdrop').querySelector('.modal').classList.remove('branch-editor');$('backdrop').classList.remove('on');$('shell').inert=false;onSave=null;lastFocus?.focus();}
