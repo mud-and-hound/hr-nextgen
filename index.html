@@ -496,7 +496,9 @@ $('modalSave').addEventListener('click',async()=>{
  catch(e){if($('backdrop').classList.contains('on'))showError('modalError',e.message);else banner(saved?'บันทึกแล้ว แต่โหลดข้อมูลล่าสุดไม่สำเร็จ กรุณากดโหลดข้อมูลใหม่':e.message,true);}
  finally{saving=false;$('modalSave').disabled=false;$('modalCancel').disabled=false;}
 });
-$('backdrop').addEventListener('click',e=>{if(e.target===$('backdrop'))closeModal();});
+// The dialog no longer closes on an outside click: a click counts from where the mouse
+// went down, so selecting text in a field and releasing outside used to discard the form.
+// ยกเลิก and Escape close it.
 document.addEventListener('keydown',e=>{
  if(!$('backdrop').classList.contains('on'))return;
  if(e.key==='Escape'){e.preventDefault();closeModal();}
