@@ -184,6 +184,17 @@
     table.cards td.cardtitle{order:-1;font-weight:600;font-size:15px;padding-bottom:6px}
     table.cards td.cardtitle::before{display:none}
     table.cards td.rowact{justify-content:flex-end;padding-top:4px}
+    /* collapsed card: identity only, tap the card for the rest of the record */
+    table.cards tbody tr{cursor:pointer}
+    table.cards tbody td{display:none}
+    table.cards tbody td.cardtitle,table.cards tbody td.cardsub,table.cards tbody td.cardpick{display:flex}
+    table.cards tbody tr.open td{display:flex}
+    table.cards tbody td[colspan]{display:block}
+    table.cards td.cardtitle{position:relative;padding-right:24px}
+    table.cards td.cardtitle::after{content:'';position:absolute;right:4px;top:7px;width:8px;height:8px;
+      border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
+      transform:rotate(45deg);transition:transform .15s}
+    table.cards tbody tr.open td.cardtitle::after{transform:rotate(-135deg);top:10px}
     table.cards td .empty{padding:28px 0;width:100%}
     #panel-audit pre{max-width:none}
   }
@@ -395,6 +406,18 @@ $('refreshBtn').addEventListener('click',()=>loadData().catch(()=>{}));
  document.addEventListener('click',event=>{if(!panel.contains(event.target)&&!button.contains(event.target))setOpen(false);});
  document.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false);});
 })();
+// Phone cards start collapsed to name and code; tapping one reveals that record.
+(function(){
+ const cardMode=window.matchMedia('(max-width:799px),(max-height:599px)');
+ for(const id of ['userRows','branchRows','auditRows']){
+  $(id).addEventListener('click',event=>{
+   if(!cardMode.matches||event.target.closest('button,a,input,label,summary,details'))return;
+   const row=event.target.closest('tr');
+   if(row&&row.querySelector('.cardtitle'))row.classList.toggle('open');
+  });
+ }
+ cardMode.addEventListener('change',()=>document.querySelectorAll('tbody tr.open').forEach(row=>row.classList.remove('open')));
+})();
 document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{
  document.querySelectorAll('nav.tabs button').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='panel-'+b.dataset.panel));
@@ -406,7 +429,7 @@ function renderUsers(){
  $('clearUserFilters').hidden=!q&&!filters.some(([,v])=>v);
  const list=users.filter(u=>{const v=normalizedUser(u);return (!q||Object.values(v).join(' ').toLowerCase().includes(q))&&filters.every(([k,f])=>!f||String(v[k]||'').toLowerCase().includes(f));});
  $('userCount').textContent=list.length+' คน';
- $('userRows').innerHTML=list.length?list.map(u=>{const v=normalizedUser(u);return `<tr><td data-label="รหัสพนักงาน">${esc(v.emp)||'<span class="chip">ยังไม่ระบุ</span>'}</td><td class="cardtitle" data-label="LINE / ชื่อพนักงาน"><div class="hrng-person"><span class="hrng-person-avatar" data-profile-avatar="${u.id}"></span><span class="hrng-person-name">${esc(HRNGProfile.name(u))} ${!u.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</span></div></td><td data-label="ชื่อ (อังกฤษ)">${esc(v.en)}</td><td class="masked" data-label="เลขบัตร (ปกปิด)">${esc(v.nid)||'—'}</td><td data-label="ตำแหน่ง">${esc(v.pos)}</td><td data-label="สาขา">${esc(v.branch)}</td><td data-label="บริษัท">${esc(v.company)}</td><td class="rowact"><button class="linkbtn" data-edit-user="${u.id}">แก้ไข</button></td></tr>`;}).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบพนักงาน</div></td></tr>';
+ $('userRows').innerHTML=list.length?list.map(u=>{const v=normalizedUser(u);return `<tr><td class="cardsub" data-label="รหัสพนักงาน">${esc(v.emp)||'<span class="chip">ยังไม่ระบุ</span>'}</td><td class="cardtitle" data-label="LINE / ชื่อพนักงาน"><div class="hrng-person"><span class="hrng-person-avatar" data-profile-avatar="${u.id}"></span><span class="hrng-person-name">${esc(HRNGProfile.name(u))} ${!u.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</span></div></td><td data-label="ชื่อ (อังกฤษ)">${esc(v.en)}</td><td class="masked" data-label="เลขบัตร (ปกปิด)">${esc(v.nid)||'—'}</td><td data-label="ตำแหน่ง">${esc(v.pos)}</td><td data-label="สาขา">${esc(v.branch)}</td><td data-label="บริษัท">${esc(v.company)}</td><td class="rowact"><button class="linkbtn" data-edit-user="${u.id}">แก้ไข</button></td></tr>`;}).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบพนักงาน</div></td></tr>';
  document.querySelectorAll('[data-profile-avatar]').forEach(el=>HRNGProfile.avatar(el,list.find(u=>String(u.id)===el.dataset.profileAvatar)));
 }
 HRNGProfile.languageControl($('nameLanguageControl'));
@@ -416,7 +439,7 @@ $('clearUserFilters').addEventListener('click',()=>{$('userSearch').value='';doc
 function renderBranches(){
  const q=$('branchSearch').value.trim().toLowerCase();const list=branches.filter(b=>(b.code+' '+b.name+' '+b.near).toLowerCase().includes(q));
  $('branchCount').textContent=list.length+' สาขา';$('checkAll').checked=false;
- $('branchRows').innerHTML=list.length?list.map(b=>`<tr><td><input type="checkbox" class="pick" data-id="${b.id}" aria-label="เลือก ${esc(b.name)}" style="width:auto"></td><td data-label="รหัสสาขา">${esc(b.code)}</td><td class="cardtitle" data-label="ชื่อสาขา">${esc(b.name)} ${!b.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</td><td data-label="สถานที่ใกล้เคียง">${esc(b.near)||'—'}</td><td data-label="Latitude">${b.lat==null?'ยังไม่มีพิกัด':b.lat.toFixed(6)}</td><td data-label="Longitude">${b.lng==null?'—':b.lng.toFixed(6)}</td><td data-label="รัศมี">${b.radius_m} ม.</td><td class="rowact"><button class="linkbtn" data-edit-branch="${b.id}">แก้ไข</button></td></tr>`).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบสาขา</div></td></tr>';syncBulk();
+ $('branchRows').innerHTML=list.length?list.map(b=>`<tr><td class="cardpick"><input type="checkbox" class="pick" data-id="${b.id}" aria-label="เลือก ${esc(b.name)}" style="width:auto"></td><td class="cardsub" data-label="รหัสสาขา">${esc(b.code)}</td><td class="cardtitle" data-label="ชื่อสาขา">${esc(b.name)} ${!b.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</td><td data-label="สถานที่ใกล้เคียง">${esc(b.near)||'—'}</td><td data-label="Latitude">${b.lat==null?'ยังไม่มีพิกัด':b.lat.toFixed(6)}</td><td data-label="Longitude">${b.lng==null?'—':b.lng.toFixed(6)}</td><td data-label="รัศมี">${b.radius_m} ม.</td><td class="rowact"><button class="linkbtn" data-edit-branch="${b.id}">แก้ไข</button></td></tr>`).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบสาขา</div></td></tr>';syncBulk();
 }
 $('branchSearch').addEventListener('input',renderBranches);
 function picked(){return [...document.querySelectorAll('.pick:checked')].map(el=>Number(el.dataset.id));}
@@ -462,7 +485,7 @@ $('bulkBtn').addEventListener('click',()=>{
 });
 async function loadAudit(){
  $('auditRows').textContent='กำลังโหลดประวัติ…';
- try{const d=await api('/audit');$('auditRows').innerHTML=d.items.length?d.items.map(a=>`<tr><td data-label="เวลา">${esc(new Date(a.created_at).toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}</td><td data-label="ผู้แก้ไข">${esc(a.username)}</td><td class="cardtitle" data-label="การทำรายการ">${esc(({create:'เพิ่ม',update:'แก้ไข',bulk_radius:'ปรับรัศมีหลายสาขา'})[a.action]||a.action)}</td><td data-label="ข้อมูล">${esc(a.entity_type==='employee'?'พนักงาน':'สาขา')} #${a.entity_id}</td><td data-label="รายละเอียด"><details><summary>รายละเอียด</summary><pre>${esc(JSON.stringify({ก่อนแก้:a.before_data,หลังแก้:a.after_data},null,2))}</pre></details></td></tr>`).join(''):'<tr><td colspan="5"><div class="empty">ยังไม่มีประวัติการแก้ไข</div></td></tr>';}catch(e){$('auditRows').textContent=e.message;}
+ try{const d=await api('/audit');$('auditRows').innerHTML=d.items.length?d.items.map(a=>`<tr><td class="cardsub" data-label="เวลา">${esc(new Date(a.created_at).toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}</td><td data-label="ผู้แก้ไข">${esc(a.username)}</td><td class="cardtitle" data-label="การทำรายการ">${esc(({create:'เพิ่ม',update:'แก้ไข',bulk_radius:'ปรับรัศมีหลายสาขา'})[a.action]||a.action)}</td><td data-label="ข้อมูล">${esc(a.entity_type==='employee'?'พนักงาน':'สาขา')} #${a.entity_id}</td><td data-label="รายละเอียด"><details><summary>รายละเอียด</summary><pre>${esc(JSON.stringify({ก่อนแก้:a.before_data,หลังแก้:a.after_data},null,2))}</pre></details></td></tr>`).join(''):'<tr><td colspan="5"><div class="empty">ยังไม่มีประวัติการแก้ไข</div></td></tr>';}catch(e){$('auditRows').textContent=e.message;}
 }
 function openModal(handler){branchMapController?.destroy();branchMapController=null;$('backdrop').querySelector('.modal').classList.remove('branch-editor');lastFocus=document.activeElement;onSave=handler;showError('modalError','');$('backdrop').classList.add('on');$('shell').inert=true;$('modalSave').disabled=false;setTimeout(()=>$('modalBody').querySelector('input,select')?.focus(),0);}
 function closeModal(){if(saving)return;branchMapController?.destroy();branchMapController=null;$('backdrop').querySelector('.modal').classList.remove('branch-editor');$('backdrop').classList.remove('on');$('shell').inert=false;onSave=null;lastFocus?.focus();}
