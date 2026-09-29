@@ -130,7 +130,8 @@
     font-size:13.5px;line-height:1.35;cursor:pointer}
   /* หน้านี้ตั้ง input{width:100%} ไว้ทั้งหน้า ช่องติ๊กจึงถูกยืดจนดันข้อความไปชิดขวา
      ต้องคืนขนาดจริงให้มันทุกครั้งที่ใช้ checkbox ในลิสต์ */
-  .target-list input[type="checkbox"]{width:15px;height:15px;flex:0 0 15px;
+  /* 13x13 คือขนาดที่เจ้าของระบบวัดแล้วบอกว่าต้องการ ยึดตามนั้น */
+  .target-list input[type="checkbox"]{width:13px;height:13px;flex:0 0 13px;
     margin:0;align-self:center}
   .target-list label:hover{background:#f4f6f8}
   .target-list .nm{flex:1;min-width:0}
