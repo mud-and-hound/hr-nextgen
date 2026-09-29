@@ -37,6 +37,11 @@
   .field{margin-bottom:18px}
   input,select{width:100%;font-family:inherit;font-size:15px;padding:12px 14px;
     border:1px solid #dbdfe4;border-radius:11px;background:#fff;color:var(--ink)}
+  /* input{width:100%} ข้างบนตั้งไว้สำหรับช่องกรอก แต่มันไปยืดช่องติ๊กด้วย
+     ทำให้ช่องติ๊กใหญ่ผิดรูปและดันข้อความข้าง ๆ ไปชิดขวา คืนขนาดจริงให้มันที่นี่ที่เดียว
+     ที่อื่นเคยแก้ด้วย style="width:auto" รายจุด ซึ่งพลาดได้ทุกครั้งที่เพิ่มช่องติ๊กใหม่ */
+  input[type="checkbox"],input[type="radio"]{width:auto;height:auto;padding:0;
+    accent-color:var(--green);vertical-align:middle}
   input:focus,select:focus{outline:2px solid var(--green);border-color:transparent}
   input:disabled{background:var(--surface-2);color:var(--muted)}
   .hint{font-size:12px;color:var(--muted);margin-top:6px}
@@ -120,11 +125,21 @@
     border:1px solid #dbdfe4;border-radius:999px;padding:6px 12px;cursor:pointer}
   fieldset.weekdays label:has(input:checked){border-color:var(--green);background:#eaf7ee}
   .target-box{margin-top:16px}
-  .target-list{max-height:260px;overflow:auto;border:1px solid #dbdfe4;border-radius:10px;padding:6px}
-  .target-list label{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;
-    font-size:13.5px;cursor:pointer}
+  .target-list{max-height:260px;overflow:auto;border:1px solid #dbdfe4;border-radius:10px;padding:4px}
+  .target-list label{display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:6px;
+    font-size:13.5px;line-height:1.35;cursor:pointer}
+  /* หน้านี้ตั้ง input{width:100%} ไว้ทั้งหน้า ช่องติ๊กจึงถูกยืดจนดันข้อความไปชิดขวา
+     ต้องคืนขนาดจริงให้มันทุกครั้งที่ใช้ checkbox ในลิสต์ */
+  .target-list input[type="checkbox"]{width:15px;height:15px;flex:0 0 15px;
+    margin:0;align-self:center}
   .target-list label:hover{background:#f4f6f8}
-  .target-list .who{color:var(--muted);font-size:12.5px}
+  .target-list .nm{flex:1;min-width:0}
+  .target-list .who{color:var(--muted);font-size:12.5px;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;max-width:46%}
+  @media (max-width:640px){
+    .target-list label{flex-wrap:wrap}
+    .target-list .who{max-width:100%;white-space:normal;flex-basis:100%;padding-left:25px}
+  }
   .target-tools{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
   .target-tools .search{flex:1;min-width:200px}
 
@@ -1038,7 +1053,7 @@ function renderTargetList(){
  const list=shiftTargets.employees.filter(person=>targetMatches(person,query));
  $('targetList').innerHTML=list.map(person=>`<label>
    <input type="checkbox" data-pick="${person.id}"${pickedEmployees.has(person.id)?' checked':''}>
-   <span translate="no">${esc(person.employee_code)} · ${esc(person.full_name)}</span>
+   <span class="nm" translate="no">${esc(person.employee_code)} · ${esc(person.full_name)}</span>
    <span class="who"><span translate="no">${esc(person.branch_name)||'ไม่มีสาขา'}</span> · <span translate="no">${esc(person.position)||'ไม่ระบุตำแหน่ง'}</span></span>
   </label>`).join('')||'<div class="empty">ไม่พบพนักงานตามคำค้น</div>';
  $('targetCount').textContent=`เลือกไว้ ${pickedEmployees.size} คน · แสดง ${list.length} จาก ${shiftTargets.employees.length}`;
@@ -1083,7 +1098,7 @@ function renderGroupPicker(){
  const list=shiftTargets.employees.filter(person=>targetMatches(person,query));
  $('grpList').innerHTML=list.map(person=>`<label>
    <input type="checkbox" data-grp-pick="${person.id}"${pickedGroup.has(person.id)?' checked':''}>
-   <span translate="no">${esc(person.employee_code)} · ${esc(person.full_name)}</span>
+   <span class="nm" translate="no">${esc(person.employee_code)} · ${esc(person.full_name)}</span>
    <span class="who"><span translate="no">${esc(person.branch_name)||'ไม่มีสาขา'}</span> · <span translate="no">${esc(person.position)||'ไม่ระบุตำแหน่ง'}</span></span>
   </label>`).join('')||'<div class="empty">ไม่พบพนักงานตามคำค้น</div>';
  $('grpCount').textContent=`เลือกไว้ ${pickedGroup.size} คน · แสดง ${list.length} จาก ${shiftTargets.employees.length}`;
