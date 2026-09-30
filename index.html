@@ -528,7 +528,7 @@
 const API_BASE='https://timemud.mobile1234.site';
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let devSession=false,token=null,users=[],branches=[],onSave=null,saving=false,lastFocus=null,branchMapController=null;
+let devSession=false,token=null,users=[],branches=[],brands=[],calendars=[],onSave=null,saving=false,lastFocus=null,branchMapController=null;
 
 function banner(message,error=false){$('demobar').textContent=message;$('demobar').classList.toggle('error',error);}
 function showError(id,message){const el=$(id);el.textContent=message;el.hidden=!message;}
@@ -559,7 +559,7 @@ async function api(path,options={}){
 }
 
 function sessionEnded(){
- devSession=false;token=null;users=[];branches=[];saving=false;closeModal();
+ devSession=false;token=null;users=[];branches=[];brands=[];calendars=[];saving=false;closeModal();
  $('shell').classList.remove('on');$('loginView').style.display='grid';
  ['todayRows','userRows','branchRows','auditRows','modalBody'].forEach(id=>$(id).replaceChildren());
  clearShifts();setDrawer(false);dayRows=[];dayKey='';dayOpen=null;dayDetail.clear();
@@ -567,6 +567,8 @@ function sessionEnded(){
 }
 
 const branchName=u=>branches.find(b=>b.id===u.branch_id)?.name||'ยังไม่กำหนดสาขา';
+// แบรนด์ของพนักงานมาจากสาขาที่สังกัด ไม่ได้เก็บซ้ำที่ตัวพนักงาน จึงขัดกันเองไม่ได้
+const brandOf=u=>branches.find(b=>b.id===u.branch_id)?.brand_name||'';
 const bangkokToday=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const clockTime=value=>new Date(value).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
 const CLOCK_LABEL={in:'เข้างาน',out:'ออกงาน',break_start:'เริ่มพัก',break_end:'กลับเข้างาน'};
@@ -574,7 +576,9 @@ const CLOCK_LABEL={in:'เข้างาน',out:'ออกงาน',break_sta
 async function loadData(){
  banner('กำลังโหลดข้อมูล…');
  try{
-  const b=await api('/branches');
+  const [b,brandList,calendarList]=await Promise.all(
+    [api('/branches'),api('/brands'),api('/shifts/calendars')]);
+  brands=brandList.items;calendars=calendarList.items;
   let all=[],offset=0,total=0;
   do{const page=await api('/employees?limit=500&offset='+offset);all.push(...page.items);total=page.total;offset+=page.items.length;if(!page.items.length)break;}while(offset<total);
   branches=b.items;users=all;
@@ -824,7 +828,8 @@ function userRowHtml(u){
    <span class="hrng-person-avatar" data-profile-avatar="${u.id}"></span>
    <span class="main"><span class="hrng-person-name nm" translate="no">${esc(HRNGProfile.name(u))}</span>
      <span class="sub"><span translate="no">${esc(u.employee_code||'ยังไม่ระบุ')} · ${
-       esc(u.position||'ไม่ระบุตำแหน่ง')}</span></span></span>
+       esc(u.position||'ไม่ระบุตำแหน่ง')}</span>${
+       brandOf(u)?` · <span translate="no">${esc(brandOf(u))}</span>`:''}</span></span>
    <span class="val">${u.is_active?'':'<span class="tag off">ปิดใช้งาน</span>'}${
      u.line_bound_at?'<span class="tag">ผูก LINE แล้ว</span>':'<span class="tag warn">รอผูก LINE</span>'}</span>
  </button>`;
@@ -864,20 +869,38 @@ window.addEventListener('hrng:lang',()=>{if(dayKey)$('todayDate').textContent=da
 
 /* ═══ สาขา ═══ */
 $('branchSearch').addEventListener('input',renderBranches);
+/* แยกหัวข้อตามแบรนด์ เพราะเมื่อมีร้านหลายร้อยสาขา การไล่ดูเรียงรหัสจะหาไม่เจอ
+   สาขาที่ไม่สังกัดแบรนด์ (สำนักงานใหญ่) ไปอยู่กลุ่มท้ายสุด */
 function renderBranches(){
  const query=$('branchSearch').value.trim().toLowerCase();
- const list=branches.filter(b=>!query||[b.code,b.name,b.near].join(' ').toLowerCase().includes(query));
- $('branchRows').innerHTML=list.map(b=>`<div class="row">
-   <input type="checkbox" class="pick" data-id="${b.id}" aria-labelledby="bname-${b.id}">
-   <button class="main" data-edit-branch="${b.id}" style="border:0;background:none;text-align:left;padding:0">
-     <span class="nm" id="bname-${b.id}" translate="no">${esc(b.name)}</span>
-     <span class="sub"><span translate="no">${esc(b.code)}</span> · รัศมี ${b.radius_m} ม.${
-       b.lat==null?' · <span class="tag warn">ยังไม่มีพิกัด</span>':''}${
-       b.is_active?'':' · <span class="tag off">ปิดใช้งาน</span>'}</span></button>
- </div>`).join('')||'<div class="empty">ไม่พบสาขา</div>';
+ const list=branches.filter(b=>!query||
+   [b.code,b.name,b.near,b.brand_name].join(' ').toLowerCase().includes(query));
+ const groups=new Map();
+ for(const b of list){
+  const key=b.brand_id||0;
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(b);
+ }
+ const order=[...groups.keys()].sort((a,b)=>(a===0)-(b===0)||
+   (brands.findIndex(r=>r.id===a)-brands.findIndex(r=>r.id===b)));
+ $('branchRows').innerHTML=order.map(key=>{
+  const rows=groups.get(key);
+  const name=key?brands.find(r=>r.id===key)?.name:null;
+  return `<div class="grouphead"><span${name?' translate="no"':''}>${
+    esc(name||'ไม่สังกัดแบรนด์')}</span><span class="count">${rows.length} สาขา</span></div>`+
+   rows.map(b=>`<div class="row">
+     <input type="checkbox" class="pick" data-id="${b.id}" aria-labelledby="bname-${b.id}">
+     <button class="main" data-edit-branch="${b.id}" style="border:0;background:none;text-align:left;padding:0">
+       <span class="nm" id="bname-${b.id}" translate="no">${esc(b.name)}</span>
+       <span class="sub"><span translate="no">${esc(b.code)}</span> · รัศมี ${b.radius_m} ม.${
+         b.lat==null?' · <span class="tag warn">ยังไม่มีพิกัด</span>':''}${
+         b.is_active?'':' · <span class="tag off">ปิดใช้งาน</span>'}</span></button>
+   </div>`).join('');
+ }).join('')||'<div class="empty">ไม่พบสาขา</div>';
  $('branchCount').innerHTML=`<b>${list.length}</b> สาขา`;
  syncBulk();
 }
+
 function picked(){return [...document.querySelectorAll('.pick:checked')].map(el=>Number(el.dataset.id));}
 function syncBulk(){const n=picked().length;$('bulkBtn').hidden=!n;$('bulkBtn').textContent='ปรับรัศมี '+n+' สาขาที่เลือก';}
 $('branchRows').addEventListener('change',event=>{if(event.target.classList.contains('pick'))syncBulk();});
@@ -904,7 +927,7 @@ function value(key){return $('edit-'+key).value.trim();}
 function activeField(active){return `<div class="field"><label for="edit-is_active">สถานะ</label><select id="edit-is_active"><option value="true"${active?' selected':''}>เปิดใช้งาน</option><option value="false"${!active?' selected':''}>ปิดใช้งาน</option></select></div>`;}
 
 function openUser(id){
- const u=id?users.find(x=>x.id===id):{employee_code:'',full_name:'',full_name_en:'',position:'',company:'',line_user_id:'',is_active:true};
+ const u=id?users.find(x=>x.id===id):{employee_code:'',full_name:'',full_name_en:'',position:'',company:'',line_user_id:'',is_active:true,employment_type:'office'};
  if(!u)return;
  $('modalTitle').textContent=id?'แก้ไขพนักงาน':'เพิ่มพนักงาน';
  $('modalBody').innerHTML='<div class="grid2">'
@@ -919,6 +942,14 @@ function openUser(id){
       const items=rows.map(b=>`<option value="${b.id}" translate="no"${b.id===u.branch_id?' selected':''}>${esc(b.name)}</option>`).join('');
       return group==='active'?items:`<optgroup label="ปิดใช้งาน">${items}</optgroup>`;}).join('')
    }</select></div>`
+  +`<div class="field"><label for="edit-employment_type">ประเภทการจ้าง</label><select id="edit-employment_type">
+      <option value="office"${u.employment_type!=='shift'?' selected':''}>พนักงานออฟฟิศ</option>
+      <option value="shift"${u.employment_type==='shift'?' selected':''}>พนักงานกะ</option>
+    </select></div>`
+  +`<div class="field"><label for="edit-holiday_calendar_id">ปฏิทินวันหยุด</label><select id="edit-holiday_calendar_id">
+      <option value="">ยังไม่ได้ผูกปฏิทิน</option>${
+      calendars.map(c=>`<option value="${c.id}" translate="no"${c.id===u.holiday_calendar_id?' selected':''}>${esc(c.name)}</option>`).join('')
+    }</select></div>`
   +`<div class="field"><label>การผูก LINE</label><div>${u.line_bound_at?'ผูกบัญชีแล้ว':'รอพนักงานยืนยันผ่าน LINE'}</div></div>`
   +activeField(u.is_active)
   +inputField('national_id','เลขบัตรประชาชน (จำเป็นสำหรับเข้าแอป)','','text','inputmode="numeric" maxlength="13" autocomplete="off"')
@@ -928,6 +959,8 @@ function openUser(id){
   const body={employee_code:value('employee_code'),full_name:value('full_name'),full_name_en:value('full_name_en'),
    position:value('position'),company:value('company'),branch_id:Number(value('branch_id')),
    is_active:value('is_active')==='true',national_id:value('national_id')||null,
+   employment_type:value('employment_type'),
+   holiday_calendar_id:value('holiday_calendar_id')===''?null:Number(value('holiday_calendar_id')),
    clear_national_id:$('edit-clear_national_id').checked};
   if(!body.employee_code||!body.full_name||!body.branch_id)throw new Error('กรอกรหัสพนักงาน ชื่อ และเลือกสาขา');
   if(id)body.version=u.version;
@@ -942,6 +975,10 @@ function openBranch(id){
  const mapMarkup=window.HRNGBranchMap?.markup||'<div class="note">โหลดเครื่องมือแผนที่ไม่สำเร็จ กรุณาโหลดหน้าใหม่ หรือกรอกพิกัดด้านล่าง</div>';
  $('modalBody').innerHTML='<div class="grid2">'+inputField('code','รหัสสาขา',b.code,'text','maxlength="32"')
   +inputField('name','ชื่อสาขา',b.name,'text','maxlength="200"')+inputField('near','สถานที่ใกล้เคียง',b.near)
+  +`<div class="field"><label for="edit-brand_id">แบรนด์</label><select id="edit-brand_id">
+      <option value="">ไม่สังกัดแบรนด์ (สำนักงานใหญ่)</option>${
+      brands.map(r=>`<option value="${r.id}" translate="no"${r.id===b.brand_id?' selected':''}>${esc(r.name)}</option>`).join('')
+    }</select></div>`
   +activeField(b.is_active)+'</div>'+mapMarkup+'<div class="branch-coordinates grid2">'
   +inputField('lat','Latitude',b.lat??'','number','min="-90" max="90" step="any"')
   +inputField('lng','Longitude',b.lng??'','number','min="-180" max="180" step="any"')
@@ -951,6 +988,7 @@ function openBranch(id){
   if(branchMapController?.busy)throw new Error('รอค้นหาพิกัดให้เสร็จก่อนกดบันทึก');
   const body={code:value('code'),name:value('name'),near:value('near'),radius_m:Number(value('radius_m')),
    lat:value('lat')===''?null:Number(value('lat')),lng:value('lng')===''?null:Number(value('lng')),
+   brand_id:value('brand_id')===''?null:Number(value('brand_id')),
    is_active:value('is_active')==='true'};
   if(id)body.version=b.version;
   if(!body.code||!body.name)throw new Error('กรอกรหัสสาขาและชื่อสาขา');
