@@ -131,6 +131,13 @@
     border-left:1px solid var(--line-soft);border-right:1px solid var(--line-soft)}
   .datebar input:focus{outline-offset:-2px}
 
+  /* ── กลุ่มปุ่มกรอง: หน้าตาเดียวกับแถบเลือกวัน จะได้ไม่มีรูปแบบปุ่มใหม่ให้จำ ── */
+  .pick{display:inline-flex;align-items:center;gap:0;border:1px solid var(--line);
+    border-radius:var(--r-sm);background:var(--paper);box-shadow:var(--shadow);overflow:hidden}
+  .pick .btn{border:0;border-radius:0;box-shadow:none;height:36px}
+  .pick .btn + .btn{border-left:1px solid var(--line-soft)}
+  .pick .btn[aria-pressed="true"]{background:var(--green);color:#fff;font-weight:600}
+
   /* ── ตัวเลขสรุป ── */
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2);margin-bottom:var(--s4)}
   @media (max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}}
@@ -344,6 +351,8 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>กะเวลา</button>
       <button data-panel="branches">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>สาขา</button>
+      <button data-panel="calendars">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/><path d="M8.5 14.5h2M13.5 14.5h2"/></svg>ปฏิทินวันหยุด</button>
       <button data-panel="audit">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2"/><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 4v4h4"/></svg>ประวัติการแก้ไข</button>
       <h2>ภาษา</h2>
@@ -390,7 +399,14 @@
     <section class="panel" id="panel-users">
       <div class="viewhead"><h1>พนักงาน</h1>
         <button class="btn solid" id="addUserBtn">เพิ่มพนักงาน</button></div>
-      <div class="bar"><input class="search" id="userSearch" placeholder="ค้นหาชื่อ รหัสพนักงาน สาขา หรือตำแหน่ง"></div>
+      <div class="bar">
+        <span class="pick" id="userType" role="group" aria-label="กรองตามประเภทการจ้าง">
+          <button class="btn" data-type="" aria-pressed="true">ทั้งหมด</button>
+          <button class="btn" data-type="office" aria-pressed="false">พนักงานออฟฟิศ</button>
+          <button class="btn" data-type="shift" aria-pressed="false">พนักงานกะ</button>
+        </span>
+        <input class="search" id="userSearch" placeholder="ค้นหาชื่อ รหัสพนักงาน สาขา หรือตำแหน่ง">
+      </div>
       <div class="list" id="userRows"></div>
       <p class="summary" id="userCount"></p>
     </section>
@@ -499,6 +515,43 @@
       <p class="summary" id="branchCount"></p>
     </section>
 
+    <!-- ═══ ปฏิทินวันหยุด ═══ -->
+    <section class="panel" id="panel-calendars">
+      <div class="viewhead"><h1>ปฏิทินวันหยุด</h1></div>
+      <div class="note" style="margin:0 0 16px">
+        <b>มีได้หลายชุด</b> — ออฟฟิศกับหน้าร้านหยุดคนละวัน จึงใช้คนละปฏิทิน
+        ผูกให้พนักงานแต่ละคนได้ในหน้าพนักงาน
+        ม.29 กำหนดว่าวันหยุดตามประเพณีต้องไม่น้อยกว่า 13 วันต่อปี รวมวันแรงงานแห่งชาติ
+        ปฏิทินที่ยังไม่ครบจะถูกเตือนแต่ยังบันทึกได้
+      </div>
+
+      <h3 class="shift-head">สร้างหรือแก้ไขปฏิทิน</h3>
+      <div class="card shift-form">
+        <div class="grid2">
+          <label>ชื่อปฏิทิน <input id="calName" maxlength="200" placeholder="ปฏิทินสำนักงาน"></label>
+          <label>หมายเหตุ <input id="calNote" maxlength="500" placeholder="ไม่บังคับ"></label>
+        </div>
+        <div class="shift-breaks">
+          <div class="shift-breaks-head"><b>วันหยุดในปฏิทินนี้</b>
+            <span class="count" id="calCount"></span>
+            <span class="grow"></span>
+            <button class="btn" id="calAddDate" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>เพิ่มวันหยุด</button>
+          </div>
+          <div id="calDates"></div>
+        </div>
+        <div class="shift-preview" id="calWarn" role="status" aria-live="polite"></div>
+        <div class="bar">
+          <button class="btn solid" id="calSave">บันทึกปฏิทิน</button>
+          <button class="btn" id="calReset" hidden>ยกเลิกการแก้ไข</button>
+          <span class="count" id="calEditing"></span>
+        </div>
+      </div>
+
+      <h3 class="shift-head">ปฏิทินที่มี</h3>
+      <div class="list" id="calRows"></div>
+    </section>
+
     <!-- ═══ ประวัติการแก้ไข ═══ -->
     <section class="panel" id="panel-audit">
       <div class="viewhead"><h1>ประวัติการแก้ไข</h1></div>
@@ -561,7 +614,7 @@ async function api(path,options={}){
 function sessionEnded(){
  devSession=false;token=null;users=[];branches=[];brands=[];calendars=[];saving=false;closeModal();
  $('shell').classList.remove('on');$('loginView').style.display='grid';
- ['todayRows','userRows','branchRows','auditRows','modalBody'].forEach(id=>$(id).replaceChildren());
+ ['todayRows','userRows','branchRows','auditRows','calRows','calDates','modalBody'].forEach(id=>$(id).replaceChildren());
  clearShifts();setDrawer(false);dayRows=[];dayKey='';dayOpen=null;dayDetail.clear();
  showError('loginAlert','หมดเวลาใช้งาน กรุณาเข้าสู่ระบบใหม่');
 }
@@ -582,7 +635,7 @@ async function loadData(){
   let all=[],offset=0,total=0;
   do{const page=await api('/employees?limit=500&offset='+offset);all.push(...page.items);total=page.total;offset+=page.items.length;if(!page.items.length)break;}while(offset<total);
   branches=b.items;users=all;
-  renderUsers();renderBranches();
+  renderUsers();renderBranches();renderCalendars();
   await loadDay(true);
   banner((devSession?'Dev · ข้อมูลทดสอบ · ':'ข้อมูลจริง · ')+users.filter(u=>u.is_active).length+' คน · '+branches.length+' สาขา');
  }catch(e){banner(e.message,true);throw e;}
@@ -629,6 +682,7 @@ document.querySelectorAll('#drawer nav button[data-panel]').forEach(b=>b.addEven
  if(b.dataset.panel==='audit')loadAudit();
  if(b.dataset.panel==='shifts')openShiftsTab();
  if(b.dataset.panel==='today')loadDay();
+ if(b.dataset.panel==='calendars'&&!$('calDates').children.length)resetCalendarForm();
 }));
 
 /* ═══ วันนี้ ═══
@@ -823,13 +877,21 @@ $('todayRows').addEventListener('click',async event=>{
 
 /* ═══ พนักงาน ═══ */
 $('userSearch').addEventListener('input',renderUsers);
+$('userType').addEventListener('click',event=>{
+ const button=event.target.closest('[data-type]');
+ if(!button)return;
+ $('userType').querySelectorAll('[data-type]').forEach(b=>
+   b.setAttribute('aria-pressed',String(b===button)));
+ renderUsers();
+});
 function userRowHtml(u){
  return `<button class="row" data-edit-user="${u.id}">
    <span class="hrng-person-avatar" data-profile-avatar="${u.id}"></span>
    <span class="main"><span class="hrng-person-name nm" translate="no">${esc(HRNGProfile.name(u))}</span>
      <span class="sub"><span translate="no">${esc(u.employee_code||'ยังไม่ระบุ')} · ${
        esc(u.position||'ไม่ระบุตำแหน่ง')}</span>${
-       brandOf(u)?` · <span translate="no">${esc(brandOf(u))}</span>`:''}</span></span>
+       brandOf(u)?` · <span translate="no">${esc(brandOf(u))}</span>`:''} · ${
+       u.employment_type==='shift'?'พนักงานกะ':'พนักงานออฟฟิศ'}</span></span>
    <span class="val">${u.is_active?'':'<span class="tag off">ปิดใช้งาน</span>'}${
      u.line_bound_at?'<span class="tag">ผูก LINE แล้ว</span>':'<span class="tag warn">รอผูก LINE</span>'}</span>
  </button>`;
@@ -839,9 +901,10 @@ function userRowHtml(u){
    คนที่ยังไม่กำหนดสาขาไปอยู่กลุ่มท้ายสุด จะได้เห็นว่าค้างอยู่ */
 function renderUsers(){
  const query=$('userSearch').value.trim().toLowerCase();
- const list=users.filter(u=>!query||
+ const want=$('userType').querySelector('[aria-pressed="true"]').dataset.type;
+ const list=users.filter(u=>(!want||(u.employment_type||'office')===want)&&(!query||
    [u.employee_code,u.full_name,u.full_name_en,u.line_display_name,u.position,u.company,branchName(u)]
-     .join(' ').toLowerCase().includes(query));
+     .join(' ').toLowerCase().includes(query)));
  const groups=new Map();
  for(const u of list){
   const key=u.branch_id||0;
@@ -859,7 +922,8 @@ function renderUsers(){
  }).join('')||'<div class="empty">ไม่พบพนักงาน</div>';
  document.querySelectorAll('#userRows [data-profile-avatar]').forEach(el=>
    HRNGProfile.avatar(el,list.find(u=>String(u.id)===el.dataset.profileAvatar)));
- $('userCount').innerHTML=`<b>${list.length}</b> คน`+(query?` จากทั้งหมด ${users.length}`:'');
+ $('userCount').innerHTML=`<b>${list.length}</b> คน`
+   +(query||want?` จากทั้งหมด ${users.length}`:'');
 }
 
 // เปลี่ยนภาษาแสดงชื่อแล้วรายชื่อต้องเปลี่ยนตามทันที ไม่ต้องโหลดใหม่
@@ -1260,6 +1324,102 @@ $('grpRows').addEventListener('click',async event=>{
   $('grpEditing').textContent='กำลังแก้ไข '+group.name;
   renderGroupPicker();
  }catch(error){banner(error.message,true);}
+});
+
+/* ═══ ปฏิทินวันหยุด ═══
+   ก่อนหน้านี้สร้างได้แต่ผ่าน API เท่านั้น ซึ่งแปลว่าใช้จริงไม่ได้
+   หน้านี้ทำให้แอดมินสร้างเองได้ครบวงจร */
+let editingCalendar=null;
+
+function calDateRow(value='',name=''){
+ return `<div class="break-row">
+  <label>วันที่ <input type="date" data-cal="date" value="${esc(value)}"></label>
+  <label>ชื่อวันหยุด <input type="text" maxlength="200" data-cal="name" value="${esc(name)}"
+    placeholder="เช่น วันสงกรานต์"></label>
+  <button class="btn" type="button" data-cal="remove">ลบ</button>
+ </div>`;
+}
+function calendarBody(){
+ const dates=[...$('calDates').querySelectorAll('.break-row')].map(row=>({
+  holiday_date:row.querySelector('[data-cal="date"]').value,
+  name:row.querySelector('[data-cal="name"]').value.trim()}))
+  .filter(item=>item.holiday_date);
+ return {name:$('calName').value.trim(),note:$('calNote').value.trim(),dates,is_active:true};
+}
+
+/* เตือนตาม ม.29 ตั้งแต่ตอนกรอก ไม่ต้องรอกดบันทึกแล้วค่อยรู้
+   คิดฝั่งหน้าจอเพื่อให้เห็นทันที ส่วน backend ยังตรวจซ้ำอยู่ดี */
+function calendarWarnings(){
+ const body=calendarBody();
+ const box=$('calWarn');
+ $('calCount').textContent=`${body.dates.length} วัน`;
+ const problems=[],notes=[];
+ if(body.dates.some(d=>!d.name))problems.push('ทุกวันหยุดต้องมีชื่อ');
+ const seen=body.dates.map(d=>d.holiday_date);
+ if(new Set(seen).size!==seen.length)problems.push('มีวันที่ซ้ำกันในปฏิทิน');
+ for(const year of [...new Set(seen.map(d=>d.slice(0,4)))].filter(Boolean)){
+  const inYear=seen.filter(d=>d.startsWith(year));
+  if(inYear.length<13)notes.push(`ม.29 ปี ${Number(year)+543} มี ${inYear.length} วัน ต้องไม่น้อยกว่า 13 วัน`);
+  if(!inYear.includes(`${year}-05-01`))notes.push(`ม.29 ปี ${Number(year)+543} ยังไม่มีวันแรงงานแห่งชาติ`);
+ }
+ box.className='shift-preview'+(problems.length?' bad':notes.length?' warn':'');
+ box.innerHTML=problems.length||notes.length
+  ? '<ul>'+[...problems,...notes].map(t=>`<li>${esc(t)}</li>`).join('')+'</ul>'
+  : (body.dates.length?'ปฏิทินนี้ครบตาม ม.29 แล้ว':'ยังไม่ได้ใส่วันหยุด');
+ return problems;
+}
+
+function renderCalendars(){
+ $('calRows').innerHTML=calendars.map(row=>`<div class="row">
+   <span class="main"><span class="nm" translate="no">${esc(row.name)}</span>
+     <span class="sub">${row.dates.length} วัน · ใช้อยู่ ${row.employees} คน${
+       row.note?` · <span translate="no">${esc(row.note)}</span>`:''}${
+       row.warnings.length?' · <span class="tag warn">ยังไม่ครบตาม ม.29</span>':''}</span></span>
+   <span class="rowact"><button class="btn" data-cal-edit="${row.id}">แก้ไข</button></span>
+ </div>`).join('')||'<div class="empty">ยังไม่มีปฏิทิน สร้างปฏิทินแรกด้านบน</div>';
+}
+
+function resetCalendarForm(){
+ editingCalendar=null;
+ $('calName').value='';$('calNote').value='';
+ $('calDates').innerHTML=calDateRow();
+ $('calSave').textContent='บันทึกปฏิทิน';$('calReset').hidden=true;$('calEditing').textContent='';
+ calendarWarnings();
+}
+
+$('calAddDate').addEventListener('click',()=>{
+ $('calDates').insertAdjacentHTML('beforeend',calDateRow());calendarWarnings();});
+$('calDates').addEventListener('click',event=>{
+ if(event.target.dataset.cal==='remove'){event.target.closest('.break-row').remove();calendarWarnings();}});
+$('calDates').addEventListener('input',calendarWarnings);
+$('calDates').addEventListener('change',calendarWarnings);
+$('calReset').addEventListener('click',resetCalendarForm);
+
+$('calSave').addEventListener('click',async()=>{
+ const body=calendarBody();
+ if(!body.name){banner('ตั้งชื่อปฏิทินก่อน',true);return;}
+ if(calendarWarnings().length){banner('แก้ข้อผิดพลาดในปฏิทินก่อนบันทึก',true);return;}
+ $('calSave').disabled=true;
+ try{
+  if(editingCalendar)await api('/shifts/calendars/'+editingCalendar,{method:'PUT',body:JSON.stringify(body)});
+  else await api('/shifts/calendars',{method:'POST',body:JSON.stringify(body)});
+  banner(`บันทึกปฏิทิน ${body.name} แล้ว (${body.dates.length} วัน)`);
+  resetCalendarForm();await loadData();
+ }catch(error){banner(error.message,true);}
+ finally{$('calSave').disabled=false;}
+});
+
+$('calRows').addEventListener('click',event=>{
+ const id=event.target.dataset.calEdit;
+ if(!id)return;
+ const row=calendars.find(c=>c.id===Number(id));
+ editingCalendar=row.id;
+ $('calName').value=row.name;$('calNote').value=row.note||'';
+ $('calDates').innerHTML=(row.dates.length?row.dates:[{holiday_date:'',name:''}])
+  .map(d=>calDateRow(d.holiday_date,d.name)).join('');
+ $('calSave').textContent='บันทึกการแก้ไข';$('calReset').hidden=false;
+ $('calEditing').textContent='กำลังแก้ไข '+row.name;
+ calendarWarnings();window.scrollTo(0,0);
 });
 
 async function loadShiftTab(force){
