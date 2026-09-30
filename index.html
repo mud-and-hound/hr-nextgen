@@ -185,6 +185,22 @@
   .list > .grouphead:first-child{border-top:0}
   .grouphead + .row{border-top:0}
   .grouphead .count{font-size:11.5px;font-weight:500;text-transform:none;letter-spacing:0}
+  .dow{display:inline-block;min-width:17px;text-align:center;padding:0 3px;margin-right:2px;
+    border-radius:4px;background:var(--bg);border:1px solid var(--line);font-size:10.5px;
+    line-height:16px;color:var(--ink-2);font-weight:600}
+  .rowact{display:flex;gap:var(--s1);flex-shrink:0}
+  .rowact .btn{height:32px;padding:0 10px;font-size:13px;box-shadow:none}
+  @media (max-width:560px){
+    .row{flex-wrap:wrap}
+    .row .main{flex:1 1 100%}
+    .row .val{align-items:flex-start;text-align:left;flex-direction:row;gap:var(--s2)}
+    .rowact{margin-left:auto}
+  }
+  /* หัวข้อของแต่ละส่วนในหน้ากะเวลา ต้องแยกจากกันให้เห็น ไม่ใช่ไหลต่อกันเป็นพืด */
+  .shift-head{display:flex;align-items:center;gap:var(--s2);font-size:15px;font-weight:700;
+    margin:var(--s6) 0 var(--s3);padding-top:var(--s5);border-top:1px solid var(--line);
+    color:var(--ink);letter-spacing:-.01em}
+  .shift-head:first-of-type{margin-top:0;padding-top:0;border-top:0}
   .summary{text-align:center;margin:var(--s3) 0 0;font-size:12.5px;color:var(--muted)}
   .summary b{color:var(--ink-2);font-weight:650}
 
@@ -214,8 +230,6 @@
     border-radius:var(--r-sm);padding:var(--s2) var(--s3);font-weight:500}
 
   /* ── กะเวลา ── */
-  .shift-head{font-size:16px;font-weight:650;margin:var(--s5) 0 var(--s3)}
-  .shift-head:first-of-type{margin-top:0}
   .shift-form{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
     padding:var(--s4);margin-bottom:var(--s3);box-shadow:var(--shadow)}
   .shift-form label{display:block;font-size:12.5px;color:var(--ink-2);font-weight:550}
@@ -411,12 +425,7 @@
           <span class="count" id="tplEditing"></span>
         </div>
       </div>
-      <div class="card"><div class="tablewrap">
-        <table class="shifts cards">
-          <thead><tr><th>รหัส</th><th>ชื่อกะ</th><th>เวลากะ</th><th>ทำงาน</th><th>พัก</th><th></th></tr></thead>
-          <tbody id="tplRows"></tbody>
-        </table>
-      </div></div>
+      <div class="list" id="tplRows"></div>
 
       <h3 class="shift-head">กลุ่มที่ตั้งชื่อเอง</h3>
       <div class="card shift-form">
@@ -443,12 +452,7 @@
           <span class="count" id="grpEditing"></span>
         </div>
       </div>
-      <div class="card"><div class="tablewrap">
-        <table class="groups cards">
-          <thead><tr><th>ชื่อกลุ่ม</th><th>จำนวนคน</th><th>หมายเหตุ</th><th></th></tr></thead>
-          <tbody id="grpRows"></tbody>
-        </table>
-      </div></div>
+      <div class="list" id="grpRows"></div>
 
       <h3 class="shift-head">จัดกะให้พนักงาน</h3>
       <div class="card shift-form">
@@ -481,12 +485,7 @@
         <span class="count" id="asgCount"></span>
         <button class="clearbtn" id="asgClear" hidden>ล้างตัวกรอง</button>
       </div>
-      <div class="card"><div class="tablewrap">
-        <table class="assignments cards">
-          <thead><tr><th>รหัสพนักงาน</th><th>ชื่อ</th><th>สาขา</th><th>กะ</th><th>วันที่เข้ากะ</th><th>ช่วงวันที่</th><th></th></tr></thead>
-          <tbody id="asgRows"></tbody>
-        </table>
-      </div></div>
+      <div class="list" id="asgRows"></div>
     </section>
     </section>
 
@@ -990,6 +989,8 @@ let shiftTemplates=[], shiftTargets=null, shiftAssignments=[], editingTemplate=n
 let previewTimer=null, shiftTabLoaded=false;
 const hhmm=m=>String(Math.floor((((m%1440)+1440)%1440)/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const hours=m=>`${Math.floor(m/60)} ชม.${m%60?` ${m%60} น.`:''}`;
+const shortDate=iso=>{const [y,m,d]=iso.split('-');
+ return window.HRNGLang&&HRNGLang.get()==='en'?`${d}/${m}/${y}`:`${d}/${m}/${Number(y)+543}`;};
 
 function slotOptions(from,to,step,label,chosen){
  let html='';
@@ -1037,15 +1038,14 @@ async function previewTemplate(){
 const schedulePreview=()=>{clearTimeout(previewTimer);previewTimer=setTimeout(previewTemplate,150);};
 
 function renderTemplates(){
- $('tplRows').innerHTML=shiftTemplates.map(row=>`<tr>
-  <td data-label="รหัส" translate="no">${esc(row.code)}</td>
-  <td data-label="ชื่อกะ" translate="no">${esc(row.name)}</td>
-  <td data-label="เวลากะ">${row.start} – ${row.end}${row.crosses_midnight?' <span class="chip warn">ข้ามคืน</span>':''}</td>
-  <td data-label="ทำงาน">${hours(row.work_minutes)}</td>
-  <td data-label="พัก">${row.break_minutes} นาที</td>
-  <td class="right"><button class="ghost" data-tpl-edit="${row.id}">แก้ไข</button>
-      <button class="ghost" data-tpl-retire="${row.id}">ปิดใช้งาน</button></td>
- </tr>`).join('')||'<tr><td colspan="6" class="empty">ยังไม่มีแบบกะ สร้างกะแรกด้านบน</td></tr>';
+ $('tplRows').innerHTML=shiftTemplates.map(row=>`<div class="row">
+   <span class="main"><span class="nm"><span translate="no">${esc(row.code)}</span> · <span translate="no">${esc(row.name)}</span></span>
+     <span class="sub">ทำงาน ${hours(row.work_minutes)} · พัก ${row.break_minutes} นาที${
+       row.crosses_midnight?' · <span class="tag warn">ข้ามคืน</span>':''}</span></span>
+   <span class="val"><b>${row.start} – ${row.end}</b></span>
+   <span class="rowact"><button class="btn" data-tpl-edit="${row.id}">แก้ไข</button>
+     <button class="btn" data-tpl-retire="${row.id}">ปิดใช้งาน</button></span>
+ </div>`).join('')||'<div class="empty">ยังไม่มีแบบกะ สร้างกะแรกด้านบน</div>';
  $('asgTemplate').innerHTML=shiftTemplates.map(row=>
   `<option value="${row.id}" translate="no">${esc(row.code)} · ${esc(row.name)} (${row.start}–${row.end})</option>`).join('')
   ||'<option value="">— ยังไม่มีแบบกะ —</option>';
@@ -1129,22 +1129,30 @@ function renderAssignments(){
   [row.employee_code,row.full_name,row.branch_name,row.template_code,row.template_name]
    .join(' ').toLowerCase().includes(query));
  $('asgCount').textContent=`${list.length} รายการ`+(query?` จาก ${shiftAssignments.length}`:'');
- $('asgRows').innerHTML=list.map(row=>`<tr>
-  <td data-label="รหัสพนักงาน" translate="no">${esc(row.employee_code||'—')}</td>
-  <td data-label="ชื่อ" translate="no">${esc(row.full_name)}</td>
-  <td data-label="สาขา" translate="no">${esc(row.branch_name||'—')}</td>
-  <td data-label="กะ"><span translate="no">${esc(row.template_code)} · ${esc(row.template_name)}</span><br>
-      <span class="who">${hhmm(row.start_minute)} · ${hours(row.work_minutes)}</span></td>
-  <td data-label="วันที่เข้ากะ">${[...row.weekdays].map((flag,index)=>
-      flag==='1'?`<span class="chip">${DOW[index]}</span>`:'').join(' ')}</td>
-  <td data-label="ช่วงวันที่">${esc(row.effective_from)} – ${esc(row.effective_to||'ไม่มีกำหนด')}</td>
-  <td class="right"><button class="ghost" data-asg-remove="${row.id}">ยกเลิกกะ</button></td>
- </tr>`).join('')||'<tr><td colspan="7" class="empty">ยังไม่มีการจัดกะ</td></tr>';
+ // จัดกลุ่มตามกะ เพราะคำถามคือ "กะนี้มีใครบ้าง" ไม่ใช่ไล่ดูทีละคน
+ const groups=new Map();
+ for(const row of list){
+  const key=row.template_id;
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(row);
+ }
+ $('asgRows').innerHTML=[...groups.entries()].map(([,rows])=>{
+  const head=rows[0];
+  return `<div class="grouphead"><span><span translate="no">${esc(head.template_code)} · ${
+    esc(head.template_name)}</span> · ${hhmm(head.start_minute)} · ${hours(head.work_minutes)}</span>
+    <span class="count">${rows.length} คน</span></div>`+
+   rows.map(row=>`<div class="row">
+     <span class="main"><span class="nm" translate="no">${esc(row.full_name)}</span>
+       <span class="sub"><span translate="no">${esc(row.employee_code||'—')} · ${
+         esc(row.branch_name||'—')}</span> · ${[...row.weekdays].map((flag,index)=>
+           flag==='1'?`<span class="dow">${DOW[index]}</span>`:'').filter(Boolean).join('')}</span></span>
+     <span class="val"><b>${shortDate(row.effective_from)}</b><span>${
+       row.effective_to?'ถึง '+shortDate(row.effective_to):'ไม่มีกำหนด'}</span></span>
+     <span class="rowact"><button class="btn" data-asg-remove="${row.id}">ยกเลิกกะ</button></span>
+   </div>`).join('');
+ }).join('')||'<div class="empty">ยังไม่มีการจัดกะ</div>';
 }
 
-// ===== กลุ่มที่ตั้งชื่อเอง =====
-// ตัวเลือกรายชื่อใช้ตรรกะกรองเดียวกับหน้าจัดกะ แต่แยกชุดที่เลือกไว้คนละชุด
-// เพราะกำลังสร้างกลุ่มกับกำลังจัดกะเป็นคนละงาน ไม่ควรเผลอใช้รายชื่อข้ามกัน
 const pickedGroup=new Set();
 let editingGroup=null, shiftGroups=[];
 
@@ -1160,12 +1168,12 @@ function renderGroupPicker(){
  $('grpCount').textContent=`เลือกไว้ ${pickedGroup.size} คน · แสดง ${list.length} จาก ${shiftTargets.employees.length}`;
 }
 function renderGroups(){
- $('grpRows').innerHTML=shiftGroups.map(row=>`<tr>
-  <td data-label="ชื่อกลุ่ม" translate="no">${esc(row.name)}</td>
-  <td data-label="จำนวนคน">${row.members} คน</td>
-  <td data-label="หมายเหตุ" translate="no">${esc(row.note||'—')}</td>
-  <td class="right"><button class="ghost" data-grp-edit="${row.id}">แก้ไข</button></td>
- </tr>`).join('')||'<tr><td colspan="4" class="empty">ยังไม่มีกลุ่ม</td></tr>';
+ $('grpRows').innerHTML=shiftGroups.map(row=>`<div class="row">
+   <span class="main"><span class="nm" translate="no">${esc(row.name)}</span>
+     <span class="sub" translate="no">${esc(row.note||'—')}</span></span>
+   <span class="val"><b>${row.members}</b><span>คน</span></span>
+   <span class="rowact"><button class="btn" data-grp-edit="${row.id}">แก้ไข</button></span>
+ </div>`).join('')||'<div class="empty">ยังไม่มีกลุ่ม</div>';
 }
 function resetGroupForm(){
  editingGroup=null;pickedGroup.clear();
