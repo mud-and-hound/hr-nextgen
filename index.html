@@ -976,7 +976,7 @@ function openBranch(id){
  $('modalBody').innerHTML='<div class="grid2">'+inputField('code','รหัสสาขา',b.code,'text','maxlength="32"')
   +inputField('name','ชื่อสาขา',b.name,'text','maxlength="200"')+inputField('near','สถานที่ใกล้เคียง',b.near)
   +`<div class="field"><label for="edit-brand_id">แบรนด์</label><select id="edit-brand_id">
-      <option value="">ไม่สังกัดแบรนด์ (สำนักงานใหญ่)</option>${
+      <option value="">ยังไม่ได้เลือกแบรนด์</option>${
       brands.map(r=>`<option value="${r.id}" translate="no"${r.id===b.brand_id?' selected':''}>${esc(r.name)}</option>`).join('')
     }</select></div>`
   +activeField(b.is_active)+'</div>'+mapMarkup+'<div class="branch-coordinates grid2">'
