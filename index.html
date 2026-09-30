@@ -8,318 +8,208 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* หน้านี้ออกแบบรอบใหม่ 30 ก.ย. 2569 ตามที่เจ้าของบอกว่าของเดิมใช้ยาก
+     หลักที่ยึด: เปิดมาต้องเห็น "วันนี้ใครเข้าออกกี่โมง" ทันที ไม่ต้องกดหา
+     งานอื่นอยู่หลังเมนู ไม่แย่งที่บนจอ และไม่มีตารางหลายคอลัมน์อีกแล้ว */
   :root{
     --green:#06c755; --green-press:#05a648; --green-tint:#edf9f2;
-    --ink:#16181c; --ink-2:#3c4043; --muted:#8b9099;
-    --hair:#e6e9ed; --surface:#fff; --surface-2:#f6f7f9; --page:#f2f4f6;
-    --amber:#d97a00; --amber-bg:#fdf4e6;
-    --red:#c0392b; --red-bg:#fdecea;
+    --ink:#16181c; --ink-2:#3d4450; --muted:#78828f;
+    --line:#e6e9ed; --paper:#fff; --bg:#f4f6f8;
+    --amber:#b26a00; --amber-tint:#fff6e5; --red:#c0392b; --red-tint:#fdecec;
   }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;background:var(--page);color:var(--ink);
-    font-family:"IBM Plex Sans Thai",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    -webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'IBM Plex Sans Thai',system-ui,sans-serif;background:var(--bg);color:var(--ink);
+    font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%}
+  button{font-family:inherit;font-size:inherit;cursor:pointer}
+  a{color:var(--green-press)}
 
-  /* ===== demo banner ===== */
-  .demobar{background:var(--amber-bg);color:var(--amber);
-    padding:9px 16px;font-size:13px;text-align:center;font-weight:500}
+  /* ── ปุ่มมาตรฐาน ── */
+  .btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);
+    background:var(--paper);color:var(--ink-2);border-radius:10px;padding:9px 15px;font-weight:500}
+  .btn:hover{background:var(--bg)}
+  .btn.solid{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
+  .btn.solid:hover{background:var(--green-press)}
+  .btn.icon{padding:9px;width:40px;height:40px;justify-content:center}
+  .btn:disabled{opacity:.5;cursor:default}
+  .btn:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:2px}
 
-  /* ===== login ===== */
-  .login-wrap{min-height:calc(100vh - 40px);display:grid;place-items:center;padding:24px}
-  .login{background:#fff;border-radius:18px;padding:36px 32px;width:100%;max-width:400px;
-    box-shadow:0 2px 20px rgba(20,25,35,.07)}
-  .login .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
-  .login .brand .mark{width:38px;height:38px;border-radius:11px;background:var(--green);
-    display:grid;place-items:center;color:#fff}
-  .login h1{font-size:20px;margin:0;font-weight:600}
-  .login .lead{color:var(--muted);font-size:13.5px;margin:2px 0 26px}
-  label{display:block;font-size:13px;color:var(--ink-2);font-weight:500;margin-bottom:6px}
-  .field{margin-bottom:18px}
-  input,select{width:100%;font-family:inherit;font-size:15px;padding:12px 14px;
-    border:1px solid #dbdfe4;border-radius:11px;background:#fff;color:var(--ink)}
-  /* input{width:100%} ข้างบนตั้งไว้สำหรับช่องกรอก แต่มันไปยืดช่องติ๊กด้วย
-     ทำให้ช่องติ๊กใหญ่ผิดรูปและดันข้อความข้าง ๆ ไปชิดขวา คืนขนาดจริงให้มันที่นี่ที่เดียว
-     ที่อื่นเคยแก้ด้วย style="width:auto" รายจุด ซึ่งพลาดได้ทุกครั้งที่เพิ่มช่องติ๊กใหม่ */
+  input,select{width:100%;font-family:inherit;font-size:15px;padding:11px 13px;
+    border:1px solid #dbdfe4;border-radius:10px;background:#fff;color:var(--ink)}
+  /* input{width:100%} ข้างบนไว้ใช้กับช่องกรอก ถ้าไม่ยกเว้นตรงนี้ช่องติ๊กจะถูกยืดจนผิดรูป */
   input[type="checkbox"],input[type="radio"]{width:auto;height:auto;padding:0;
     accent-color:var(--green);vertical-align:middle}
   input:focus,select:focus{outline:2px solid var(--green);border-color:transparent}
-  input:disabled{background:var(--surface-2);color:var(--muted)}
-  .hint{font-size:12px;color:var(--muted);margin-top:6px}
-  .hint.live{color:var(--green)}
-  a.dev-chat-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;color:var(--green);font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
-  .login .dev-chat-link{display:flex;margin-top:12px}
-  a.dev-chat-link:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:6px}
-  button.primary{width:100%;border:0;border-radius:11px;background:var(--green);color:#fff;
-    font-family:inherit;font-size:15.5px;font-weight:600;padding:14px;cursor:pointer;
-    transition:background .15s}
-  button.primary:active{background:var(--green-press)}
-  button.primary:disabled{background:#ccd0d5;cursor:not-allowed}
-  .alert{border-radius:11px;padding:12px 14px;font-size:13.5px;line-height:1.6;margin-bottom:18px}
-  .alert.err{background:var(--red-bg);color:var(--red)}
-  .alert.warn{background:var(--amber-bg);color:var(--amber)}
-  .alert strong{font-weight:600}
+  .sronly{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-  /* ===== shell ===== */
-  .shell{display:none}
-  .shell.on{display:block}
-  header.top{background:#fff;border-bottom:1px solid var(--hair);
-    padding:0 20px;display:flex;align-items:center;gap:16px;height:60px;
-    position:sticky;top:0;z-index:10}
-  header .mark{width:32px;height:32px;border-radius:9px;background:var(--green);
-    display:grid;place-items:center;color:#fff;flex:none}
-  header .name{font-weight:600;font-size:16px}
-  header .spacer{flex:1}
-  header .who{font-size:13px;color:var(--muted);text-align:right;line-height:1.4}
-  header .who b{display:block;color:var(--ink);font-weight:600;font-size:13.5px}
-  button.ghost{border:1px solid #dbdfe4;background:#fff;border-radius:9px;
-    font-family:inherit;font-size:13.5px;padding:8px 14px;cursor:pointer;color:var(--ink-2)}
-  button.ghost:hover{background:var(--surface-2)}
+  /* ── เข้าสู่ระบบ ── */
+  .login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px;
+    background:linear-gradient(180deg,#f7fbf8 0%,var(--bg) 45%)}
+  .login{width:100%;max-width:360px;background:var(--paper);border:1px solid var(--line);
+    border-radius:16px;padding:28px 24px}
+  .login .mark{width:52px;height:52px;border-radius:15px;background:var(--green);display:grid;
+    place-items:center;color:#fff;margin:0 auto 14px}
+  .login h1{font-size:21px;text-align:center;margin:0}
+  .login .lead{font-size:13.5px;color:var(--muted);text-align:center;margin:5px 0 18px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;color:var(--ink-2);font-weight:500;margin-bottom:5px}
+  .alert{border-radius:10px;padding:10px 13px;font-size:13.5px;margin-bottom:14px}
+  .alert.err{background:var(--red-tint);color:var(--red)}
 
-  nav.tabs{background:#fff;border-bottom:1px solid var(--hair);padding:0 20px;
-    display:flex;gap:4px}
-  nav.tabs button{border:0;background:none;font-family:inherit;font-size:14.5px;
-    padding:14px 16px;cursor:pointer;color:var(--muted);font-weight:500;
-    border-bottom:2px solid transparent;margin-bottom:-1px}
-  .sronly{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
-    clip:rect(0 0 0 0);white-space:nowrap;border:0}
-  .langpick{display:flex;gap:8px;justify-content:center;margin:0 0 18px}
-  .langpick button{font-family:inherit;font-size:13.5px;font-weight:600;padding:7px 18px;
-    border:1px solid #dbdfe4;border-radius:999px;background:#fff;color:var(--muted);cursor:pointer}
+  .langpick{display:flex;gap:6px;justify-content:center;margin:0 0 16px}
+  .langpick button{font-size:13px;font-weight:600;padding:6px 15px;border:1px solid var(--line);
+    border-radius:999px;background:#fff;color:var(--muted)}
   .langpick button[aria-pressed="true"]{border-color:var(--green);background:var(--green);color:#fff}
-  .langpick button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
-  header .langpick{margin:0}
-  header .langpick button{padding:6px 14px;font-size:13px}
-  @media (forced-colors:active){
-    .langpick button[aria-pressed="true"]{background:Highlight;color:HighlightText;border-color:Highlight}
-  }
 
-  nav.tabs button[aria-selected="true"]{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+  /* ── โครงหลัก ── */
+  #shell{display:none}
+  #shell.on{display:block}
+  header.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;
+    background:var(--paper);border-bottom:1px solid var(--line);padding:10px 14px}
+  header .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:16px;flex:1;min-width:0}
+  header .mark{width:30px;height:30px;border-radius:9px;background:var(--green);display:grid;
+    place-items:center;color:#fff;flex-shrink:0}
+  header .who{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  @media (max-width:560px){header .who{display:none}}
 
-  main{padding:24px 20px 60px;max-width:1180px;margin:0 auto}
+  /* เมนูเป็นแผงเลื่อนออกมา ไม่ใช่แถบแท็บที่กินที่ตลอดเวลา */
+  #drawer{position:fixed;inset:0;z-index:40;display:none}
+  #drawer.on{display:block}
+  #drawer .veil{position:absolute;inset:0;background:rgba(15,20,25,.4)}
+  #drawer nav{position:absolute;top:0;right:0;bottom:0;width:min(280px,82vw);background:var(--paper);
+    padding:14px;display:flex;flex-direction:column;gap:4px;overflow:auto}
+  #drawer nav h2{font-size:12px;color:var(--muted);font-weight:600;margin:14px 6px 4px;
+    text-transform:uppercase;letter-spacing:.04em}
+  #drawer nav button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+    border:0;background:none;padding:12px 12px;border-radius:10px;font-size:15px;color:var(--ink-2)}
+  #drawer nav button:hover{background:var(--bg)}
+  #drawer nav button[aria-current="page"]{background:var(--green-tint);color:var(--green-press);font-weight:600}
+
+  main{max-width:820px;margin:0 auto;padding:18px 14px 72px}
   .panel{display:none}
   .panel.on{display:block}
+  .viewhead{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .viewhead h1{font-size:20px;margin:0;flex:1}
+  .viewhead .sub{font-size:13px;color:var(--muted);margin:2px 0 0}
 
-  /* ===== กะเวลา ===== */
-  .shift-head{font-size:16px;font-weight:600;margin:26px 0 12px}
-  .shift-head:first-of-type{margin-top:4px}
-  .shift-form{padding:18px;margin-bottom:16px}
-  .shift-form .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .bar{display:flex;gap:9px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  .bar input.search{flex:1;min-width:180px}
+
+  /* ── รายการแบบการ์ด แทนตารางหลายคอลัมน์ ── */
+  .list{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .row{display:flex;align-items:center;gap:12px;padding:13px 15px;border-top:1px solid var(--line);
+    width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left}
+  .list .row:first-child{border-top:0}
+  button.row:hover{background:var(--bg)}
+  .row .main{flex:1;min-width:0}
+  .row .nm{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .sub{font-size:12.5px;color:var(--muted);display:block;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .row .val{text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+  .row .val b{display:block;font-size:15px;font-weight:600}
+  .row .val span{font-size:12px;color:var(--muted)}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:#cfd6dd}
+  .dot.in{background:var(--green)}
+  .dot.done{background:#9aa5b1}
+  .dot.warn{background:#e8a33d}
+  .empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:14px}
+  .tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:999px;
+    background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+  .tag.warn{background:var(--amber-tint);color:var(--amber);border-color:#f0dcb4}
+  .tag.off{background:var(--red-tint);color:var(--red);border-color:#f3cfcb}
+  .summary{display:flex;gap:16px;justify-content:center;margin:12px 0 0;font-size:13px;color:var(--muted)}
+  .summary b{color:var(--ink);font-weight:600}
+
+  .detail{padding:2px 15px 14px;border-top:1px solid var(--line);background:var(--bg)}
+  .detail ol{list-style:none;margin:10px 0 0;padding:0}
+  .detail li{display:flex;gap:10px;align-items:baseline;padding:4px 0;font-size:13.5px}
+  .detail li time{font-variant-numeric:tabular-nums;font-weight:600;min-width:52px}
+  .detail li .k{flex:1;color:var(--ink-2)}
+
+  .datebar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .datebar input{flex:1;min-width:0}
+
+  /* ── หน้าต่างแก้ไข ── */
+  #backdrop{position:fixed;inset:0;background:rgba(15,20,25,.45);display:none;
+    place-items:center;padding:16px;z-index:50;overflow:auto}
+  #backdrop.on{display:grid}
+  .modal{background:var(--paper);border-radius:16px;width:min(560px,100%);padding:20px;margin:auto}
+  .modal.branch-editor{width:min(780px,100%)}
+  .modal h2{font-size:18px;margin:0 0 14px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .modal .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
+  .note{background:var(--bg);border-radius:10px;padding:11px 13px;font-size:12.5px;
+    color:var(--ink-2);margin-top:12px;line-height:1.6}
+  .inline-check{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:13.5px}
+
+  #demobar{background:var(--green-tint);color:var(--green-press);text-align:center;
+    padding:7px 14px;font-size:12.5px}
+  #demobar.error{background:var(--red-tint);color:var(--red)}
+
+  /* ── กะเวลา ── */
+  .shift-head{font-size:16px;font-weight:600;margin:24px 0 10px}
+  .shift-head:first-of-type{margin-top:0}
+  .shift-form{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
   .shift-form label{display:block;font-size:13px;color:var(--ink-2);font-weight:500}
-  .shift-form label input,.shift-form label select{width:100%;margin-top:5px}
+  .shift-form label input,.shift-form label select{margin-top:5px}
   .hintlabel{color:var(--muted);font-weight:400}
-  .shift-breaks{margin-top:16px}
-  .shift-breaks-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-  .break-row{display:flex;align-items:end;gap:10px;margin-bottom:8px;flex-wrap:wrap}
-  .break-row label{flex:0 1 180px}
-  .shift-preview{margin-top:14px;padding:12px 14px;border-radius:10px;
-    background:#f4f6f8;font-size:13.5px;line-height:1.7}
-  .shift-preview.bad{background:#fdecec;color:#8a1c1c}
-  .shift-preview.warn{background:#fff6e5;color:#7a4a00}
+  .shift-breaks{margin-top:14px}
+  .shift-breaks-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .break-row{display:flex;align-items:end;gap:9px;margin-bottom:8px;flex-wrap:wrap}
+  .break-row label{flex:0 1 170px}
+  .shift-preview{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--bg);
+    font-size:13px;line-height:1.7}
+  .shift-preview.bad{background:var(--red-tint);color:#8a1c1c}
+  .shift-preview.warn{background:var(--amber-tint);color:var(--amber)}
   .shift-preview ul{margin:6px 0 0;padding-left:18px}
-  .shift-preview .seg{display:inline-block;margin-right:14px;white-space:nowrap}
-  .shift-preview .seg.break{color:#7a4a00}
-  fieldset.weekdays{border:1px solid #dbdfe4;border-radius:10px;padding:12px 14px;margin:16px 0 0}
+  .shift-preview .seg{display:inline-block;margin-right:13px;white-space:nowrap}
+  .shift-preview .seg.break{color:var(--amber)}
+  fieldset.weekdays{border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin:14px 0 0}
   fieldset.weekdays legend{font-size:13px;color:var(--ink-2);font-weight:500;padding:0 6px}
   fieldset.weekdays > div{display:flex;gap:6px;flex-wrap:wrap}
   fieldset.weekdays label{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;
-    border:1px solid #dbdfe4;border-radius:999px;padding:6px 12px;cursor:pointer}
-  fieldset.weekdays label:has(input:checked){border-color:var(--green);background:#eaf7ee}
-  .target-box{margin-top:16px}
-  .target-list{max-height:260px;overflow:auto;border:1px solid #dbdfe4;border-radius:10px;padding:4px}
+    border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+  fieldset.weekdays label:has(input:checked){border-color:var(--green);background:var(--green-tint)}
+  .target-box{margin-top:14px}
+  .target-list{max-height:250px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:4px}
   .target-list label{display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:6px;
     font-size:13.5px;line-height:1.35;cursor:pointer}
-  /* หน้านี้ตั้ง input{width:100%} ไว้ทั้งหน้า ช่องติ๊กจึงถูกยืดจนดันข้อความไปชิดขวา
-     ต้องคืนขนาดจริงให้มันทุกครั้งที่ใช้ checkbox ในลิสต์ */
-  /* 13x13 คือขนาดที่เจ้าของระบบวัดแล้วบอกว่าต้องการ ยึดตามนั้น */
-  .target-list input[type="checkbox"]{width:13px;height:13px;flex:0 0 13px;
-    margin:0;align-self:center}
-  .target-list label:hover{background:#f4f6f8}
+  /* 13x13 คือขนาดที่เจ้าของระบบวัดแล้วบอกว่าต้องการ */
+  .target-list input[type="checkbox"]{width:13px;height:13px;flex:0 0 13px;margin:0;align-self:center}
+  .target-list label:hover{background:var(--bg)}
   .target-list .nm{flex:1;min-width:0}
-  .target-list .who{color:var(--muted);font-size:12.5px;white-space:nowrap;
-    overflow:hidden;text-overflow:ellipsis;max-width:46%}
+  .target-list .who{color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;max-width:46%}
+  .target-tools{display:flex;align-items:center;gap:9px;margin-bottom:8px;flex-wrap:wrap}
+  .target-tools .search{flex:1;min-width:190px}
+  .count{color:var(--muted);font-size:13px}
+  .grow{flex:1}
   @media (max-width:640px){
     .target-list label{flex-wrap:wrap}
-    .target-list .who{max-width:100%;white-space:normal;flex-basis:100%;padding-left:25px}
+    .target-list .who{max-width:100%;white-space:normal;flex-basis:100%;padding-left:23px}
   }
-  .target-tools{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
-  .target-tools .search{flex:1;min-width:200px}
-
-  .bar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-  .bar .search{flex:1;min-width:220px;max-width:340px}
-  .bar .grow{flex:1}
-  .count{color:var(--muted);font-size:13.5px}
-  .clearbtn{border:0;background:none;color:var(--green);font-family:inherit;
-    font-size:13.5px;cursor:pointer;font-weight:500;padding:6px 4px}
-  .clearbtn:hover{text-decoration:underline}
-
-  .card{background:#fff;border:1px solid var(--hair);border-radius:14px;overflow:hidden}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  table.users{min-width:0}
-  th{text-align:left;font-weight:600;color:var(--ink-2);font-size:12.5px;
-    padding:12px 14px;background:var(--surface-2);border-bottom:1px solid var(--hair);
-    white-space:nowrap}
-  td{padding:13px 14px;border-bottom:1px solid #f0f2f4;vertical-align:middle}
-  tr:last-child td{border-bottom:0}
-  tbody tr:hover{background:#fafbfc}
-  td.num{font-variant-numeric:tabular-nums}
-  .tablewrap{overflow-x:auto}
-  .masked{letter-spacing:1px;color:var(--muted)}
-  .linkbtn{border:0;background:none;color:var(--green);font-family:inherit;
-    font-size:13.5px;cursor:pointer;padding:4px 6px;font-weight:500}
-  .linkbtn:hover{text-decoration:underline}
-  .chip{display:inline-block;font-size:12px;padding:3px 9px;border-radius:6px;
-    background:var(--surface-2);color:var(--ink-2)}
-  .chip.green{background:var(--green-tint);color:#0a7a3f}
-  .chip.warn{background:var(--amber-bg);color:var(--amber)}
-  .chip.err{background:var(--red-bg);color:var(--red)}
-  .chip+.chip{margin-left:5px}
-
-  /* ===== attendance ===== */
-  table.attendance{min-width:1000px}
-  td.time{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
-  td.time.none{color:var(--muted);font-weight:400}
-  .daterange{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-  .daterange button[aria-pressed="true"]{border-color:var(--green);color:var(--green);
-    background:var(--green-tint);font-weight:600}
-  label.inline{display:flex;align-items:center;gap:8px;margin:0;font-size:13.5px;
-    color:var(--ink-2);font-weight:500;white-space:nowrap}
-  label.inline input,label.inline select{width:auto;padding:9px 12px;font-size:14px}
-  tr.detail>td{background:var(--surface-2);padding:0}
-  .events{padding:12px 16px;display:flex;flex-direction:column;gap:9px}
-  .events .ev{display:flex;align-items:center;gap:10px;font-size:13.5px;flex-wrap:wrap}
-  .events .ev .t{font-variant-numeric:tabular-nums;font-weight:600;min-width:50px}
-  .events .ev .w{color:var(--muted)}
-  .empty{padding:40px;text-align:center;color:var(--muted);font-size:14px}
-
-  /* ===== per-column filter row ===== */
-  thead tr.filters th{background:#fff;padding:9px 10px;border-bottom:1px solid var(--hair)}
-  /* A 120px floor on seven filters forced the table wider than the page, which pushed
-     แก้ไข out of view; let each filter follow its own column instead. */
-  thead tr.filters input{font-size:12.5px;font-weight:400;padding:7px 10px;
-    border:1px solid #e1e5e9;border-radius:8px;min-width:0}
-  thead tr.filters input::placeholder{color:#a8adb5}
-  thead tr.filters input:focus{outline:2px solid var(--green);border-color:transparent}
-  thead tr.filters input.active{border-color:var(--green);background:var(--green-tint)}
-
-  /* ===== modal ===== */
-  .backdrop{position:fixed;inset:0;background:rgba(20,25,35,.42);display:none;
-    place-items:center;padding:20px;z-index:50}
-  .backdrop.on{display:grid}
-  .modal{background:#fff;border-radius:16px;width:100%;max-width:560px;
-    max-height:88vh;overflow:auto}
-  .modal .head{padding:20px 24px 0}
-  .modal h2{margin:0;font-size:18px;font-weight:600}
-  .modal .body{padding:20px 24px}
-  .modal .foot{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-end;
-    border-top:1px solid var(--hair);margin-top:4px;position:sticky;bottom:0;background:#fff}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
-  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
-  button.solid{border:0;border-radius:10px;background:var(--green);color:#fff;
-    font-family:inherit;font-size:14.5px;font-weight:600;padding:11px 20px;cursor:pointer}
-  button.solid:active{background:var(--green-press)}
-
-  .pagesize label{display:flex;align-items:center;gap:8px;margin:0;font-size:13.5px;
-    color:var(--ink-2);white-space:nowrap}
-  .pagesize select{width:auto;padding:9px 12px;font-size:14px}
-  .pager{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
-  .pager button.ghost:disabled{color:#b6bbc2;cursor:not-allowed;background:#fff}
-
-  .note{background:var(--surface-2);border-radius:11px;padding:13px 15px;
-    font-size:13px;color:var(--ink-2);line-height:1.65;margin-bottom:18px}
-  .note b{font-weight:600}
-
-  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-  [hidden]{display:none!important}
-  :root{--green:#15803d;--green-press:#166534;--muted:#626d77}
-  .demobar{background:var(--green-tint);color:#166534}.demobar.error{background:var(--red-bg);color:var(--red)}
-  button:focus-visible,summary:focus-visible{outline:3px solid var(--green);outline-offset:3px}
-  .inline-check{display:flex;gap:8px;align-items:center}.inline-check input{width:auto}
-  #modalError{margin:0 24px 12px}.modal pre{white-space:pre-wrap;overflow-wrap:anywhere}
-  #panel-audit pre{max-width:480px;max-height:300px;overflow:auto;font-size:12px}
-  #loginAlert:empty{display:none}
-  /* ===== phone-sized screens: header actions collapse behind the menu button ===== */
-  header .actions{display:flex;align-items:center;gap:16px}
-  header .menubtn{display:none;border:1px solid #dbdfe4;background:#fff;border-radius:9px;
-    padding:7px 9px;cursor:pointer;color:var(--ink-2);line-height:0}
-  header .menubtn:hover{background:var(--surface-2)}
-  @media(max-width:799px),(max-height:599px){
-    header.top{min-height:56px;height:auto;padding:10px 12px;gap:10px}
-    header .name{font-size:15px}
-    header .menubtn{display:inline-flex}
-    header .actions{display:none;position:absolute;top:calc(100% + 6px);right:10px;left:10px;
-      flex-direction:column;align-items:stretch;gap:8px;background:#fff;
-      border:1px solid var(--hair);border-radius:12px;padding:12px;
-      box-shadow:0 14px 30px rgba(20,25,35,.18);z-index:20}
-    header .actions.on{display:flex}
-    header .who{order:-1;text-align:left;padding-bottom:8px;border-bottom:1px solid var(--hair)}
-    header .actions button.ghost,header .actions .dev-chat-link{width:100%;text-align:center;padding:10px 14px}
-    nav.tabs{overflow-x:auto;padding:0 8px}
-    nav.tabs button{white-space:nowrap;padding:12px 14px}
-    main{padding:14px 12px 48px}
-    .bar{gap:8px;margin-bottom:12px}
-    .bar .search{flex:1 1 100%;min-width:0;max-width:none}
-    .bar .grow{display:none}
-    .login{padding:24px}.modal .body{padding:16px}.modal .foot{padding:12px}
-    /* one card per row, so the tables stop scrolling sideways */
-    table.users{min-width:0}
-    .tablewrap{overflow-x:visible}
-    table.cards thead{display:none}
-    table.cards,table.cards tbody,table.cards tr,table.cards td{display:block}
-    table.cards tr{display:flex;flex-direction:column;padding:12px 14px;border-bottom:1px solid var(--hair)}
-    table.cards tr:last-child{border-bottom:0}
-    table.cards tbody tr:hover{background:none}
-    table.cards td{border:0;padding:3px 0;display:flex;gap:10px;align-items:flex-start}
-    table.cards td[data-label]:not([data-label=""])::before{content:attr(data-label);
-      flex:none;width:104px;color:var(--muted);font-size:12.5px;padding-top:1px}
-    table.cards td.cardtitle{order:-1;font-weight:600;font-size:15px;padding-bottom:6px}
-    table.cards td.cardtitle::before{display:none}
-    table.cards td.rowact{justify-content:flex-end;padding-top:4px}
-    /* collapsed card: identity only, tap the card for the rest of the record */
-    table.cards tbody tr{cursor:pointer}
-    table.cards tbody td{display:none}
-    table.cards tbody td.cardtitle,table.cards tbody td.cardsub,table.cards tbody td.cardpick{display:flex}
-    table.cards tbody tr.open td{display:flex}
-    /* The clock times are the point of this table, so a collapsed card keeps them. */
-    /* A card is as wide as its container, so the desktop min-width has to go. */
-    table.attendance{min-width:0}
-    table.attendance tbody td.time,table.attendance tbody td.status{display:flex}
-    table.attendance tbody td.status{flex-wrap:wrap;row-gap:5px}
-    table.attendance tbody td.status .chip+.chip{margin-left:0}
-    table.cards tbody td[colspan]{display:block}
-    table.cards td.cardtitle{position:relative;padding-right:24px}
-    table.cards td.cardtitle::after{content:'';position:absolute;right:4px;top:7px;width:8px;height:8px;
-      border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
-      transform:rotate(45deg);transition:transform .15s}
-    table.cards tbody tr.open td.cardtitle::after{transform:rotate(-135deg);top:10px}
-    table.cards td .empty{padding:28px 0;width:100%}
-    #panel-audit pre{max-width:none}
+  @media (forced-colors:active){
+    .dot,.dot.in,.dot.done,.dot.warn{background:CanvasText}
+    .langpick button[aria-pressed="true"]{background:Highlight;color:HighlightText}
   }
-
-  [data-dev-login]{cursor:pointer;user-select:none;touch-action:manipulation}
-  [data-dev-login]:focus-visible{outline:2px solid var(--green);outline-offset:4px}
 </style>
 <link rel="stylesheet" href="https://timemud.mobile1234.site/vendor/leaflet-1.9.4/leaflet.css">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/branch-map.css?v=20260915-1">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=20260917-1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=20260929-1"></script>
-<script src="https://timemud.mobile1234.site/i18n.js?v=20260929-1"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=20260930-1"></script>
+<script src="https://timemud.mobile1234.site/i18n.js?v=20260930-1"></script>
 </head>
+
 <body>
 
-<div class="demobar" id="demobar">
-  เข้าสู่ระบบเพื่อจัดการข้อมูลพนักงานและสาขา
-</div>
-
-<!-- ══════════ LOGIN ══════════ -->
+<!-- ═════ เข้าสู่ระบบ ═════ -->
 <div class="login-wrap" id="loginView">
   <form class="login" id="loginForm" autocomplete="on" novalidate>
-    <div class="brand">
-      <span class="mark">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-      </span>
-      <h1 data-dev-login>HR NextGen</h1>
+    <div class="mark">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
     </div>
+    <h1 data-dev-login>HR NextGen</h1>
     <p class="lead">ระบบจัดการข้อมูลพนักงานและสาขา</p>
 
     <!-- ชื่อภาษาเขียนด้วยภาษาตัวเอง จึงกัน translate="no" ไว้ไม่ให้กลไกแปลทับ -->
@@ -329,147 +219,92 @@
     </div>
 
     <div id="loginAlert" class="alert err" role="alert" hidden></div>
-
     <div class="field">
       <label for="empId">บัญชี Admin</label>
       <input id="empId" maxlength="64" placeholder="ชื่อบัญชี Admin" autocomplete="username" />
-      <div class="hint" id="empHint">ใช้บัญชีผู้ดูแลระบบที่ได้รับอนุญาต</div>
     </div>
-
     <div class="field">
       <label for="pw">รหัสผ่าน</label>
       <input id="pw" type="password" maxlength="128" placeholder="รหัสผ่าน Admin" autocomplete="current-password" />
     </div>
-
-    <button class="primary" type="submit" id="loginBtn">เข้าสู่ระบบ</button>
-    <a class="dev-chat-link" href="https://timemud.mobile1234.site/dev/">Dev Chat · คุยและสั่งแก้โปรเจ็กต์ ↗</a>
+    <button class="btn solid" id="loginBtn" type="submit" style="width:100%;justify-content:center">เข้าสู่ระบบ</button>
   </form>
 </div>
 
-<!-- ══════════ ADMIN SHELL ══════════ -->
-<div class="shell" id="shell">
+<!-- ═════ ระบบ ═════ -->
+<div id="shell">
   <header class="top">
-    <span class="mark">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-    </span>
-    <span class="name" data-dev-login>HR NextGen</span>
-    <span class="spacer"></span>
-    <button class="menubtn" id="menuBtn" type="button" aria-expanded="false" aria-controls="headerActions" aria-label="เมนู">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    <span class="brand"><span class="mark" data-dev-login>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    </span>HR NextGen</span>
+    <span class="who"><b id="whoName">—</b> · <span id="whoId">—</span></span>
+    <button class="btn icon" id="menuBtn" aria-expanded="false" aria-controls="drawer" aria-label="เมนู">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
-    <!-- Quick-login appends its revoke button to the logout button's parent, so it lands here too. -->
-    <div class="actions" id="headerActions">
-      <a class="dev-chat-link" href="https://timemud.mobile1234.site/dev/">Dev Chat ↗</a>
-      <span class="who"><b id="whoName">—</b><span id="whoId">—</span></span>
-      <div class="langpick" role="group" translate="no" aria-label="เลือกภาษา / Choose language">
+  </header>
+  <div id="demobar" role="status">กำลังโหลดข้อมูล…</div>
+
+  <div id="drawer">
+    <div class="veil" data-close-drawer></div>
+    <nav aria-label="เมนู">
+      <button class="btn icon" data-close-drawer aria-label="ปิด" style="align-self:flex-end;border:0">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <button data-panel="today" aria-current="page">วันนี้</button>
+      <button data-panel="users">พนักงาน</button>
+      <button data-panel="shifts">กะเวลา</button>
+      <button data-panel="branches">สาขา</button>
+      <button data-panel="audit">ประวัติการแก้ไข</button>
+      <h2>บัญชี</h2>
+      <div class="langpick" translate="no" style="justify-content:flex-start;margin:4px 6px 8px">
         <button type="button" data-lang-pick="th" aria-pressed="true" lang="th">ไทย</button>
         <button type="button" data-lang-pick="en" aria-pressed="false" lang="en">English</button>
       </div>
-      <button class="ghost" id="refreshBtn">โหลดข้อมูลใหม่</button>
-      <button class="ghost" id="logoutBtn">ออกจากระบบ</button>
-    </div>
-  </header>
-
-  <nav class="tabs" role="tablist">
-    <button role="tab" aria-selected="true"  data-panel="users">ผู้ใช้งาน</button>
-    <button role="tab" aria-selected="false" data-panel="attendance">เวลาเข้า–ออก</button>
-    <button role="tab" aria-selected="false" data-panel="shifts">กะเวลา</button>
-    <button role="tab" aria-selected="false" data-panel="branches">สาขา</button>
-    <button role="tab" aria-selected="false" data-panel="audit">ประวัติการแก้ไข</button>
-  </nav>
+      <div id="nameLanguageControl" style="padding:4px 8px"></div>
+      <button id="refreshBtn">โหลดข้อมูลใหม่</button>
+      <button id="logoutBtn">ออกจากระบบ</button>
+      <a class="dev-chat-link" href="https://timemud.mobile1234.site/dev/" style="padding:12px;font-size:14px">Dev Chat ↗</a>
+    </nav>
+  </div>
 
   <main>
-    <!-- ===== USERS ===== -->
-    <section class="panel on" id="panel-users">
-      <div class="bar">
-        <input class="search" id="userSearch" placeholder="ค้นหาชื่อ รหัสพนักงาน หรือสาขา" />
-        <span class="count" id="userCount"></span>
-        <button class="clearbtn" id="clearUserFilters" hidden>ล้างตัวกรอง</button>
-        <span class="grow"></span>
-        <div class="pagesize" id="usersPageSize"></div>
-        <div id="nameLanguageControl"></div>
-        <button class="solid" id="addUserBtn">เพิ่มผู้ใช้งาน</button>
+    <!-- ═══ วันนี้ — หน้าแรก เปิดมาต้องเห็นทันทีว่าใครเข้าออกกี่โมง ═══ -->
+    <section class="panel on" id="panel-today">
+      <div class="viewhead">
+        <div style="flex:1"><h1>วันนี้</h1><p class="sub" id="todayDate">—</p></div>
       </div>
-      <div class="card"><div class="tablewrap">
-        <table class="users cards">
-          <thead>
-            <tr class="filters">
-              <!-- Short placeholders keep every filter readable inside its own column;
-                   aria-label carries the full wording the placeholder used to show. -->
-              <th><input data-uf="emp"     aria-label="ค้นหารหัสพนักงาน"     placeholder="รหัสพนักงาน" /></th>
-              <th><input data-uf="th"      aria-label="ค้นหาชื่อ LINE / ไทย" placeholder="ชื่อ LINE / ไทย" /></th>
-              <th><input data-uf="en"      aria-label="ค้นหาชื่อ (อังกฤษ)"   placeholder="ชื่อ (อังกฤษ)" /></th>
-              <th><input data-uf="nid"     aria-label="ค้นหา 4 หลักท้าย"     placeholder="4 หลักท้าย" /></th>
-              <th><input data-uf="pos"     aria-label="ค้นหาตำแหน่ง"         placeholder="ตำแหน่ง" /></th>
-              <th><input data-uf="branch"  aria-label="ค้นหาสาขา"            placeholder="สาขา" /></th>
-              <th><input data-uf="company" aria-label="ค้นหาบริษัท"          placeholder="บริษัท" /></th>
-              <th></th>
-            </tr>
-            <tr>
-              <th>รหัสพนักงาน</th><th>LINE / ชื่อพนักงาน</th><th>ชื่อ (อังกฤษ)</th>
-              <th>เลขบัตร (ปกปิด)</th><th>ตำแหน่ง</th><th>สาขา</th><th>บริษัท</th><th></th>
-            </tr>
-          </thead>
-          <tbody id="userRows"></tbody>
-        </table>
-      </div></div>
-      <div class="pager" id="usersPager"></div>
+      <div class="datebar">
+        <button class="btn icon" id="dayPrev" aria-label="วันก่อนหน้า">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+        <input id="dayPick" type="date" aria-label="เลือกวันที่">
+        <button class="btn icon" id="dayNext" aria-label="วันถัดไป">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+        <button class="btn" id="dayToday">วันนี้</button>
+      </div>
+      <div class="bar"><input class="search" id="todaySearch" placeholder="ค้นหาชื่อหรือรหัสพนักงาน"></div>
+      <div class="list" id="todayRows"></div>
+      <p class="summary" id="todaySummary"></p>
     </section>
 
-    <!-- ===== ATTENDANCE ===== -->
-    <section class="panel" id="panel-attendance">
-      <div class="note">
-        <b>เวลาที่ระบบบันทึกไว้จริง</b> — แต่ละแถวคือพนักงานหนึ่งคนในหนึ่งวัน
-        แสดงเวลาเข้างานครั้งแรกและออกงานครั้งสุดท้ายตามเวลาไทย กดดูรายละเอียดเพื่อเห็นการลงเวลาทุกครั้งของวันนั้น
-        ยังไม่ใช่เวลาทำงานที่อนุมัติแล้ว ไม่ได้หักเวลาพัก และวันที่ไม่มีการลงเวลาจะไม่ปรากฏในตาราง
-      </div>
-      <div class="bar">
-        <div class="daterange" role="group" aria-label="ช่วงวันที่">
-          <button class="ghost" data-preset="today" aria-pressed="false">วันนี้</button>
-          <button class="ghost" data-preset="week" aria-pressed="false">7 วัน</button>
-          <button class="ghost" data-preset="month" aria-pressed="false">เดือนนี้</button>
-        </div>
-        <label class="inline" for="attFrom">ตั้งแต่ <input id="attFrom" type="date"></label>
-        <label class="inline" for="attTo">ถึง <input id="attTo" type="date"></label>
-        <label class="inline" for="attBranch">สาขา <select id="attBranch"></select></label>
-        <button class="solid" id="attLoad">ดูข้อมูล</button>
-      </div>
-      <div class="bar">
-        <input class="search" id="attSearch" placeholder="ค้นหาชื่อ รหัสพนักงาน หรือสาขา" />
-        <label class="inline" for="attStatus">สถานะ <select id="attStatus">
-          <option value="">ทั้งหมด</option>
-          <option value="complete">ลงเวลาครบ</option>
-          <option value="open">ยังไม่ลงเวลาออก</option>
-          <option value="noin">ไม่มีเวลาเข้างาน</option>
-          <option value="outside">มีรายการนอกรัศมี</option>
-        </select></label>
-        <span class="count" id="attCount"></span>
-        <button class="clearbtn" id="attClear" hidden>ล้างตัวกรอง</button>
-        <span class="grow"></span>
-        <div class="pagesize" id="attendancePageSize"></div>
-      </div>
-      <div class="card"><div class="tablewrap">
-        <table class="attendance cards">
-          <thead><tr>
-            <th>วันที่</th><th>LINE / ชื่อพนักงาน</th><th>รหัสพนักงาน</th><th>สาขา</th>
-            <th>เข้างาน</th><th>ออกงาน</th><th>สถานะ</th><th></th>
-          </tr></thead>
-          <tbody id="attRows"></tbody>
-        </table>
-      </div></div>
-      <div class="pager" id="attendancePager"></div>
+    <!-- ═══ พนักงาน ═══ -->
+    <section class="panel" id="panel-users">
+      <div class="viewhead"><h1>พนักงาน</h1>
+        <button class="btn solid" id="addUserBtn">เพิ่มพนักงาน</button></div>
+      <div class="bar"><input class="search" id="userSearch" placeholder="ค้นหาชื่อ รหัสพนักงาน สาขา หรือตำแหน่ง"></div>
+      <div class="list" id="userRows"></div>
+      <p class="summary" id="userCount"></p>
     </section>
 
-    <!-- ===== SHIFTS ===== -->
+    <!-- ═══ กะเวลา ═══ -->
     <section class="panel" id="panel-shifts">
-      <div class="note">
+      <div class="viewhead"><h1>กะเวลา</h1></div>
+      <div class="note" style="margin:0 0 16px">
         <b>กะเวลาและเวลาพัก</b> — ตั้งเวลาเริ่มกะและเวลาพักบนช่อง 30 นาที
         ระบบตรวจตาม พ.ร.บ.คุ้มครองแรงงานให้อัตโนมัติ: ทำงานไม่เกิน 8 ชม./วัน และ 48 ชม./สัปดาห์ (ม.23)
         พักรวมไม่น้อยกว่า 1 ชม. และห้ามทำงานติดต่อกันเกิน 5 ชม. โดยไม่พัก (ม.27)
         และต้องมีวันหยุดประจำสัปดาห์อย่างน้อย 1 วัน (ม.28)
         กะที่ผิดกฎเหล่านี้จะบันทึกไม่ได้
       </div>
-
       <h3 class="shift-head">แบบกะ</h3>
       <div class="card shift-form">
         <div class="grid2">
@@ -567,52 +402,35 @@
         </table>
       </div></div>
     </section>
-
-    <!-- ===== BRANCHES ===== -->
-    <section class="panel" id="panel-branches">
-      <div class="note">
-        <b>ปรับรัศมีหลายสาขาพร้อมกัน</b> — ติ๊กเลือกสาขาในตาราง แล้วกดปุ่มปรับรัศมีที่จะขึ้นมา
-        หรือกดแก้ไขรายสาขาเพื่อตั้งค่าเฉพาะจุด
-      </div>
-      <div class="bar">
-        <input class="search" id="branchSearch" placeholder="ค้นหารหัสหรือชื่อสาขา" />
-        <span class="count" id="branchCount"></span>
-        <span class="grow"></span>
-        <div class="pagesize" id="branchesPageSize"></div>
-        <button class="ghost" id="bulkBtn" hidden>ปรับรัศมีที่เลือก</button>
-        <button class="solid" id="addBranchBtn">เพิ่มสาขา</button>
-      </div>
-      <div class="card"><div class="tablewrap">
-        <table class="cards">
-          <thead><tr>
-            <th style="width:38px"><input type="checkbox" id="checkAll" aria-labelledby="branchPickAll" style="width:auto" />
-              <span id="branchPickAll" class="sronly">เลือกทุกสาขา</span>
-              <span id="branchPickLabel" class="sronly">เลือกสาขา</span></th>
-            <th>รหัสสาขา</th><th>ชื่อสาขา</th><th>สถานที่ใกล้เคียง</th>
-            <th>Latitude</th><th>Longitude</th><th>รัศมี</th><th></th>
-          </tr></thead>
-          <tbody id="branchRows"></tbody>
-        </table>
-      </div></div>
-      <div class="pager" id="branchesPager"></div>
     </section>
+
+    <!-- ═══ สาขา ═══ -->
+    <section class="panel" id="panel-branches">
+      <div class="viewhead"><h1>สาขา</h1>
+        <button class="btn solid" id="addBranchBtn">เพิ่มสาขา</button></div>
+      <div class="bar"><input class="search" id="branchSearch" placeholder="ค้นหารหัสหรือชื่อสาขา">
+        <button class="btn" id="bulkBtn" hidden>ปรับรัศมีที่เลือก</button></div>
+      <div class="list" id="branchRows"></div>
+      <p class="summary" id="branchCount"></p>
+    </section>
+
+    <!-- ═══ ประวัติการแก้ไข ═══ -->
     <section class="panel" id="panel-audit">
-      <div class="bar"><span class="count" id="auditCount"></span><span class="grow"></span><div class="pagesize" id="auditPageSize"></div></div>
-      <div class="card tablewrap"><table class="cards"><thead><tr><th>เวลา</th><th>ผู้แก้ไข</th><th>การทำรายการ</th><th>ข้อมูล</th><th>รายละเอียด</th></tr></thead><tbody id="auditRows"></tbody></table></div>
-      <div class="pager" id="auditPager"></div>
+      <div class="viewhead"><h1>ประวัติการแก้ไข</h1></div>
+      <div class="list" id="auditRows"></div>
     </section>
   </main>
 </div>
 
-<!-- ══════════ MODAL ══════════ -->
-<div class="backdrop" id="backdrop">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="head"><h2 id="modalTitle">แก้ไข</h2></div>
-    <div class="body" id="modalBody"></div>
+<!-- ═════ หน้าต่างแก้ไข ═════ -->
+<div id="backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <h2 id="modalTitle">แก้ไข</h2>
+    <div id="modalBody"></div>
     <div id="modalError" class="alert err" role="alert" hidden></div>
-    <div class="foot">
-      <button class="ghost" id="modalCancel">ยกเลิก</button>
-      <button class="solid" id="modalSave">บันทึก</button>
+    <div class="actions">
+      <button class="btn" id="modalCancel">ยกเลิก</button>
+      <button class="btn solid" id="modalSave">บันทึก</button>
     </div>
   </div>
 </div>
@@ -620,20 +438,21 @@
 <script src="https://timemud.mobile1234.site/vendor/leaflet-1.9.4/leaflet.js"></script>
 <script src="https://timemud.mobile1234.site/branch-map.js?v=20260915-1"></script>
 <script src="https://timemud.mobile1234.site/line-profile.js?v=20260917-1"></script>
+
 <script>
-'use strict';
 const API_BASE='https://timemud.mobile1234.site';
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let devSession=false,token=null,users=[],branches=[],onSave=null,saving=false,lastFocus=null,branchMapController=null;
+
 function banner(message,error=false){$('demobar').textContent=message;$('demobar').classList.toggle('error',error);}
 function showError(id,message){const el=$(id);el.textContent=message;el.hidden=!message;}
-function sessionEnded(){devSession=false;token=null;users=[];branches=[];saving=false;closeModal();$('shell').classList.remove('on');$('loginView').style.display='grid';$('userRows').replaceChildren();$('branchRows').replaceChildren();$('auditRows').replaceChildren();clearAttendance();clearShifts();$('modalBody').replaceChildren();showError('loginAlert','หมดเวลาใช้งาน กรุณาเข้าสู่ระบบใหม่');}
+
 async function api(path,options={}){
  const headers={'Content-Type':'application/json',...(token?{'Authorization':'Bearer '+token}:{})};
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
  try{
-  let error_extra=null;
+  let extra=null;
   const r=await fetch(API_BASE+'/api/admin'+path,{...options,headers,cache:'no-store',signal:controller.signal});
   const data=await r.json().catch(()=>({}));
   if(!r.ok){
@@ -642,285 +461,316 @@ async function api(path,options={}){
    if(Array.isArray(data.detail))message=data.detail.map(e=>e.msg.replace(/^Value error, /,'')).join(' · ');
    // บาง endpoint ตอบ detail เป็นวัตถุเพื่อส่งรายละเอียดเพิ่ม เช่น รายชื่อคนที่กะทับกัน
    else if(data.detail&&typeof data.detail==='object'&&typeof data.detail.message==='string'){
-    message=data.detail.message;error_extra=data.detail;
+    message=data.detail.message;extra=data.detail;
    }
-   const error=new Error(message);error.status=r.status;error.detail=error_extra;throw error;
+   const error=new Error(message);error.status=r.status;error.detail=extra;throw error;
   }
   return data;
- }catch(e){if(e.name==='AbortError')throw new Error('รอการตอบกลับนานเกินไป กรุณาโหลดข้อมูลใหม่เพื่อตรวจว่ารายการถูกบันทึกแล้วหรือไม่');if(e instanceof TypeError)throw new Error('เชื่อมต่อ Server ไม่สำเร็จ กรุณาตรวจการเชื่อมต่อแล้วลองใหม่');throw e;}
- finally{clearTimeout(timer);}
+ }catch(e){
+  if(e.name==='AbortError')throw new Error('รอการตอบกลับนานเกินไป กรุณาโหลดข้อมูลใหม่เพื่อตรวจว่ารายการถูกบันทึกแล้วหรือไม่');
+  if(e instanceof TypeError)throw new Error('เชื่อมต่อ Server ไม่สำเร็จ กรุณาตรวจการเชื่อมต่อแล้วลองใหม่');
+  throw e;
+ }finally{clearTimeout(timer);}
 }
+
+function sessionEnded(){
+ devSession=false;token=null;users=[];branches=[];saving=false;closeModal();
+ $('shell').classList.remove('on');$('loginView').style.display='grid';
+ ['todayRows','userRows','branchRows','auditRows','modalBody'].forEach(id=>$(id).replaceChildren());
+ clearShifts();setDrawer(false);dayRows=[];dayKey='';dayOpen=null;dayDetail.clear();
+ showError('loginAlert','หมดเวลาใช้งาน กรุณาเข้าสู่ระบบใหม่');
+}
+
+const branchName=u=>branches.find(b=>b.id===u.branch_id)?.name||'ยังไม่กำหนดสาขา';
+const bangkokToday=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+const clockTime=value=>new Date(value).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
+const CLOCK_LABEL={in:'เข้างาน',out:'ออกงาน',break_start:'เริ่มพัก',break_end:'กลับเข้างาน'};
+
 async function loadData(){
- banner('กำลังโหลดข้อมูล…');$('refreshBtn').disabled=true;
+ banner('กำลังโหลดข้อมูล…');
  try{
-  const b=await api('/branches');let all=[],offset=0,total=0;
+  const b=await api('/branches');
+  let all=[],offset=0,total=0;
   do{const page=await api('/employees?limit=500&offset='+offset);all.push(...page.items);total=page.total;offset+=page.items.length;if(!page.items.length)break;}while(offset<total);
-  branches=b.items;users=all;renderUsers();renderBranches();fillAttendanceBranches();attendanceKey='';banner((devSession?'Dev · ข้อมูลทดสอบ · พนักงาน ':'ข้อมูลจริง · พนักงาน ')+users.length+' คน · '+branches.length+' สาขา');
+  branches=b.items;users=all;
+  renderUsers();renderBranches();
+  await loadDay(true);
+  banner((devSession?'Dev · ข้อมูลทดสอบ · ':'ข้อมูลจริง · ')+users.filter(u=>u.is_active).length+' คน · '+branches.length+' สาขา');
  }catch(e){banner(e.message,true);throw e;}
- finally{$('refreshBtn').disabled=false;}
 }
+
 async function acceptAdminLogin(data){
  devSession=data.development===true;token=data.token;$('pw').value='';showError('loginAlert','');
  $('whoName').textContent=data.user.display_name;$('whoId').textContent=data.user.username;
- $('loginView').style.display='none';$('shell').classList.add('on');await loadData();
+ $('loginView').style.display='none';$('shell').classList.add('on');
+ HRNGProfile.languageControl($('nameLanguageControl'));
+ $('dayPick').value=bangkokToday();
+ await loadData();
 }
+
 $('loginForm').addEventListener('submit',async e=>{
  e.preventDefault();showError('loginAlert','');
  const username=$('empId').value.trim(),password=$('pw').value;
  if(!username||!password){showError('loginAlert','กรอกบัญชี Admin และรหัสผ่าน');(!username?$('empId'):$('pw')).focus();return;}
  $('loginBtn').disabled=true;
- try{
-  const d=await api('/login',{method:'POST',body:JSON.stringify({username,password})});
-  await acceptAdminLogin(d);
- }catch(e){if(!token)showError('loginAlert',e.message);else banner(e.message,true);}
+ try{await acceptAdminLogin(await api('/login',{method:'POST',body:JSON.stringify({username,password})}));}
+ catch(e){if(!token)showError('loginAlert',e.message);else banner(e.message,true);}
  finally{$('loginBtn').disabled=false;}
 });
-$('logoutBtn').addEventListener('click',async()=>{try{await api('/logout',{method:'POST'});}catch(e){banner(e.message,true);return;}sessionEnded();showError('loginAlert','');banner('เข้าสู่ระบบเพื่อจัดการข้อมูล');});
-$('refreshBtn').addEventListener('click',()=>loadData().catch(()=>{}));
-// Header menu: only visible on phone-sized screens, where CSS turns .actions into a dropdown.
-(function(){
- const panel=$('headerActions'),button=$('menuBtn');
- const setOpen=open=>{panel.classList.toggle('on',open);button.setAttribute('aria-expanded',String(open));};
- button.addEventListener('click',event=>{event.stopPropagation();setOpen(!panel.classList.contains('on'));});
- panel.addEventListener('click',event=>{if(event.target.closest('a,button'))setOpen(false);});
- document.addEventListener('click',event=>{if(!panel.contains(event.target)&&!button.contains(event.target))setOpen(false);});
- document.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false);});
-})();
-// Phone cards start collapsed to name and code; tapping one reveals that record.
-(function(){
- const cardMode=window.matchMedia('(max-width:799px),(max-height:599px)');
- for(const id of ['userRows','branchRows','auditRows','attRows']){
-  $(id).addEventListener('click',event=>{
-   if(!cardMode.matches||event.target.closest('button,a,input,label,summary,details'))return;
-   const row=event.target.closest('tr');
-   if(row&&row.querySelector('.cardtitle'))row.classList.toggle('open');
-  });
- }
- cardMode.addEventListener('change',()=>document.querySelectorAll('tbody tr.open').forEach(row=>row.classList.remove('open')));
-})();
-document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{
- document.querySelectorAll('nav.tabs button').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
+$('logoutBtn').addEventListener('click',async()=>{
+ try{await api('/logout',{method:'POST'});}catch(e){banner(e.message,true);return;}
+ sessionEnded();showError('loginAlert','');banner('เข้าสู่ระบบเพื่อจัดการข้อมูล');
+});
+$('refreshBtn').addEventListener('click',()=>{setDrawer(false);loadData().catch(()=>{});});
+
+/* ── เมนู ── */
+function setDrawer(open){
+ $('drawer').classList.toggle('on',open);
+ $('menuBtn').setAttribute('aria-expanded',String(open));
+}
+$('menuBtn').addEventListener('click',()=>setDrawer(!$('drawer').classList.contains('on')));
+document.querySelectorAll('[data-close-drawer]').forEach(el=>el.addEventListener('click',()=>setDrawer(false)));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('backdrop').classList.contains('on'))setDrawer(false);});
+
+document.querySelectorAll('#drawer nav button[data-panel]').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('#drawer nav button[data-panel]').forEach(x=>{
+   if(x===b)x.setAttribute('aria-current','page'); else x.removeAttribute('aria-current');});
  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='panel-'+b.dataset.panel));
+ setDrawer(false);window.scrollTo(0,0);
  if(b.dataset.panel==='audit')loadAudit();
- if(b.dataset.panel==='attendance')openAttendanceTab();
  if(b.dataset.panel==='shifts')openShiftsTab();
+ if(b.dataset.panel==='today')loadDay();
 }));
-function normalizedUser(u){return {emp:u.employee_code||'',th:(u.line_display_name||'')+' '+u.full_name,en:u.full_name_en,nid:u.national_id_masked,pos:u.position,branch:branches.find(b=>b.id===u.branch_id)?.name||'ยังไม่กำหนดสาขา',company:u.company};}
-// ===== how many rows to show, per list and per browser =====
-const PAGE_SIZES=[5,10,15,20,30,50,100];
-const paging={users:{size:20,page:1},branches:{size:20,page:1},audit:{size:20,page:1},attendance:{size:20,page:1}};
-function pageSizeSetup(key,rerender){
- let stored=20;
- try{const raw=localStorage.getItem('hrng-admin-rows-'+key);if(raw!==null&&(raw==='0'||PAGE_SIZES.includes(Number(raw))))stored=Number(raw);}catch(_){}
- paging[key].size=stored;
- const host=$(key+'PageSize');
- host.innerHTML='<label>แสดง <select>'+PAGE_SIZES.map(v=>`<option value="${v}">${v}</option>`).join('')+'<option value="0">ทั้งหมด</option></select> รายการ</label>';
- const select=host.querySelector('select');
- select.value=String(stored);
- select.addEventListener('change',()=>{
-  paging[key].size=Number(select.value);paging[key].page=1;
-  try{localStorage.setItem('hrng-admin-rows-'+key,select.value);}catch(_){}
-  rerender();
- });
+
+/* ═══ วันนี้ ═══
+   รวมรายชื่อพนักงานกับเวลาที่ลงไว้ในวันนั้น คนที่ยังไม่มาต้องขึ้นด้วย
+   เพราะคำถามแรกของคนเปิดหน้านี้คือ "ใครยังไม่มา" พอ ๆ กับ "ใครมากี่โมง" */
+let dayRows=[],dayKey='',dayOpen=null;
+const dayDetail=new Map();      // employeeId -> เหตุการณ์ของวันนั้น ดึงครั้งเดียวต่อแถว
+
+// ไทยใช้ พ.ศ. อังกฤษใช้ ค.ศ. ผ่านกลไกเดียวกับฝั่งพนักงาน
+const dayHeading=day=>{
+ const [y,m,d]=day.split('-').map(Number);
+ return new Date(Date.UTC(y,m-1,d)).toLocaleDateString(
+   window.HRNGLang?HRNGLang.locale():'th-TH-u-ca-buddhist',
+   {weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+};
+
+async function loadDay(force){
+ const day=$('dayPick').value||bangkokToday();
+ if(!force&&day===dayKey)return;
+ $('todayDate').textContent=dayHeading(day);
+ $('todayRows').innerHTML='<div class="empty">กำลังโหลดเวลาเข้า–ออก…</div>';
+ try{
+  const page=await api(`/attendance/daily?date_from=${day}&date_to=${day}&limit=500`);
+  dayRows=page.items;dayKey=day;dayDetail.clear();dayOpen=null;
+  renderDay();
+ }catch(e){$('todayRows').innerHTML=`<div class="empty">${esc(e.message)}</div>`;}
 }
-function paginate(key,list){
- const state=paging[key],size=state.size;
- const pages=size?Math.max(1,Math.ceil(list.length/size)):1;
- if(state.page>pages)state.page=pages;
- if(state.page<1)state.page=1;
- const start=size?(state.page-1)*size:0;
- const rows=size?list.slice(start,start+size):list;
- return {rows,start,pages,total:list.length};
+$('dayPick').addEventListener('change',()=>loadDay());
+$('dayToday').addEventListener('click',()=>{$('dayPick').value=bangkokToday();loadDay();});
+for(const [id,step] of [['dayPrev',-1],['dayNext',1]]) $(id).addEventListener('click',()=>{
+ const d=new Date(($('dayPick').value||bangkokToday())+'T00:00:00Z');
+ d.setUTCDate(d.getUTCDate()+step);
+ $('dayPick').value=d.toISOString().slice(0,10);loadDay();
+});
+$('todaySearch').addEventListener('input',renderDay);
+
+function renderDay(){
+ const query=$('todaySearch').value.trim().toLowerCase();
+ const found=new Map(dayRows.map(row=>[row.employee_id,row]));
+ const people=users.filter(u=>u.is_active).filter(u=>!query||
+   [u.employee_code,u.full_name,u.full_name_en,u.line_display_name,u.position,branchName(u)]
+     .join(' ').toLowerCase().includes(query));
+ // เรียงคนที่ยังอยู่ในงานขึ้นก่อน แล้วคนที่ครบแล้ว แล้วคนที่ยังไม่มา
+ const rank=u=>{const r=found.get(u.id);return !r?2:(r.last_out?1:0);};
+ people.sort((a,b)=>rank(a)-rank(b)||String(a.employee_code).localeCompare(String(b.employee_code)));
+
+ $('todayRows').innerHTML=people.map(u=>{
+  const row=found.get(u.id);
+  const state=!row?'none':(row.last_out?'done':'in');
+  const warn=row&&row.outside_radius>0;
+  const times=!row?'<span>ยังไม่เข้างาน</span>'
+    :`<b>${esc(clockTime(row.first_in))}${row.last_out?' – '+esc(clockTime(row.last_out)):''}</b>`+
+     (row.last_out?'':'<span>ยังอยู่ในงาน</span>');
+  return `<button class="row" data-day-row="${u.id}" ${row?'':'disabled style="cursor:default"'}>
+    <span class="dot ${state==='none'?'':state}${warn?' warn':''}"></span>
+    <span class="main"><span class="nm" translate="no">${esc(u.full_name)}</span>
+      <span class="sub"><span translate="no">${esc(u.employee_code||'—')} · ${esc(branchName(u))}</span>${
+        warn?' <span class="tag warn">นอกรัศมี</span>':''}</span></span>
+    <span class="val">${times}</span>
+  </button>`+(dayOpen===u.id?`<div class="detail" id="dayDetail-${u.id}">${detailHtml(u.id)}</div>`:'');
+ }).join('')||'<div class="empty">ไม่พบพนักงานตามคำค้น</div>';
+
+ const workedIn=people.filter(u=>found.has(u.id)).length;
+ $('todaySummary').innerHTML=`เข้างานแล้ว <b>${workedIn}</b> คน · ยังไม่มา <b>${people.length-workedIn}</b> คน`;
 }
-function renderPager(key,info,rerender){
- const host=$(key+'Pager');
- if(!info.total){host.replaceChildren();return;}
- const to=info.start+info.rows.length;
- host.innerHTML=`<span class="count">แสดง ${info.start+1}–${to} จาก ${info.total} รายการ</span><span class="grow"></span>`+
-  (info.pages>1?`<button class="ghost" data-page="prev"${paging[key].page<=1?' disabled':''}>ก่อนหน้า</button>`+
-   `<span class="count">หน้า ${paging[key].page} / ${info.pages}</span>`+
-   `<button class="ghost" data-page="next"${paging[key].page>=info.pages?' disabled':''}>ถัดไป</button>`:'');
- host.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>{
-  paging[key].page+=button.dataset.page==='next'?1:-1;rerender();
-  document.querySelector('.panel.on')?.scrollIntoView({block:'start',behavior:'smooth'});
- }));
+
+function detailHtml(id){
+ const events=dayDetail.get(id);
+ if(!events)return '<div class="empty">กำลังโหลด…</div>';
+ if(!events.length)return '<div class="empty">ไม่มีการลงเวลาในวันนี้</div>';
+ return '<ol>'+events.map(e=>`<li><time>${esc(clockTime(e.clock_time))}</time>`+
+   `<span class="k">${esc(CLOCK_LABEL[e.clock_type]||e.clock_type)}</span>`+
+   (e.within_radius===false?'<span class="tag warn">นอกรัศมี</span>':'')+
+   (e.distance_m==null?'':`<span class="tag">${e.distance_m} ม.</span>`)+'</li>').join('')+'</ol>';
 }
+
+$('todayRows').addEventListener('click',async event=>{
+ const button=event.target.closest('[data-day-row]');
+ if(!button)return;
+ const id=Number(button.dataset.dayRow);
+ dayOpen=dayOpen===id?null:id;
+ renderDay();
+ if(dayOpen===id&&!dayDetail.has(id)){
+  try{
+   const d=await api(`/attendance/events?employee_id=${id}&day=${dayKey}`);
+   dayDetail.set(id,d.items);
+  }catch(e){dayDetail.set(id,[]);banner(e.message,true);}
+  if(dayOpen===id)renderDay();
+ }
+});
+
+/* ═══ พนักงาน ═══ */
+$('userSearch').addEventListener('input',renderUsers);
 function renderUsers(){
- const q=$('userSearch').value.trim().toLowerCase(),filters=[...document.querySelectorAll('[data-uf]')].map(el=>[el.dataset.uf,el.value.trim().toLowerCase()]);
- $('clearUserFilters').hidden=!q&&!filters.some(([,v])=>v);
- const list=users.filter(u=>{const v=normalizedUser(u);return (!q||Object.values(v).join(' ').toLowerCase().includes(q))&&filters.every(([k,f])=>!f||String(v[k]||'').toLowerCase().includes(f));});
- $('userCount').textContent=list.length+' คน';
- const info=paginate('users',list);
- $('userRows').innerHTML=info.rows.length?info.rows.map(u=>{const v=normalizedUser(u);return `<tr><td class="cardsub" data-label="รหัสพนักงาน">${esc(v.emp)||'<span class="chip">ยังไม่ระบุ</span>'}</td><td class="cardtitle" data-label="LINE / ชื่อพนักงาน"><div class="hrng-person"><span class="hrng-person-avatar" data-profile-avatar="${u.id}"></span><span class="hrng-person-name" translate="no">${esc(HRNGProfile.name(u))} ${!u.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</span></div></td><td data-label="ชื่อ (อังกฤษ)" translate="no">${esc(v.en)}</td><td class="masked" data-label="เลขบัตร (ปกปิด)">${esc(v.nid)||'—'}</td><td data-label="ตำแหน่ง" translate="no">${esc(v.pos)}</td><td data-label="สาขา" translate="no">${esc(v.branch)}</td><td data-label="บริษัท" translate="no">${esc(v.company)}</td><td class="rowact"><button class="linkbtn" data-edit-user="${u.id}">แก้ไข</button></td></tr>`;}).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบพนักงาน</div></td></tr>';
- document.querySelectorAll('[data-profile-avatar]').forEach(el=>HRNGProfile.avatar(el,info.rows.find(u=>String(u.id)===el.dataset.profileAvatar)));
- renderPager('users',info,renderUsers);
+ const query=$('userSearch').value.trim().toLowerCase();
+ // ต้องค้นด้วยชื่อ LINE ได้ด้วย เพราะบางคนหน้าจอขึ้นชื่อ LINE เป็นหลัก
+ const list=users.filter(u=>!query||
+   [u.employee_code,u.full_name,u.full_name_en,u.line_display_name,u.position,u.company,branchName(u)]
+     .join(' ').toLowerCase().includes(query));
+ // รูปและชื่อจาก LINE เป็นสัญญาที่ตกลงไว้ใน UX-CONTRACT ไม่ตัดออกตอนรื้อหน้า
+ $('userRows').innerHTML=list.map(u=>`<button class="row" data-edit-user="${u.id}">
+   <span class="hrng-person-avatar" data-profile-avatar="${u.id}"></span>
+   <span class="main"><span class="hrng-person-name nm" translate="no">${esc(HRNGProfile.name(u))}</span>
+     <span class="sub"><span translate="no">${esc(u.employee_code||'ยังไม่ระบุ')} · ${esc(branchName(u))} · ${
+       esc(u.position||'ไม่ระบุตำแหน่ง')}</span></span></span>
+   <span class="val">${u.is_active?'':'<span class="tag off">ปิดใช้งาน</span>'}${
+     u.line_bound_at?'<span class="tag">ผูก LINE แล้ว</span>':'<span class="tag warn">รอผูก LINE</span>'}</span>
+ </button>`).join('')||'<div class="empty">ไม่พบพนักงาน</div>';
+ document.querySelectorAll('#userRows [data-profile-avatar]').forEach(el=>
+   HRNGProfile.avatar(el,list.find(u=>String(u.id)===el.dataset.profileAvatar)));
+ $('userCount').innerHTML=`<b>${list.length}</b> คน`+(query?` จากทั้งหมด ${users.length}`:'');
 }
-pageSizeSetup('users',renderUsers);pageSizeSetup('branches',renderBranches);pageSizeSetup('audit',renderAudit);pageSizeSetup('attendance',renderAttendance);
-HRNGProfile.languageControl($('nameLanguageControl'));
-window.addEventListener('hrng:name-language',()=>{renderUsers();if(attendanceRows.length)renderAttendance();});
-$('userSearch').addEventListener('input',renderUsers);document.querySelectorAll('[data-uf]').forEach(el=>el.addEventListener('input',renderUsers));
-$('clearUserFilters').addEventListener('click',()=>{$('userSearch').value='';document.querySelectorAll('[data-uf]').forEach(el=>el.value='');renderUsers();});
-function renderBranches(){
- const q=$('branchSearch').value.trim().toLowerCase();const list=branches.filter(b=>(b.code+' '+b.name+' '+b.near).toLowerCase().includes(q));
- $('branchCount').textContent=list.length+' สาขา';$('checkAll').checked=false;
- const info=paginate('branches',list);
- $('branchRows').innerHTML=info.rows.length?info.rows.map(b=>`<tr><td class="cardpick"><input type="checkbox" class="pick" data-id="${b.id}" aria-labelledby="branchPickLabel bname-${b.id}" style="width:auto"></td><td class="cardsub" data-label="รหัสสาขา" translate="no">${esc(b.code)}</td><td class="cardtitle" data-label="ชื่อสาขา" translate="no" id="bname-${b.id}">${esc(b.name)} ${!b.is_active?'<span class="chip">ปิดใช้งาน</span>':''}</td><td data-label="สถานที่ใกล้เคียง" translate="no">${esc(b.near)||'—'}</td><td data-label="Latitude">${b.lat==null?'ยังไม่มีพิกัด':b.lat.toFixed(6)}</td><td data-label="Longitude">${b.lng==null?'—':b.lng.toFixed(6)}</td><td data-label="รัศมี">${b.radius_m} ม.</td><td class="rowact"><button class="linkbtn" data-edit-branch="${b.id}">แก้ไข</button></td></tr>`).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบสาขา</div></td></tr>';syncBulk();
- renderPager('branches',info,renderBranches);
-}
+
+// เปลี่ยนภาษาแสดงชื่อแล้วรายชื่อต้องเปลี่ยนตามทันที ไม่ต้องโหลดใหม่
+window.addEventListener('hrng:name-language',()=>{renderUsers();renderDay();});
+// สลับภาษาระบบแล้ว วันที่ต้องเปลี่ยนปฏิทินตาม จึงต้องวาดหัวใหม่
+window.addEventListener('hrng:lang',()=>{if(dayKey)$('todayDate').textContent=dayHeading(dayKey);});
+
+/* ═══ สาขา ═══ */
 $('branchSearch').addEventListener('input',renderBranches);
+function renderBranches(){
+ const query=$('branchSearch').value.trim().toLowerCase();
+ const list=branches.filter(b=>!query||[b.code,b.name,b.near].join(' ').toLowerCase().includes(query));
+ $('branchRows').innerHTML=list.map(b=>`<div class="row">
+   <input type="checkbox" class="pick" data-id="${b.id}" aria-labelledby="bname-${b.id}">
+   <button class="main" data-edit-branch="${b.id}" style="border:0;background:none;text-align:left;padding:0">
+     <span class="nm" id="bname-${b.id}" translate="no">${esc(b.name)}</span>
+     <span class="sub"><span translate="no">${esc(b.code)}</span> · รัศมี ${b.radius_m} ม.${
+       b.lat==null?' · <span class="tag warn">ยังไม่มีพิกัด</span>':''}${
+       b.is_active?'':' · <span class="tag off">ปิดใช้งาน</span>'}</span></button>
+ </div>`).join('')||'<div class="empty">ไม่พบสาขา</div>';
+ $('branchCount').innerHTML=`<b>${list.length}</b> สาขา`;
+ syncBulk();
+}
 function picked(){return [...document.querySelectorAll('.pick:checked')].map(el=>Number(el.dataset.id));}
 function syncBulk(){const n=picked().length;$('bulkBtn').hidden=!n;$('bulkBtn').textContent='ปรับรัศมี '+n+' สาขาที่เลือก';}
-$('branchRows').addEventListener('change',syncBulk);$('checkAll').addEventListener('change',e=>{document.querySelectorAll('.pick').forEach(el=>el.checked=e.target.checked);syncBulk();});
+$('branchRows').addEventListener('change',event=>{if(event.target.classList.contains('pick'))syncBulk();});
+
+/* ═══ ประวัติการแก้ไข ═══ */
+async function loadAudit(){
+ $('auditRows').innerHTML='<div class="empty">กำลังโหลดประวัติ…</div>';
+ try{
+  const d=await api('/audit');
+  $('auditRows').innerHTML=d.items.map(a=>`<div class="row">
+    <span class="main"><span class="nm"><span>${esc(({create:'เพิ่ม',update:'แก้ไข',retire:'ปิดใช้งาน',
+      assign:'จัดกะ',unassign:'ยกเลิกกะ',bulk_radius:'ปรับรัศมีหลายสาขา'})[a.action]||a.action)}</span> <span>${
+      esc({employee:'ข้อมูลพนักงาน',branch:'ข้อมูลสาขา',shift_template:'แบบกะ',shift_group:'กลุ่ม',
+           shift_assignment:'การจัดกะ'}[a.entity_type]||a.entity_type)}</span> <span translate="no">#${a.entity_id}</span></span>
+      <span class="sub"><span translate="no">${esc(a.username)}</span> · ${
+        esc(new Date(a.created_at).toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}</span></span>
+  </div>`).join('')||'<div class="empty">ยังไม่มีประวัติการแก้ไข</div>';
+ }catch(e){$('auditRows').innerHTML=`<div class="empty">${esc(e.message)}</div>`;}
+}
+
+/* ═══ หน้าต่างแก้ไข ═══ */
 function inputField(key,label,value='',type='text',extra=''){return `<div class="field"><label for="edit-${key}">${label}</label><input id="edit-${key}" data-k="${key}" type="${type}" value="${esc(value)}" ${extra}></div>`;}
 function value(key){return $('edit-'+key).value.trim();}
 function activeField(active){return `<div class="field"><label for="edit-is_active">สถานะ</label><select id="edit-is_active"><option value="true"${active?' selected':''}>เปิดใช้งาน</option><option value="false"${!active?' selected':''}>ปิดใช้งาน</option></select></div>`;}
+
 function openUser(id){
  const u=id?users.find(x=>x.id===id):{employee_code:'',full_name:'',full_name_en:'',position:'',company:'',line_user_id:'',is_active:true};
  if(!u)return;
  $('modalTitle').textContent=id?'แก้ไขพนักงาน':'เพิ่มพนักงาน';
- $('modalBody').innerHTML='<div class="grid2">'+inputField('employee_code','รหัสพนักงาน',u.employee_code||'','text','maxlength="32"')+inputField('full_name','ชื่อ (ไทย)',u.full_name,'text','maxlength="200"')+inputField('full_name_en','ชื่อ (อังกฤษ)',u.full_name_en)+inputField('position','ตำแหน่ง',u.position)+inputField('company','บริษัท',u.company)+`<div class="field"><label for="edit-branch_id">สาขา</label><select id="edit-branch_id"><option value="">เลือกสาขา</option>${
+ $('modalBody').innerHTML='<div class="grid2">'
+  +inputField('employee_code','รหัสพนักงาน',u.employee_code||'','text','maxlength="32"')
+  +inputField('full_name','ชื่อ (ไทย)',u.full_name,'text','maxlength="200"')
+  +inputField('full_name_en','ชื่อ (อังกฤษ)',u.full_name_en)
+  +inputField('position','ตำแหน่ง',u.position)
+  +inputField('company','บริษัท',u.company)
+  +`<div class="field"><label for="edit-branch_id">สาขา</label><select id="edit-branch_id"><option value="">เลือกสาขา</option>${
     ['active','off'].map(group=>{const rows=branches.filter(b=>(group==='active')===b.is_active);
       if(!rows.length)return '';
       const items=rows.map(b=>`<option value="${b.id}" translate="no"${b.id===u.branch_id?' selected':''}>${esc(b.name)}</option>`).join('');
       return group==='active'?items:`<optgroup label="ปิดใช้งาน">${items}</optgroup>`;}).join('')
-  }</select></div>`+`<div class="field"><label>การผูก LINE</label><div>${u.line_bound_at?'ผูกบัญชีแล้ว':'รอพนักงานยืนยันผ่าน LINE'}</div></div>`+activeField(u.is_active)+inputField('national_id','เลขบัตรประชาชน (จำเป็นสำหรับเข้าแอป)','','text','inputmode="numeric" maxlength="13" autocomplete="off"')+'</div>'+`<div class="note">เลขบัตรเดิม: ${esc(u.national_id_masked)||'ยังไม่มีข้อมูล'}<br>เว้นเลขบัตรว่างเพื่อคงค่าเดิม พนักงานต้องมีรหัสพนักงานและเลขบัตรในทะเบียน จึงจะยืนยันและผูก LINE ครั้งแรกได้</div><label class="inline-check"><input id="edit-clear_national_id" type="checkbox"> ลบเลขบัตรที่บันทึกไว้</label>`;
+   }</select></div>`
+  +`<div class="field"><label>การผูก LINE</label><div>${u.line_bound_at?'ผูกบัญชีแล้ว':'รอพนักงานยืนยันผ่าน LINE'}</div></div>`
+  +activeField(u.is_active)
+  +inputField('national_id','เลขบัตรประชาชน (จำเป็นสำหรับเข้าแอป)','','text','inputmode="numeric" maxlength="13" autocomplete="off"')
+  +'</div>'
+  +`<div class="note">เลขบัตรเดิม: ${esc(u.national_id_masked)||'ยังไม่มีข้อมูล'}<br>เว้นเลขบัตรว่างเพื่อคงค่าเดิม พนักงานต้องมีรหัสพนักงานและเลขบัตรในทะเบียน จึงจะยืนยันและผูก LINE ครั้งแรกได้</div><label class="inline-check"><input id="edit-clear_national_id" type="checkbox"> ลบเลขบัตรที่บันทึกไว้</label>`;
  openModal(async()=>{
-  const body={employee_code:value('employee_code'),full_name:value('full_name'),full_name_en:value('full_name_en'),position:value('position'),company:value('company'),branch_id:Number(value('branch_id')),is_active:value('is_active')==='true',national_id:value('national_id')||null,clear_national_id:$('edit-clear_national_id').checked};
+  const body={employee_code:value('employee_code'),full_name:value('full_name'),full_name_en:value('full_name_en'),
+   position:value('position'),company:value('company'),branch_id:Number(value('branch_id')),
+   is_active:value('is_active')==='true',national_id:value('national_id')||null,
+   clear_national_id:$('edit-clear_national_id').checked};
   if(!body.employee_code||!body.full_name||!body.branch_id)throw new Error('กรอกรหัสพนักงาน ชื่อ และเลือกสาขา');
   if(id)body.version=u.version;
   await api('/employees'+(id?'/'+id:''),{method:id?'PUT':'POST',body:JSON.stringify(body)});
  });
 }
+
 function openBranch(id){
- const b=id?branches.find(x=>x.id===id):{code:'',name:'',near:'',lat:null,lng:null,radius_m:150,is_active:true};if(!b)return;
+ const b=id?branches.find(x=>x.id===id):{code:'',name:'',near:'',lat:null,lng:null,radius_m:150,is_active:true};
+ if(!b)return;
  $('modalTitle').textContent=id?'แก้ไขสาขา':'เพิ่มสาขา';
  const mapMarkup=window.HRNGBranchMap?.markup||'<div class="note">โหลดเครื่องมือแผนที่ไม่สำเร็จ กรุณาโหลดหน้าใหม่ หรือกรอกพิกัดด้านล่าง</div>';
- $('modalBody').innerHTML='<div class="grid2">'+inputField('code','รหัสสาขา',b.code,'text','maxlength="32"')+inputField('name','ชื่อสาขา',b.name,'text','maxlength="200"')+inputField('near','สถานที่ใกล้เคียง',b.near)+activeField(b.is_active)+'</div>'+mapMarkup+'<div class="branch-coordinates">'+inputField('lat','Latitude',b.lat??'','number','min="-90" max="90" step="any"')+inputField('lng','Longitude',b.lng??'','number','min="-180" max="180" step="any"')+inputField('radius_m','รัศมี (เมตร)',b.radius_m,'number','min="10" max="10000" step="1"')+'</div><div class="note">สาขาที่เปิดใช้งานต้องระบุพิกัดครบ รัศมี 10–10,000 เมตร · ตำแหน่งจะเปลี่ยนเมื่อกดบันทึก</div>';
+ $('modalBody').innerHTML='<div class="grid2">'+inputField('code','รหัสสาขา',b.code,'text','maxlength="32"')
+  +inputField('name','ชื่อสาขา',b.name,'text','maxlength="200"')+inputField('near','สถานที่ใกล้เคียง',b.near)
+  +activeField(b.is_active)+'</div>'+mapMarkup+'<div class="branch-coordinates grid2">'
+  +inputField('lat','Latitude',b.lat??'','number','min="-90" max="90" step="any"')
+  +inputField('lng','Longitude',b.lng??'','number','min="-180" max="180" step="any"')
+  +inputField('radius_m','รัศมี (เมตร)',b.radius_m,'number','min="10" max="10000" step="1"')
+  +'</div><div class="note">สาขาที่เปิดใช้งานต้องระบุพิกัดครบ รัศมี 10–10,000 เมตร · ตำแหน่งจะเปลี่ยนเมื่อกดบันทึก</div>';
  openModal(async()=>{
   if(branchMapController?.busy)throw new Error('รอค้นหาพิกัดให้เสร็จก่อนกดบันทึก');
-  const body={code:value('code'),name:value('name'),near:value('near'),radius_m:Number(value('radius_m')),lat:value('lat')===''?null:Number(value('lat')),lng:value('lng')===''?null:Number(value('lng')),is_active:value('is_active')==='true'};if(id)body.version=b.version;
+  const body={code:value('code'),name:value('name'),near:value('near'),radius_m:Number(value('radius_m')),
+   lat:value('lat')===''?null:Number(value('lat')),lng:value('lng')===''?null:Number(value('lng')),
+   is_active:value('is_active')==='true'};
+  if(id)body.version=b.version;
   if(!body.code||!body.name)throw new Error('กรอกรหัสสาขาและชื่อสาขา');
   const updated=await api('/branches'+(id?'/'+id:''),{method:id?'PUT':'POST',body:JSON.stringify(body)});
   branches=id?branches.map(row=>row.id===id?updated:row):[...branches,updated];renderBranches();
  });
  $('backdrop').querySelector('.modal').classList.add('branch-editor');
- if(window.HRNGBranchMap)branchMapController=HRNGBranchMap.mount({root:$('modalBody'),resolve:url=>api('/maps/resolve',{method:'POST',body:JSON.stringify({url})})});
+ if(window.HRNGBranchMap)branchMapController=HRNGBranchMap.mount({root:$('modalBody'),
+   resolve:url=>api('/maps/resolve',{method:'POST',body:JSON.stringify({url})})});
 }
-$('addUserBtn').addEventListener('click',()=>openUser());$('addBranchBtn').addEventListener('click',()=>openBranch());
+
+$('addUserBtn').addEventListener('click',()=>openUser());
+$('addBranchBtn').addEventListener('click',()=>openBranch());
 $('userRows').addEventListener('click',e=>{const b=e.target.closest('[data-edit-user]');if(b)openUser(Number(b.dataset.editUser));});
 $('branchRows').addEventListener('click',e=>{const b=e.target.closest('[data-edit-branch]');if(b)openBranch(Number(b.dataset.editBranch));});
 $('bulkBtn').addEventListener('click',()=>{
- const selected=branches.filter(b=>picked().includes(b.id));$('modalTitle').textContent='ปรับรัศมี '+selected.length+' สาขา';
- $('modalBody').innerHTML=inputField('radius_m','รัศมีใหม่ (เมตร)',150,'number','min="10" max="10000" step="1"')+'<div class="note">'+selected.map(b=>esc(b.name)).join(', ')+'</div>';
- openModal(()=>api('/branches/radius',{method:'PATCH',body:JSON.stringify({branches:selected.map(b=>({id:b.id,version:b.version})),radius_m:Number(value('radius_m'))})}));
+ const selected=branches.filter(b=>picked().includes(b.id));
+ $('modalTitle').textContent='ปรับรัศมี '+selected.length+' สาขา';
+ $('modalBody').innerHTML=inputField('radius_m','รัศมีใหม่ (เมตร)',150,'number','min="10" max="10000" step="1"')
+  +'<div class="note" translate="no">'+selected.map(b=>esc(b.name)).join(', ')+'</div>';
+ openModal(()=>api('/branches/radius',{method:'PATCH',body:JSON.stringify({
+   branches:selected.map(b=>({id:b.id,version:b.version})),radius_m:Number(value('radius_m'))})}));
 });
-let auditItems=[];
-async function loadAudit(){
- $('auditRows').textContent='กำลังโหลดประวัติ…';
- try{const d=await api('/audit');auditItems=d.items;paging.audit.page=1;renderAudit();}catch(e){$('auditRows').textContent=e.message;}
-}
-function renderAudit(){
- $('auditCount').textContent=auditItems.length+' รายการ';
- const info=paginate('audit',auditItems);
- $('auditRows').innerHTML=info.rows.length?info.rows.map(a=>`<tr><td class="cardsub" data-label="เวลา">${esc(new Date(a.created_at).toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}</td><td data-label="ผู้แก้ไข">${esc(a.username)}</td><td class="cardtitle" data-label="การทำรายการ">${esc(({create:'เพิ่ม',update:'แก้ไข',bulk_radius:'ปรับรัศมีหลายสาขา'})[a.action]||a.action)}</td><td data-label="ข้อมูล">${esc(a.entity_type==='employee'?'พนักงาน':'สาขา')} #${a.entity_id}</td><td data-label="รายละเอียด"><details><summary>รายละเอียด</summary><pre translate="no">${esc(JSON.stringify({ก่อนแก้:a.before_data,หลังแก้:a.after_data},null,2))}</pre></details></td></tr>`).join(''):'<tr><td colspan="5"><div class="empty">ยังไม่มีประวัติการแก้ไข</div></td></tr>';
- renderPager('audit',info,renderAudit);
-}
-// ===== attendance: the server bounds range and branch, the browser refines what it loaded =====
-const ATTENDANCE_MAX_ROWS=5000;
-let attendanceRows=[],attendanceKey='',attendanceLoading=false;
-const attendanceDetail=new Map();   // "employeeId|work_date" -> events, fetched once per row
-const bangkokToday=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-const clockTime=value=>new Date(value).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
-// work_date is already the Bangkok calendar day, so read it straight as DD/MM/พ.ศ.
-const dayLabel=day=>{const [year,month,date]=day.split('-');return `${date}/${month}/${Number(year)+543}`;};
-function attendancePreset(name){
- const today=bangkokToday();
- if(name==='today')return [today,today];
- if(name==='month')return [today.slice(0,8)+'01',today];
- const start=new Date(today+'T00:00:00Z');start.setUTCDate(start.getUTCDate()-6);
- return [start.toISOString().slice(0,10),today];
-}
-function markAttendancePreset(){
- const from=$('attFrom').value,to=$('attTo').value;
- document.querySelectorAll('[data-preset]').forEach(button=>{
-  const [f,t]=attendancePreset(button.dataset.preset);
-  button.setAttribute('aria-pressed',String(f===from&&t===to));
- });
-}
-function setAttendanceRange(name){
- const [from,to]=attendancePreset(name);
- $('attFrom').value=from;$('attTo').value=to;markAttendancePreset();
-}
-function fillAttendanceBranches(){
- const select=$('attBranch'),current=select.value;
- select.innerHTML='<option value="">ทุกสาขา</option>'+branches.map(b=>`<option value="${b.id}" translate="no">${esc(b.name)}</option>`).join('');
- select.value=branches.some(b=>String(b.id)===current)?current:'';
-}
-function clearAttendance(){
- attendanceRows=[];attendanceKey='';attendanceDetail.clear();
- $('attRows').replaceChildren();$('attCount').textContent='';
-}
-function attendanceNotice(message){
- $('attRows').innerHTML='<tr><td colspan="8"><div class="empty">'+esc(message)+'</div></td></tr>';
- $('attCount').textContent='';$('attendancePager').replaceChildren();
-}
-function attendanceState(row){
- if(!row.first_in&&row.last_out)return 'noin';
- if(row.first_in&&!row.last_out)return 'open';
- return 'complete';
-}
-async function loadAttendance(force){
- const from=$('attFrom').value,to=$('attTo').value,branch=$('attBranch').value;
- if(!from||!to){attendanceNotice('เลือกช่วงวันที่แล้วกดดูข้อมูล');return;}
- if(from>to){attendanceNotice('วันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด');return;}
- const key=from+'~'+to+'~'+branch;
- if(attendanceLoading||(!force&&key===attendanceKey))return;
- attendanceLoading=true;$('attLoad').disabled=true;attendanceNotice('กำลังโหลดเวลาเข้า–ออก…');
- try{
-  const base='/attendance/daily?date_from='+from+'&date_to='+to+'&limit=500'+(branch?'&branch_id='+branch:'');
-  let all=[],offset=0,total=0;
-  do{
-   const page=await api(base+'&offset='+offset);
-   all.push(...page.items);total=page.total;offset+=page.items.length;
-   if(!page.items.length)break;
-  }while(offset<total&&all.length<ATTENDANCE_MAX_ROWS);
-  attendanceRows=all;attendanceKey=key;attendanceDetail.clear();
-  paging.attendance.page=1;renderAttendance();
-  if(all.length<total)banner('ช่วงนี้มี '+total+' รายการ แสดงได้ '+all.length+' รายการ กรุณาเลือกช่วงที่แคบลง',true);
- }catch(e){attendanceRows=[];attendanceKey='';attendanceNotice(e.message);}
- finally{attendanceLoading=false;$('attLoad').disabled=false;}
-}
-function renderAttendance(){
- const query=$('attSearch').value.trim().toLowerCase(),status=$('attStatus').value;
- $('attClear').hidden=!query&&!status;
- const list=attendanceRows.filter(row=>{
-  const text=[row.employee_code,row.full_name,row.full_name_en,row.line_display_name,row.branch_name].join(' ').toLowerCase();
-  if(query&&!text.includes(query))return false;
-  if(!status)return true;
-  return status==='outside'?row.outside_radius>0:attendanceState(row)===status;
- });
- $('attCount').textContent=list.length+' รายการ';
- const info=paginate('attendance',list);
- $('attRows').innerHTML=info.rows.length?info.rows.map(row=>{
-  const id=row.employee_id+'|'+row.work_date,state=attendanceState(row);
-  const chips=(state==='complete'?'<span class="chip green">ลงเวลาครบ</span>':'')+
-   (state==='open'?'<span class="chip warn">ยังไม่ลงเวลาออก</span>':'')+
-   (state==='noin'?'<span class="chip err">ไม่มีเวลาเข้างาน</span>':'')+
-   (row.outside_radius>0?`<span class="chip warn">นอกรัศมี ${row.outside_radius} ครั้ง</span>`:'')+
-   (row.is_active?'':'<span class="chip">ปิดใช้งาน</span>');
-  return `<tr><td class="cardsub" data-label="วันที่">${esc(dayLabel(row.work_date))}</td>`+
-   `<td class="cardtitle" data-label="LINE / ชื่อพนักงาน"><div class="hrng-person"><span class="hrng-person-avatar" data-att-avatar="${esc(id)}"></span><span class="hrng-person-name">${esc(HRNGProfile.name(row))}</span></div></td>`+
-   `<td data-label="รหัสพนักงาน">${esc(row.employee_code)||'<span class="chip">ยังไม่ระบุ</span>'}</td>`+
-   `<td data-label="สาขา">${esc(row.branch_name)||'ยังไม่กำหนดสาขา'}</td>`+
-   `<td class="time${row.first_in?'':' none'}" data-label="เข้างาน">${row.first_in?esc(clockTime(row.first_in)):'—'}</td>`+
-   `<td class="time${row.last_out?'':' none'}" data-label="ออกงาน">${row.last_out?esc(clockTime(row.last_out)):'—'}</td>`+
-   `<td class="status" data-label="สถานะ">${chips}</td>`+
-   `<td class="rowact"><button class="linkbtn" data-att-detail="${esc(id)}" aria-expanded="false">รายละเอียด ${row.events} ครั้ง</button></td></tr>`;
- }).join(''):'<tr><td colspan="8"><div class="empty">ไม่พบการลงเวลาในช่วงที่เลือก</div></td></tr>';
- document.querySelectorAll('[data-att-avatar]').forEach(el=>
-  HRNGProfile.avatar(el,info.rows.find(row=>row.employee_id+'|'+row.work_date===el.dataset.attAvatar)));
- renderPager('attendance',info,renderAttendance);
-}
+
 // ===== กะเวลา =====
 function clearShifts(){
  // ออกจากระบบแล้วต้องไม่เหลือรายชื่อพนักงานหรือกะของบัญชีก่อนหน้าค้างในหน้า
@@ -1251,50 +1101,6 @@ $('asgRows').addEventListener('click',async event=>{
  try{await api('/shifts/assignments/'+id,{method:'DELETE'});banner('ยกเลิกกะแล้ว');await loadShiftTab(true);}
  catch(error){banner(error.message,true);}
 });
-
-function openAttendanceTab(){
- if(!$('attFrom').value)setAttendanceRange('today');
- fillAttendanceBranches();loadAttendance(false);
-}
-$('attRows').addEventListener('click',async event=>{
- const button=event.target.closest('[data-att-detail]');
- if(!button)return;
- const row=button.closest('tr'),id=button.dataset.attDetail;
- if(row.nextElementSibling?.classList.contains('detail')){
-  row.nextElementSibling.remove();button.setAttribute('aria-expanded','false');return;
- }
- document.querySelectorAll('#attRows tr.detail').forEach(el=>{
-  el.previousElementSibling?.querySelector('[data-att-detail]')?.setAttribute('aria-expanded','false');el.remove();
- });
- const holder=document.createElement('tr');
- holder.className='detail';holder.innerHTML='<td colspan="8"><div class="events">กำลังโหลด…</div></td>';
- row.after(holder);button.setAttribute('aria-expanded','true');
- const [employeeId,day]=id.split('|');
- try{
-  let events=attendanceDetail.get(id);
-  if(!events){
-   const data=await api('/attendance/events?employee_id='+encodeURIComponent(employeeId)+'&day='+encodeURIComponent(day));
-   events=data.items;attendanceDetail.set(id,events);
-  }
-  if(!holder.isConnected)return;
-  holder.querySelector('.events').innerHTML=events.length?events.map(e=>
-   `<div class="ev"><span class="t">${esc(clockTime(e.clock_time))}</span>`+
-   `<span>${e.clock_type==='in'?'เข้างาน':'ออกงาน'}</span>`+
-   (e.within_radius===false?'<span class="chip warn">นอกรัศมี</span>':
-    e.within_radius===true?'<span class="chip green">ในพื้นที่</span>':'')+
-   `<span class="w">${esc(e.branch_name||'ไม่ระบุสาขา')}${e.distance_m==null?'':' · ห่าง '+esc(e.distance_m)+' ม.'}</span></div>`
-  ).join(''):'<div class="ev">ไม่มีรายการลงเวลาในวันนี้</div>';
- }catch(e){if(holder.isConnected)holder.querySelector('.events').textContent=e.message;}
-});
-document.querySelectorAll('[data-preset]').forEach(button=>button.addEventListener('click',()=>{
- setAttendanceRange(button.dataset.preset);loadAttendance(false);
-}));
-['attFrom','attTo'].forEach(id=>$(id).addEventListener('change',markAttendancePreset));
-$('attBranch').addEventListener('change',()=>loadAttendance(false));
-$('attLoad').addEventListener('click',()=>loadAttendance(true));
-$('attSearch').addEventListener('input',()=>{paging.attendance.page=1;renderAttendance();});
-$('attStatus').addEventListener('change',()=>{paging.attendance.page=1;renderAttendance();});
-$('attClear').addEventListener('click',()=>{$('attSearch').value='';$('attStatus').value='';paging.attendance.page=1;renderAttendance();});
 
 function openModal(handler){branchMapController?.destroy();branchMapController=null;$('backdrop').querySelector('.modal').classList.remove('branch-editor');lastFocus=document.activeElement;onSave=handler;showError('modalError','');$('backdrop').classList.add('on');$('shell').inert=true;$('modalSave').disabled=false;setTimeout(()=>$('modalBody').querySelector('input,select')?.focus(),0);}
 function closeModal(){if(saving)return;branchMapController?.destroy();branchMapController=null;$('backdrop').querySelector('.modal').classList.remove('branch-editor');$('backdrop').classList.remove('on');$('shell').inert=false;onSave=null;lastFocus?.focus();}
