@@ -31,6 +31,8 @@
   .btn.solid{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
   .btn.solid:hover{background:var(--green-press)}
   .btn.icon{padding:9px;width:40px;height:40px;justify-content:center}
+  .btn svg{width:17px;height:17px;flex-shrink:0}
+  .btn.icon svg{width:19px;height:19px}
   .btn:disabled{opacity:.5;cursor:default}
   .btn:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:2px}
 
@@ -66,13 +68,7 @@
   #shell.on{display:block}
   .topwrap{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--line)}
   header.top{display:flex;align-items:center;gap:10px;padding:9px 12px}
-  /* แถบแท็บเห็นตลอด จอแคบเลื่อนแนวนอนได้ ไม่ยุบไปซ่อนในเมนู */
-  nav.tabs{display:flex;gap:2px;padding:0 8px;overflow-x:auto;scrollbar-width:none}
-  nav.tabs::-webkit-scrollbar{display:none}
-  nav.tabs button{border:0;background:none;padding:10px 14px 11px;font-size:14.5px;
-    color:var(--muted);font-weight:500;white-space:nowrap;border-bottom:2px solid transparent}
-  nav.tabs button:hover{color:var(--ink-2)}
-  nav.tabs button[aria-current="page"]{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+
   header .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:16px;flex:1;min-width:0}
   header .mark{width:30px;height:30px;border-radius:9px;background:var(--green);display:grid;
     place-items:center;color:#fff;flex-shrink:0}
@@ -87,8 +83,14 @@
     padding:14px;display:flex;flex-direction:column;gap:4px;overflow:auto}
   #drawer nav h2{font-size:12px;color:var(--muted);font-weight:600;margin:14px 6px 4px;
     text-transform:uppercase;letter-spacing:.04em}
-  #drawer nav button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
-    border:0;background:none;padding:12px 12px;border-radius:10px;font-size:15px;color:var(--ink-2)}
+  #drawer nav button,#drawer nav a{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+    border:0;background:none;padding:12px 12px;border-radius:10px;font-size:15px;
+    color:var(--ink-2);text-decoration:none}
+  /* ไอคอนทั้งหน้าเป็น SVG เส้นชุดเดียวกัน ไม่ใช้ emoji หรือฟอนต์ไอคอน
+     ตั้ง stroke/fill ตรงนี้ที่เดียว ทุก <svg> จึงไม่ต้องเขียน attribute ซ้ำ */
+  svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  #drawer nav button svg,#drawer nav a svg{width:19px;height:19px;flex-shrink:0;color:var(--muted)}
+  #drawer nav button[aria-current="page"] svg{color:var(--green)}
   #drawer nav button:hover{background:var(--bg)}
   #drawer nav button[aria-current="page"]{background:var(--green-tint);color:var(--green-press);font-weight:600}
 
@@ -120,10 +122,28 @@
   .dot.done{background:#9aa5b1}
   .dot.warn{background:#e8a33d}
   .empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:14px}
+  .grouphead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+    padding:9px 15px;background:var(--bg);border-top:1px solid var(--line);
+    font-size:12.5px;font-weight:600;color:var(--ink-2)}
+  .list .grouphead:first-child{border-top:0}
+  .grouphead + .row{border-top:0}
   .tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:999px;
     background:var(--bg);color:var(--muted);border:1px solid var(--line)}
   .tag.warn{background:var(--amber-tint);color:var(--amber);border-color:#f0dcb4}
   .tag.off{background:var(--red-tint);color:var(--red);border-color:#f3cfcb}
+  .tag.late{background:var(--red-tint);color:var(--red);border-color:#f3cfcb}
+  /* แถบตัวเลขสรุป ตัวใหญ่อ่านง่าย กดได้เพื่อกรอง */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:9px;margin-bottom:14px}
+  .stat{display:flex;flex-direction:column;gap:2px;align-items:flex-start;background:var(--paper);
+    border:1px solid var(--line);border-radius:12px;padding:11px 13px;text-align:left}
+  .stat:hover{border-color:#cfd6dd}
+  .stat[aria-pressed="true"]{border-color:var(--green);background:var(--green-tint)}
+  .stat .n{font-size:24px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+  .stat .k{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:5px}
+  .stat .k svg{width:14px;height:14px}
+  .stat.warn .n{color:var(--amber)}
+  .stat.none .n{color:var(--muted)}
+  .stat.soon .n{color:var(--red)}
   .summary{display:flex;gap:16px;justify-content:center;margin:12px 0 0;font-size:13px;color:var(--muted)}
   .summary b{color:var(--ink);font-weight:600}
 
@@ -250,15 +270,6 @@
     </span>HR NextGen</span>
     <span class="who"><b id="whoName">—</b> · <span id="whoId">—</span></span>
   </header>
-  <!-- แท็บเห็นตลอดเหมือนหน้าเดิม เพราะกดทีเดียวถึง เร็วกว่าเปิดเมนูก่อน
-       จอแคบเลื่อนแนวนอนได้ ไม่ต้องยุบไปซ่อน -->
-  <nav class="tabs" aria-label="ส่วนต่าง ๆ">
-    <button data-panel="today" aria-current="page">วันนี้</button>
-    <button data-panel="users">พนักงาน</button>
-    <button data-panel="shifts">กะเวลา</button>
-    <button data-panel="branches">สาขา</button>
-    <button data-panel="audit">ประวัติการแก้ไข</button>
-  </nav>
   </div>
   <div id="demobar" role="status">กำลังโหลดข้อมูล…</div>
 
@@ -266,8 +277,19 @@
     <div class="veil" data-close-drawer></div>
     <nav aria-label="เมนู">
       <button class="btn icon" data-close-drawer aria-label="ปิด" style="align-self:flex-end;border:0">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
+      <h2>ส่วนต่าง ๆ</h2>
+      <button data-panel="today" aria-current="page">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>วันนี้</button>
+      <button data-panel="users">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.6 3.4-5.6 7.5-5.6s7.5 2 7.5 5.6"/></svg>พนักงาน</button>
+      <button data-panel="shifts">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>กะเวลา</button>
+      <button data-panel="branches">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>สาขา</button>
+      <button data-panel="audit">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2"/><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 4v4h4"/></svg>ประวัติการแก้ไข</button>
       <h2>ภาษา</h2>
       <div class="langpick" translate="no" style="justify-content:flex-start;margin:4px 6px 8px">
         <button type="button" data-lang-pick="th" aria-pressed="true" lang="th">ไทย</button>
@@ -275,9 +297,12 @@
       </div>
       <div id="nameLanguageControl" style="padding:4px 8px"></div>
       <h2>บัญชี</h2>
-      <button id="refreshBtn">โหลดข้อมูลใหม่</button>
-      <button id="logoutBtn">ออกจากระบบ</button>
-      <a class="dev-chat-link" href="https://timemud.mobile1234.site/dev/" style="padding:12px;font-size:14px">Dev Chat ↗</a>
+      <button id="refreshBtn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>โหลดข้อมูลใหม่</button>
+      <button id="logoutBtn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/><path d="M15 17l5-5-5-5M20 12H9"/></svg>ออกจากระบบ</button>
+      <a class="dev-chat-link" href="https://timemud.mobile1234.site/dev/">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z"/></svg>Dev Chat ↗</a>
     </nav>
   </div>
 
@@ -295,7 +320,11 @@
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
         <button class="btn" id="dayToday">วันนี้</button>
       </div>
-      <div class="bar"><input class="search" id="todaySearch" placeholder="ค้นหาชื่อหรือรหัสพนักงาน"></div>
+      <!-- แถบตัวเลขสรุป กดแต่ละอันเพื่อกรองรายชื่อด้านล่างเฉพาะกลุ่มนั้น -->
+      <div class="stats" id="todayStats"></div>
+      <div class="bar"><input class="search" id="todaySearch" placeholder="ค้นหาชื่อหรือรหัสพนักงาน">
+        <button class="btn" id="todayCsv">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>ดาวน์โหลด</button></div>
       <div class="list" id="todayRows"></div>
       <p class="summary" id="todaySummary"></p>
     </section>
@@ -546,8 +575,8 @@ $('menuBtn').addEventListener('click',()=>setDrawer(!$('drawer').classList.conta
 document.querySelectorAll('[data-close-drawer]').forEach(el=>el.addEventListener('click',()=>setDrawer(false)));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('backdrop').classList.contains('on'))setDrawer(false);});
 
-document.querySelectorAll('nav.tabs button[data-panel]').forEach(b=>b.addEventListener('click',()=>{
- document.querySelectorAll('nav.tabs button[data-panel]').forEach(x=>{
+document.querySelectorAll('#drawer nav button[data-panel]').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('#drawer nav button[data-panel]').forEach(x=>{
    if(x===b)x.setAttribute('aria-current','page'); else x.removeAttribute('aria-current');});
  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='panel-'+b.dataset.panel));
  setDrawer(false);window.scrollTo(0,0);
@@ -559,8 +588,35 @@ document.querySelectorAll('nav.tabs button[data-panel]').forEach(b=>b.addEventLi
 /* ═══ วันนี้ ═══
    รวมรายชื่อพนักงานกับเวลาที่ลงไว้ในวันนั้น คนที่ยังไม่มาต้องขึ้นด้วย
    เพราะคำถามแรกของคนเปิดหน้านี้คือ "ใครยังไม่มา" พอ ๆ กับ "ใครมากี่โมง" */
-let dayRows=[],dayKey='',dayOpen=null;
+let dayRows=[],dayKey='',dayOpen=null,dayShifts=new Map(),dayFilter='';
 const dayDetail=new Map();      // employeeId -> เหตุการณ์ของวันนั้น ดึงครั้งเดียวต่อแถว
+
+/* "เข้าสาย" ต้องเทียบกับกะที่จัดให้คนนั้นในวันนั้น ไม่ใช่เวลาคงที่
+   คนที่ยังไม่ถูกจัดกะจึงตัดสินไม่ได้ ต้องไม่ถูกนับว่าสาย */
+async function loadDayShifts(day){
+ dayShifts.clear();
+ try{
+  const d=await api(`/shifts/assignments?on=${day}&limit=500`);
+  const index=(new Date(day+'T00:00:00Z').getUTCDay());   // 0 = อาทิตย์ ตรงกับคอลัมน์ weekdays
+  for(const row of d.items){
+   if(row.weekdays[index]!=='1')continue;                 // วันหยุดประจำสัปดาห์ของคนนั้น
+   dayShifts.set(row.employee_id,row.start_minute);
+  }
+ }catch(_){ /* ไม่มีข้อมูลกะก็แค่ไม่ตัดสินว่าสาย ไม่ใช่เหตุให้ทั้งหน้าพัง */ }
+}
+
+const minutesOf=iso=>{
+ const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',hour12:false})
+   .formatToParts(new Date(iso));
+ const get=t=>Number(p.find(x=>x.type===t).value);
+ return get('hour')*60+get('minute');
+};
+const lateBy=row=>{
+ const start=dayShifts.get(row.employee_id);
+ if(start==null||!row.first_in)return null;
+ const diff=minutesOf(row.first_in)-start;
+ return diff>0?diff:null;
+};
 
 // ไทยใช้ พ.ศ. อังกฤษใช้ ค.ศ. ผ่านกลไกเดียวกับฝั่งพนักงาน
 const dayHeading=day=>{
@@ -576,8 +632,10 @@ async function loadDay(force){
  $('todayDate').textContent=dayHeading(day);
  $('todayRows').innerHTML='<div class="empty">กำลังโหลดเวลาเข้า–ออก…</div>';
  try{
-  const page=await api(`/attendance/daily?date_from=${day}&date_to=${day}&limit=500`);
-  dayRows=page.items;dayKey=day;dayDetail.clear();dayOpen=null;
+  const [page]=await Promise.all([
+    api(`/attendance/daily?date_from=${day}&date_to=${day}&limit=500`),
+    loadDayShifts(day)]);
+  dayRows=page.items;dayKey=day;dayDetail.clear();dayOpen=null;dayFilter='';
   renderDay();
  }catch(e){$('todayRows').innerHTML=`<div class="empty">${esc(e.message)}</div>`;}
 }
@@ -590,10 +648,51 @@ for(const [id,step] of [['dayPrev',-1],['dayNext',1]]) $(id).addEventListener('c
 });
 $('todaySearch').addEventListener('input',renderDay);
 
+const STAT_ICONS={
+ present:'<path d="M20 6 9 17l-5-5"/>',
+ absent:'<circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/>',
+ late:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ open:'<path d="M12 3v9l5 3"/><circle cx="12" cy="12" r="9"/>',
+ outside:'<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>',
+ leave:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/>',
+};
+
+/* ตัวเลขทุกตัวคำนวณจากข้อมูลจริงของวันนั้น ยกเว้น "ลา" ที่ยังไม่มีแหล่งข้อมูล
+   ระบบลายังเป็นตัวอย่าง คำขอบันทึกแค่ในหน้าเว็บ จึงแสดงเป็น — ไม่ใช่ 0
+   เพราะ 0 แปลว่า "ตรวจแล้วไม่มีใครลา" ซึ่งเราไม่รู้ */
+function dayStats(people,found){
+ const has=u=>found.get(u.id);
+ const present=people.filter(has);
+ return [
+  {key:'',        cls:'',      icon:'present', label:'มาแล้ว',        n:present.length},
+  {key:'absent',  cls:'none',  icon:'absent',  label:'ยังไม่มา',      n:people.length-present.length},
+  {key:'late',    cls:'soon',  icon:'late',    label:'เข้าสาย',       n:present.filter(u=>lateBy(found.get(u.id))!==null).length},
+  {key:'open',    cls:'',      icon:'open',    label:'ยังไม่ออกงาน',  n:present.filter(u=>!found.get(u.id).last_out).length},
+  {key:'outside', cls:'warn',  icon:'outside', label:'นอกรัศมี',      n:present.filter(u=>found.get(u.id).outside_radius>0).length},
+  {key:'leave',   cls:'none',  icon:'leave',   label:'ลา',            n:null},
+ ];
+}
+
 function renderDay(){
  const query=$('todaySearch').value.trim().toLowerCase();
  const found=new Map(dayRows.map(row=>[row.employee_id,row]));
- const people=users.filter(u=>u.is_active).filter(u=>!query||
+ const active=users.filter(u=>u.is_active);
+ const stats=dayStats(active,found);
+ $('todayStats').innerHTML=stats.map(s=>`<button class="stat ${s.cls}" data-stat="${s.key}"
+   aria-pressed="${dayFilter===s.key&&s.key!==''}"${s.n===null?' disabled title="ระบบลายังไม่เชื่อมข้อมูลจริง"':''}>
+   <span class="n">${s.n===null?'—':s.n}</span>
+   <span class="k"><svg viewBox="0 0 24 24" aria-hidden="true">${STAT_ICONS[s.icon]}</svg>${s.label}</span>
+  </button>`).join('');
+
+ const keep=u=>{
+  const row=found.get(u.id);
+  if(dayFilter==='absent')return !row;
+  if(dayFilter==='late')return row&&lateBy(row)!==null;
+  if(dayFilter==='open')return row&&!row.last_out;
+  if(dayFilter==='outside')return row&&row.outside_radius>0;
+  return true;
+ };
+ const people=active.filter(keep).filter(u=>!query||
    [u.employee_code,u.full_name,u.full_name_en,u.line_display_name,u.position,branchName(u)]
      .join(' ').toLowerCase().includes(query));
  // เรียงคนที่ยังอยู่ในงานขึ้นก่อน แล้วคนที่ครบแล้ว แล้วคนที่ยังไม่มา
@@ -604,21 +703,52 @@ function renderDay(){
   const row=found.get(u.id);
   const state=!row?'none':(row.last_out?'done':'in');
   const warn=row&&row.outside_radius>0;
+  const late=row?lateBy(row):null;
   const times=!row?'<span>ยังไม่เข้างาน</span>'
     :`<b>${esc(clockTime(row.first_in))}${row.last_out?' – '+esc(clockTime(row.last_out)):''}</b>`+
      (row.last_out?'':'<span>ยังอยู่ในงาน</span>');
   return `<button class="row" data-day-row="${u.id}" ${row?'':'disabled style="cursor:default"'}>
     <span class="dot ${state==='none'?'':state}${warn?' warn':''}"></span>
-    <span class="main"><span class="nm" translate="no">${esc(u.full_name)}</span>
+    <span class="main"><span class="nm" translate="no">${esc(HRNGProfile.name(u))}</span>
       <span class="sub"><span translate="no">${esc(u.employee_code||'—')} · ${esc(branchName(u))}</span>${
+        late!==null?` <span class="tag late">สาย ${late} นาที</span>`:''}${
         warn?' <span class="tag warn">นอกรัศมี</span>':''}</span></span>
     <span class="val">${times}</span>
   </button>`+(dayOpen===u.id?`<div class="detail" id="dayDetail-${u.id}">${detailHtml(u.id)}</div>`:'');
- }).join('')||'<div class="empty">ไม่พบพนักงานตามคำค้น</div>';
+ }).join('')||'<div class="empty">ไม่พบพนักงานตามเงื่อนไข</div>';
 
- const workedIn=people.filter(u=>found.has(u.id)).length;
- $('todaySummary').innerHTML=`เข้างานแล้ว <b>${workedIn}</b> คน · ยังไม่มา <b>${people.length-workedIn}</b> คน`;
+ $('todaySummary').innerHTML=dayFilter
+   ? `กรองอยู่ · แสดง <b>${people.length}</b> คน จากทั้งหมด <b>${active.length}</b> คน`
+   : `พนักงานที่ใช้งานอยู่ <b>${active.length}</b> คน`;
 }
+
+$('todayStats').addEventListener('click',event=>{
+ const button=event.target.closest('[data-stat]');
+ if(!button||button.disabled)return;
+ const key=button.dataset.stat;
+ dayFilter=(key&&dayFilter!==key)?key:'';
+ renderDay();
+});
+
+/* ดาวน์โหลดสิ่งที่เห็นอยู่ตรงหน้า ไม่ใช่ทั้งฐานข้อมูล
+   BOM ข้างหน้าเพื่อให้ Excel เปิดภาษาไทยไม่เป็นขยะ */
+$('todayCsv').addEventListener('click',()=>{
+ const found=new Map(dayRows.map(row=>[row.employee_id,row]));
+ const head=['รหัสพนักงาน','ชื่อ','สาขา','เข้างาน','ออกงาน','สาย (นาที)','นอกรัศมี'];
+ const cell=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+ const lines=[...document.querySelectorAll('#todayRows [data-day-row]')].map(el=>{
+  const u=users.find(x=>x.id===Number(el.dataset.dayRow)),row=found.get(u.id),late=row?lateBy(row):null;
+  return [u.employee_code||'',HRNGProfile.systemName(u),branchName(u),
+          row?clockTime(row.first_in):'',row&&row.last_out?clockTime(row.last_out):'',
+          late??'',row&&row.outside_radius>0?'ใช่':''].map(cell).join(',');
+ });
+ const blob=new Blob(['\ufeff'+[head.map(cell).join(','),...lines].join('\r\n')],
+   {type:'text/csv;charset=utf-8'});
+ const link=document.createElement('a');
+ link.href=URL.createObjectURL(blob);link.download=`ลงเวลา-${dayKey}.csv`;
+ document.body.append(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(link.href),2000);
+});
 
 function detailHtml(id){
  const events=dayDetail.get(id);
@@ -647,21 +777,39 @@ $('todayRows').addEventListener('click',async event=>{
 
 /* ═══ พนักงาน ═══ */
 $('userSearch').addEventListener('input',renderUsers);
-function renderUsers(){
- const query=$('userSearch').value.trim().toLowerCase();
- // ต้องค้นด้วยชื่อ LINE ได้ด้วย เพราะบางคนหน้าจอขึ้นชื่อ LINE เป็นหลัก
- const list=users.filter(u=>!query||
-   [u.employee_code,u.full_name,u.full_name_en,u.line_display_name,u.position,u.company,branchName(u)]
-     .join(' ').toLowerCase().includes(query));
- // รูปและชื่อจาก LINE เป็นสัญญาที่ตกลงไว้ใน UX-CONTRACT ไม่ตัดออกตอนรื้อหน้า
- $('userRows').innerHTML=list.map(u=>`<button class="row" data-edit-user="${u.id}">
+function userRowHtml(u){
+ return `<button class="row" data-edit-user="${u.id}">
    <span class="hrng-person-avatar" data-profile-avatar="${u.id}"></span>
    <span class="main"><span class="hrng-person-name nm" translate="no">${esc(HRNGProfile.name(u))}</span>
-     <span class="sub"><span translate="no">${esc(u.employee_code||'ยังไม่ระบุ')} · ${esc(branchName(u))} · ${
+     <span class="sub"><span translate="no">${esc(u.employee_code||'ยังไม่ระบุ')} · ${
        esc(u.position||'ไม่ระบุตำแหน่ง')}</span></span></span>
    <span class="val">${u.is_active?'':'<span class="tag off">ปิดใช้งาน</span>'}${
      u.line_bound_at?'<span class="tag">ผูก LINE แล้ว</span>':'<span class="tag warn">รอผูก LINE</span>'}</span>
- </button>`).join('')||'<div class="empty">ไม่พบพนักงาน</div>';
+ </button>`;
+}
+
+/* แยกหัวข้อตามสาขา เพราะเวลาหาคนมักรู้ว่าอยู่สาขาไหนก่อนรู้รหัส
+   คนที่ยังไม่กำหนดสาขาไปอยู่กลุ่มท้ายสุด จะได้เห็นว่าค้างอยู่ */
+function renderUsers(){
+ const query=$('userSearch').value.trim().toLowerCase();
+ const list=users.filter(u=>!query||
+   [u.employee_code,u.full_name,u.full_name_en,u.line_display_name,u.position,u.company,branchName(u)]
+     .join(' ').toLowerCase().includes(query));
+ const groups=new Map();
+ for(const u of list){
+  const key=u.branch_id||0;
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(u);
+ }
+ const order=[...groups.keys()].sort((a,b)=>
+   (a===0)-(b===0)||String(branches.find(x=>x.id===a)?.name||'')
+     .localeCompare(String(branches.find(x=>x.id===b)?.name||'')));
+ $('userRows').innerHTML=order.map(key=>{
+  const rows=groups.get(key).sort((a,b)=>String(a.employee_code).localeCompare(String(b.employee_code)));
+  const name=key?branches.find(b=>b.id===key)?.name:null;
+  return `<div class="grouphead"><span translate="no">${esc(name||'')}${name?'':'ยังไม่กำหนดสาขา'}</span>
+    <span class="count">${rows.length} คน</span></div>`+rows.map(userRowHtml).join('');
+ }).join('')||'<div class="empty">ไม่พบพนักงาน</div>';
  document.querySelectorAll('#userRows [data-profile-avatar]').forEach(el=>
    HRNGProfile.avatar(el,list.find(u=>String(u.id)===el.dataset.profileAvatar)));
  $('userCount').innerHTML=`<b>${list.length}</b> คน`+(query?` จากทั้งหมด ${users.length}`:'');
