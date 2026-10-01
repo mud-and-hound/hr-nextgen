@@ -221,6 +221,23 @@
     margin:var(--s6) 0 var(--s3);padding-top:var(--s5);border-top:1px solid var(--line);
     color:var(--ink);letter-spacing:-.01em}
   .shift-head:first-of-type{margin-top:0;padding-top:0;border-top:0}
+  /* ── ปุ่ม ? ท้ายหัวข้อย่อย: คำอธิบายอยู่ใกล้ของจริง ไม่ใช่กองรวมไว้บนสุด ──
+     ปิดไว้เป็นค่าเริ่มต้น คนที่ใช้เป็นแล้วจะได้ไม่ต้องเลื่อนผ่านทุกครั้ง */
+  .helpbtn{width:20px;height:20px;flex:0 0 20px;padding:0;border:0;background:none;
+    color:var(--muted);border-radius:50%;display:grid;place-items:center;
+    transition:color .12s,transform .08s}
+  .helpbtn svg{width:17px;height:17px}
+  .helpbtn:hover{color:var(--ink-2)}
+  .helpbtn:active{transform:scale(.92)}
+  .helpbtn[aria-expanded="true"]{color:var(--green)}
+  .help{background:var(--bg);border-left:2px solid var(--green);border-radius:0 var(--r-sm) var(--r-sm) 0;
+    padding:var(--s3) var(--s4);margin:0 0 var(--s4);font-size:12.5px;line-height:1.7;color:var(--ink-2)}
+  .help p{margin:0 0 var(--s2)}
+  .help p:last-child{margin-bottom:0}
+  .help b{color:var(--ink);font-weight:650}
+  .help ul{margin:var(--s1) 0 var(--s2);padding-left:var(--s4)}
+  .help li{margin-bottom:2px}
+  .help .law{color:var(--muted)}
   /* ── จำนวนรายการที่แสดง: หน้าตาเดียวกับปุ่ม ไม่ใช่ช่องกรอกเต็มความกว้าง ── */
   .shown{display:inline-flex;align-items:center;gap:var(--s1);height:38px;
     padding:0 var(--s1) 0 var(--s3);border:1px solid var(--line);border-radius:var(--r-sm);
@@ -442,15 +459,26 @@
 
     <!-- ═══ กะเวลา ═══ -->
     <section class="panel" id="panel-shifts">
-      <div class="viewhead"><h1>กะเวลา</h1></div>
-      <div class="note" style="margin:0 0 16px">
-        <b>กะเวลาและเวลาพัก</b> — ตั้งเวลาเริ่มกะและเวลาพักบนช่อง 30 นาที
-        ระบบตรวจตาม พ.ร.บ.คุ้มครองแรงงานให้อัตโนมัติ: ทำงานไม่เกิน 8 ชม./วัน และ 48 ชม./สัปดาห์ (ม.23)
-        พักรวมไม่น้อยกว่า 1 ชม. และห้ามทำงานติดต่อกันเกิน 5 ชม. โดยไม่พัก (ม.27)
-        และต้องมีวันหยุดประจำสัปดาห์อย่างน้อย 1 วัน (ม.28)
-        กะที่ผิดกฎเหล่านี้จะบันทึกไม่ได้
+      <div class="viewhead"><div style="flex:1"><h1>กะเวลา</h1>
+        <p class="sub">ตั้งแบบกะ → รวมคนเป็นกลุ่ม → จัดกะให้พนักงาน</p></div></div>
+      <h3 class="shift-head">แบบกะ
+        <button class="helpbtn" type="button" data-help="tpl" aria-expanded="false" aria-controls="help-tpl" aria-label="วิธีใช้หัวข้อแบบกะ"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></h3>
+      <div class="help" id="help-tpl" hidden>
+        <p><b>ใช้ทำอะไร</b> — สร้างแม่แบบของกะไว้หนึ่งอัน เช่น กะเช้า 08:00–17:00 พัก 12:00–13:00
+        สร้างครั้งเดียวแล้วใช้กับกี่คนก็ได้ แก้ที่แม่แบบทีเดียวมีผลกับทุกคนที่ใช้กะนั้น</p>
+        <p><b>แนวคิด</b> — แม่แบบเก็บแค่ <i>เริ่มกี่โมง ทำงานกี่นาที พักช่วงไหน</i>
+        ไม่ผูกกับคนและไม่ผูกกับวัน เรื่องใครเข้ากะไหนวันไหนอยู่ที่หัวข้อจัดกะให้พนักงาน</p>
+        <p>เวลาทุกช่องเดินทีละ 30 นาที กะแปดชั่วโมงที่มีช่วงพักช่วงเดียวจึงตั้งได้ 720 แบบ
+        คือเวลาเริ่ม 48 แบบ คูณรูปแบบพักที่ถูกกฎหมาย 15 แบบ</p>
+        <p><b>ระบบตรวจให้ก่อนบันทึก</b> ผิดข้อไหนขึ้นใต้ฟอร์มทันทีตั้งแต่ตอนเลือก
+        ไม่ต้องกดบันทึกก่อนถึงจะรู้</p>
+        <ul class="law">
+          <li>ม.23 ทำงานไม่เกิน 8 ชั่วโมงต่อวัน</li>
+          <li>ม.27 พักรวมทั้งวันไม่น้อยกว่า 1 ชั่วโมง และห้ามทำงานติดต่อกันเกิน 5 ชั่วโมงโดยไม่พัก</li>
+          <li>ม.27 พักรวมเกิน 2 ชั่วโมง ส่วนที่เกินต้องนับเป็นเวลาทำงาน — ข้อนี้เตือน แต่ยังบันทึกได้</li>
+        </ul>
+        <p>กะที่ผิด ม.23 หรือ ม.27 บันทึกไม่ได้</p>
       </div>
-      <h3 class="shift-head">แบบกะ</h3>
       <div class="card shift-form">
         <div class="grid2">
           <label>รหัสกะ <input id="tplCode" maxlength="32" placeholder="M1"></label>
@@ -472,12 +500,20 @@
       </div>
       <div class="list" id="tplRows"></div>
 
-      <h3 class="shift-head">กลุ่มที่ตั้งชื่อเอง</h3>
+      <h3 class="shift-head">กลุ่มที่ตั้งชื่อเอง
+        <button class="helpbtn" type="button" data-help="grp" aria-expanded="false" aria-controls="help-grp" aria-label="วิธีใช้หัวข้อกลุ่มที่ตั้งชื่อเอง"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></h3>
+      <div class="help" id="help-grp" hidden>
+        <p><b>ใช้เมื่อไหร่</b> — เมื่อคนที่เข้ากะเดียวกันไม่ตรงกับสาขา ตำแหน่ง หรือบริษัท
+        เช่น ทีมเปิดร้านที่ดึงคนมาจากหลายสาขา</p>
+        <p><b>ถ้าตรงกับสาขาหรือตำแหน่งอยู่แล้ว ไม่ต้องสร้าง</b>
+        เลือกตามสาขาหรือตามตำแหน่งในหัวข้อจัดกะได้เลย
+        กลุ่มที่ซ้ำกับสิ่งที่มีอยู่แล้วจะกลายเป็นรายชื่อที่ต้องตามแก้สองที่</p>
+        <p><b>แนวคิด</b> — กลุ่มคือรายชื่อที่ตั้งชื่อไว้ ไม่มีเวลาอยู่ในนั้น
+        จึงเอาไปใช้ซ้ำกับกะไหนก็ได้</p>
+        <p><b>ข้อควรรู้</b> — ระบบอ่านรายชื่อในกลุ่ม ณ ตอนที่กดจัดกะ
+        แก้รายชื่อทีหลังจะไม่ย้อนไปแก้กะที่จัดไปแล้ว คนที่เพิ่งเพิ่มเข้ากลุ่มต้องจัดกะให้ใหม่อีกครั้ง</p>
+      </div>
       <div class="card shift-form">
-        <p class="hintlabel" style="margin:0 0 12px">
-          ใช้เมื่อกลุ่มคนที่เข้ากะเดียวกันไม่ตรงกับสาขาหรือตำแหน่ง
-          เช่น ทีมเปิดร้านที่มาจากหลายสาขา สร้างไว้แล้วจะเลือกได้ในหัวข้อจัดกะด้านล่าง
-        </p>
         <div class="grid2">
           <label>ชื่อกลุ่ม <input id="grpName" maxlength="200" placeholder="ทีมเปิดร้าน"></label>
           <label>หมายเหตุ <input id="grpNote" maxlength="500" placeholder="ไม่บังคับ"></label>
@@ -499,7 +535,24 @@
       </div>
       <div class="list" id="grpRows"></div>
 
-      <h3 class="shift-head">จัดกะให้พนักงาน</h3>
+      <h3 class="shift-head">จัดกะให้พนักงาน
+        <button class="helpbtn" type="button" data-help="asg" aria-expanded="false" aria-controls="help-asg" aria-label="วิธีใช้หัวข้อจัดกะให้พนักงาน"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></h3>
+      <div class="help" id="help-asg" hidden>
+        <p><b>ใช้ทำอะไร</b> — เอาแบบกะไปผูกกับคน ช่วงวันที่ และวันในสัปดาห์
+        การจัดกะหนึ่งรายการคือ แบบกะ + คน + ตั้งแต่วันที่ + ถึงวันที่ + วันที่เข้ากะ
+        เว้นถึงวันที่ว่างไว้คือใช้ไปเรื่อย ๆ จนกว่าจะมีกะใหม่มาแทน</p>
+        <p><b>วันที่ไม่ได้ติ๊กคือวันหยุดประจำสัปดาห์</b> ไม่ใช่วันที่ยังไม่ได้กรอก</p>
+        <p><b>ระบบตรวจให้ก่อนบันทึก</b></p>
+        <ul class="law">
+          <li>ม.28 ต้องเว้นวันหยุดอย่างน้อย 1 วันต่อสัปดาห์ และวันหยุดห่างกันไม่เกิน 6 วัน
+            ติ๊กครบเจ็ดวันบันทึกไม่ได้</li>
+          <li>ม.23 ชั่วโมงต่อวันคูณจำนวนวันที่ติ๊ก ต้องไม่เกิน 48 ชั่วโมงต่อสัปดาห์
+            กะแปดชั่วโมงจึงติ๊กได้มากที่สุดหกวัน</li>
+        </ul>
+        <p><b>กะทับกัน</b> — ถ้าคนที่เลือกมีกะเดิมคร่อมช่วงวันที่นี้อยู่แล้ว ระบบจะหยุดและบอกว่ากี่คน
+        เพราะวันนั้นจะตอบไม่ได้ว่าเข้ากะไหน ติ๊กแทนที่กะเดิมที่ทับกันถ้าตั้งใจให้ทับ</p>
+        <p>จัดกะให้เฉพาะพนักงานที่เปิดใช้งานอยู่ คนที่ปิดใช้งานแล้วจะถูกข้าม</p>
+      </div>
       <div class="card shift-form">
         <div class="grid2">
           <label>กะ <select id="asgTemplate"></select></label>
@@ -531,7 +584,6 @@
         <button class="clearbtn" id="asgClear" hidden>ล้างตัวกรอง</button>
       </div>
       <div class="list" id="asgRows"></div>
-    </section>
     </section>
 
     <!-- ═══ สาขา ═══ -->
@@ -963,6 +1015,16 @@ document.addEventListener('click',event=>{
 });
 
 fillLimit('user');fillLimit('branch');
+
+/* ปุ่ม ? ท้ายหัวข้อย่อย เปิดทีละอันก็ได้ ปิดเองก็ได้ ไม่บังคับให้ปิดอันอื่น
+   เพราะคนที่กำลังเทียบ "กลุ่ม" กับ "จัดกะ" ต้องเปิดอ่านพร้อมกัน */
+document.addEventListener('click',event=>{
+ const button=event.target.closest('[data-help]');
+ if(!button)return;
+ const panel=$('help-'+button.dataset.help),open=panel.hidden;
+ panel.hidden=!open;
+ button.setAttribute('aria-expanded',String(open));
+});
 
 /* คนที่ปิดใช้งานไม่ใช้รูปโปรไฟล์จริง เพราะรูปคนยิ้มทำให้แถวดูยังใช้งานอยู่
    และไม่มีเหตุผลจะโชว์รูป LINE ของคนที่ออกไปแล้ว ใช้รูปคนเปล่า ๆ สีเทาแทน
