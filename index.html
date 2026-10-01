@@ -419,6 +419,9 @@
   .dtable th.tick,.dtable td.tick{width:1%;padding-right:0}
   .dtable td.tick::before{display:none}
   .dtable .person{display:flex;align-items:center;gap:var(--s3);min-width:0}
+  .dowchip{display:inline-block;background:var(--green-soft);color:var(--green-strong);
+    border-radius:6px;padding:1px 8px;font-size:12px;font-weight:600;margin:0 3px 3px 0}
+  .dl dd b.big{font-size:22px;font-weight:700;color:var(--green-strong);letter-spacing:-.02em}
   .dtable .person .hrng-person-avatar{width:30px;height:30px;flex:0 0 30px}
   .dtable .sub{display:block;font-size:11.5px;color:var(--muted)}
   .detailhead .mark{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
@@ -513,6 +516,8 @@
   .shift-preview.bad{background:var(--red-soft);color:#8a1c1c}
   .shift-preview.warn{background:var(--amber-soft);color:var(--amber)}
   .shift-preview ul{margin:var(--s1) 0 0;padding-left:18px}
+  /* แถบว่างไม่ควรกินที่ ตอนไม่มีคำเตือนมันเหลือเป็นแถบเทาที่ไม่ได้บอกอะไร */
+  .shift-preview:empty{display:none}
   .shift-preview .seg{display:inline-block;margin-right:var(--s3);white-space:nowrap}
   .shift-preview .seg.break{color:var(--amber)}
   fieldset.weekdays{border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--s3);
@@ -810,7 +815,7 @@
       <div class="tablewrap">
         <table class="dtable">
           <thead><tr>
-            <th class="tick"><input type="checkbox" id="grpTickAll"
+            <th class="tick"><input type="checkbox" id="grpTickAll" data-tick-all="grp"
               aria-label="เลือกทุกคนที่เห็น"></th>
             <th>พนักงาน</th><th>รหัสพนักงาน</th><th>บริษัท / สาขา</th>
             <th>ตำแหน่ง</th><th>สถานะ</th>
@@ -865,27 +870,50 @@
           </select></label>
         </div>
         <fieldset class="weekdays">
-          <legend>วันที่เข้ากะ <span class="hintlabel">ต้องเว้นวันหยุดอย่างน้อย 1 วัน (ม.28)</span></legend>
+          <legend>วันทำงาน <span class="hintlabel">ต้องเว้นวันหยุดอย่างน้อย 1 วัน (ม.28)</span></legend>
           <div id="asgWeekdays"></div>
         </fieldset>
-        <div id="asgTargetBox"></div>
         <div class="shift-preview" id="asgPreview" role="status" aria-live="polite"></div>
+      </div>
+
+      <h3 class="shift-head">เลือกพนักงาน</h3>
+      <div id="asgTargetBox"></div>
+      <div id="asgPicker">
+        <div class="bar">
+          <input class="search" id="targetSearch" placeholder="ค้นหาชื่อ รหัสพนักงาน สาขา หรือบริษัท">
+          <button class="btn" type="button" id="targetAll">เลือกที่เห็นทั้งหมด</button>
+          <button class="btn" type="button" id="targetNone">ล้างที่เลือก</button>
+          <span class="count" id="targetCount"></span>
+        </div>
+        <div class="bar" id="tgtChips" role="group" aria-label="กรองรายชื่อ"></div>
+        <div class="tablewrap">
+          <table class="dtable">
+            <thead><tr>
+              <th class="tick"><input type="checkbox" id="tgtTickAll" data-tick-all="tgt"
+                aria-label="เลือกทุกคนที่เห็น"></th>
+              <th>พนักงาน</th><th>รหัสพนักงาน</th><th>บริษัท / สาขา</th>
+              <th>ตำแหน่ง</th><th>สถานะ</th>
+            </tr></thead>
+            <tbody id="targetList"></tbody>
+          </table>
+        </div>
+        <div class="pager" id="tgtPager"></div>
       </div>
         </div>
         <div class="detailwrap"><div class="detailcard" id="asgSummary"></div></div>
       </div>
 
-      <h3 class="shift-head">รายการจัดกะล่าสุด</h3>
-      <div class="bar">
-        <input class="search" id="asgSearch" placeholder="ค้นหาชื่อ รหัสพนักงาน สาขา หรือชื่อกะ">
-        <span class="count grow" id="asgCount" style="text-align:right"></span>
+      <h3 class="shift-head" style="flex-wrap:wrap">รายการจัดกะล่าสุด
+        <input class="search" id="asgSearch" style="flex:1;max-width:340px"
+          placeholder="ค้นหาชื่อพนักงาน หรือรหัสพนักงาน">
+        <span class="count" id="asgCount"></span>
         <button class="clearbtn" id="asgClear" hidden>ล้างตัวกรอง</button>
-      </div>
+      </h3>
       <div class="tablewrap">
         <table class="dtable">
           <thead><tr>
             <th>พนักงาน</th><th>กะ</th><th>วันที่เริ่ม</th><th>วันสิ้นสุด</th>
-            <th>วันทำงาน</th><th></th>
+            <th>วันทำงาน</th><th>สถานะ</th><th></th>
           </tr></thead>
           <tbody id="asgRows"></tbody>
         </table>
@@ -1744,8 +1772,8 @@ function activeField(active){return `<div class="field"><label for="edit-is_acti
 /* ═══ เลขหน้าแบบใช้ร่วมกัน ═══
    ตารางใช้เลขหน้า ส่วนรายการแบบการ์ด (พนักงาน/สาขา) ใช้ปุ่ม "แสดงเพิ่ม"
    ต่างกันโดยตั้งใจ: ตารางคนมักอยากกระโดดไปหน้าท้าย ๆ ส่วนรายชื่อมักไล่ดูลงไปเรื่อย ๆ */
-const pages={tpl:1,asg:1,audit:1,grp:1};
-const pageSize={tpl:10,asg:10,audit:10,grp:10};
+const pages={tpl:1,asg:1,audit:1,grp:1,tgt:1};
+const pageSize={tpl:10,asg:10,audit:10,grp:10,tgt:10};
 
 function paginate(name,rows){
  const size=pageSize[name];
@@ -1781,7 +1809,7 @@ function pagerHtml(name,info){
   </span>`;
 }
 const PAGE_RENDER={tpl:()=>renderTemplates(),asg:()=>renderAssignments(),
- audit:()=>renderAudit(),grp:()=>renderGroupPicker()};
+ audit:()=>renderAudit(),grp:()=>renderGroupPicker(),tgt:()=>renderTargetList()};
 document.addEventListener('click',event=>{
  const button=event.target.closest('[data-page]');
  if(!button||button.disabled)return;
@@ -2157,54 +2185,53 @@ const weekdayString=()=>DOW_FULL.map((_,index)=>
 function renderTargetBox(){
  const via=$('asgVia').value,box=$('asgTargetBox');
  if(!shiftTargets){box.innerHTML='';return;}
- box.className='target-box';
+ /* เลือกทีละคนใช้ตารางที่อยู่ในหน้าอยู่แล้ว ไม่ได้สร้างใหม่ทุกครั้ง
+    ไม่งั้นช่องค้นหาจะถูกล้างและเคอร์เซอร์หลุดทุกครั้งที่สลับวิธีเลือก */
+ const byPerson=via==='employee';
+ $('asgPicker').hidden=!byPerson;
+ box.hidden=byPerson;
+ box.className='card';
+ box.style.padding='var(--s4)';
+ if(byPerson){renderTargetList();return;}
  if(via==='branch')box.innerHTML=`<label>สาขา <select id="asgBranch">${
   shiftTargets.branches.map(([id,name])=>`<option value="${id}" translate="no">${esc(name)}</option>`).join('')}</select></label>`;
  else if(via==='position')box.innerHTML=`<label>ตำแหน่ง <select id="asgPosition">${
   shiftTargets.positions.map(name=>`<option value="${esc(name)}" translate="no">${esc(name)}</option>`).join('')}</select></label>`;
  else if(via==='company')box.innerHTML=`<label>บริษัท <select id="asgCompany">${
   shiftTargets.companies.map(name=>`<option value="${esc(name)}" translate="no">${esc(name)}</option>`).join('')}</select></label>`;
- else if(via==='group')box.innerHTML=`<label>กลุ่ม <select id="asgGroup">${
+ else box.innerHTML=`<label>กลุ่ม <select id="asgGroup">${
   shiftTargets.groups.map(row=>`<option value="${row.id}" translate="no">${esc(row.name)}</option>`).join('')
   ||'<option value="">— ยังไม่มีกลุ่ม —</option>'}</select></label>`;
- else box.innerHTML=`<div class="target-tools">
-   <input class="search" id="targetSearch" placeholder="กรองชื่อ รหัสพนักงาน สาขา ตำแหน่ง หรือบริษัท">
-   <button class="ghost" type="button" id="targetAll">เลือกที่เห็นทั้งหมด</button>
-   <button class="ghost" type="button" id="targetNone">ล้างที่เลือก</button>
-   <span class="count" id="targetCount"></span>
-  </div><div class="target-list" id="targetList"></div>`;
- if(via==='employee'){renderTargetList();
-  $('targetSearch').addEventListener('input',renderTargetList);
-  $('targetAll').addEventListener('click',()=>{visibleTargets().forEach(id=>pickedEmployees.add(id));renderTargetList();});
-  $('targetNone').addEventListener('click',()=>{pickedEmployees.clear();renderTargetList();});
- }
+ if(window.HRNGLang)HRNGLang.apply();
 }
 const pickedEmployees=new Set();
+let tgtChip='';
 function targetMatches(person,query){
  return !query||[person.employee_code,person.full_name,person.full_name_en,
   person.position,person.company,person.branch_name].join(' ').toLowerCase().includes(query);
 }
-const visibleTargets=()=>{
+function targetFiltered(){
  const query=($('targetSearch')?.value||'').trim().toLowerCase();
- return shiftTargets.employees.filter(person=>targetMatches(person,query)).map(person=>person.id);
-};
-function renderTargetList(){
- const query=($('targetSearch')?.value||'').trim().toLowerCase();
- const list=shiftTargets.employees.filter(person=>targetMatches(person,query));
- $('targetList').innerHTML=list.map(person=>`<label>
-   <input type="checkbox" data-pick="${person.id}"${pickedEmployees.has(person.id)?' checked':''}>
-   <span class="nm" translate="no">${esc(person.employee_code)} · ${esc(person.full_name)}</span>
-   <span class="who"><span translate="no">${esc(person.branch_name)||'ไม่มีสาขา'}</span> · <span translate="no">${esc(person.position)||'ไม่ระบุตำแหน่ง'}</span></span>
-  </label>`).join('')||'<div class="empty">ไม่พบพนักงานตามคำค้น</div>';
- $('targetCount').textContent=`เลือกไว้ ${pickedEmployees.size} คน · แสดง ${list.length} จาก ${shiftTargets.employees.length}`;
+ return shiftTargets.employees.filter(person=>targetMatches(person,query)&&
+   (!tgtChip||branchOfPerson(person)===tgtChip));
 }
-document.addEventListener('change',event=>{
- const pick=event.target.closest('[data-pick]');
- if(!pick)return;
- const id=Number(pick.dataset.pick);
- pick.checked?pickedEmployees.add(id):pickedEmployees.delete(id);
- $('targetCount').textContent=`เลือกไว้ ${pickedEmployees.size} คน`;
-});
+function renderTargetList(){
+ if(!shiftTargets)return;
+ $('tgtChips').innerHTML=personChipsHtml('tgt',shiftTargets.employees,tgtChip);
+ const info=paginate('tgt',targetFiltered());
+ $('targetList').innerHTML=personRowsHtml('tgt',info.slice,pickedEmployees);
+ paintFaces($('targetList'),info.slice);
+ $('tgtPager').innerHTML=pagerHtml('tgt',info);
+ $('targetCount').textContent=`เลือกแล้ว ${pickedEmployees.size} คน`;
+ syncTickAll($('tgtTickAll'),info.slice,pickedEmployees);
+ renderAssignSummary();
+ if(window.HRNGLang)HRNGLang.apply();
+}
+$('targetSearch').addEventListener('input',()=>{pages.tgt=1;renderTargetList();});
+$('targetAll').addEventListener('click',()=>{
+ // "ที่เห็น" คือทุกคนที่ผ่านตัวกรอง ไม่ใช่แค่หน้านี้ ไม่งั้นต้องกดซ้ำทุกหน้า
+ targetFiltered().forEach(person=>pickedEmployees.add(person.id));renderTargetList();});
+$('targetNone').addEventListener('click',()=>{pickedEmployees.clear();renderTargetList();});
 
 function renderAssignments(){
  const query=$('asgSearch').value.trim().toLowerCase();
@@ -2214,9 +2241,17 @@ function renderAssignments(){
    .join(' ').toLowerCase().includes(query));
  $('asgCount').textContent=`${list.length} รายการ`+(query?` จาก ${shiftAssignments.length}`:'');
  const info=paginate('asg',list);
- $('asgRows').innerHTML=info.slice.map(row=>`<tr>
-   <td data-label="พนักงาน"><span class="nm" translate="no">${esc(row.full_name)}</span>
-     <span class="sub" translate="no">${esc(row.employee_code||'—')} · ${esc(row.branch_name||'—')}</span></td>
+ const today=bangkokToday();
+ $('asgRows').innerHTML=info.slice.map(row=>{
+  /* กะที่ยังไม่ถึงวันเริ่ม กับกะที่หมดอายุแล้ว ต้องแยกออกจากกะที่ใช้อยู่จริงวันนี้
+     ไม่งั้นแถวทั้งหมดดูเหมือนมีผลเท่ากัน ทั้งที่บางแถวยังไม่เริ่มหรือจบไปแล้ว */
+  const state=row.effective_from>today?['warn','ยังไม่เริ่ม']
+    :row.effective_to&&row.effective_to<today?['off','หมดอายุ']:['go-tag','มีผลอยู่'];
+  return `<tr>
+   <td data-label="พนักงาน"><span class="person">
+     <span class="hrng-person-avatar" data-profile-avatar="${row.employee_id}"></span>
+     <span style="min-width:0"><span class="nm" translate="no">${esc(row.full_name)}</span>
+       <span class="sub" translate="no">${esc(row.employee_code||'—')}</span></span></span></td>
    <td data-label="กะ"><span translate="no">${esc(row.template_code)}</span>
      <span class="sub" translate="no">${esc(row.template_name)}</span></td>
    <td data-label="วันที่เริ่ม" class="num">${shortDate(row.effective_from)}</td>
@@ -2224,10 +2259,15 @@ function renderAssignments(){
      row.effective_to?shortDate(row.effective_to):'<span class="tag">ไม่มีกำหนด</span>'}</td>
    <td data-label="วันทำงาน">${[...row.weekdays].map((flag,index)=>
        flag==='1'?`<span class="dow">${DOW[index]}</span>`:'').filter(Boolean).join('')}</td>
+   <td data-label="สถานะ"><span class="tag ${state[0]}">${state[1]}</span></td>
    <td class="act-cell"><span class="act">
      <button class="btn danger" data-asg-remove="${row.id}" aria-label="ยกเลิกกะ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span class="lbl">ยกเลิกกะ</span></button>
    </span></td>
-  </tr>`).join('')||'<tr class="empty-row"><td colspan="6">ยังไม่มีการจัดกะ</td></tr>';
+  </tr>`;
+ }).join('')||'<tr class="empty-row"><td colspan="7">ยังไม่มีการจัดกะ</td></tr>';
+ /* รายชื่อกะไม่ได้ส่งรูปมาด้วย ใช้รูปจากรายชื่อเป้าหมายที่โหลดไว้แล้วแทน
+    คนที่ปิดใช้งานไปแล้วจะไม่อยู่ในนั้น ก็ตกไปเป็นอักษรย่อเอง */
+ paintFaces($('asgRows'),shiftTargets?shiftTargets.employees:[]);
  $('asgPager').innerHTML=pagerHtml('asg',info);
  if(window.HRNGLang)HRNGLang.apply();
 }
@@ -2242,13 +2282,17 @@ function renderAssignSummary(){
  const picked=countAssignTargets();
  const span=from&&to
    ? Math.round((new Date(to)-new Date(from))/86400000)+1 : null;
+ const chips=days.length
+   ? days.map(name=>`<span class="dowchip">${esc(name)}</span>`).join('')
+   : 'ยังไม่ได้เลือก';
  $('asgSummary').innerHTML=`<h2>สรุปการจัดกะ</h2>
   <dl class="dl">
    ${field('kind','แบบกะ',template?`${template.code} · ${template.name}`:'ยังไม่ได้เลือก')}
    ${field('cal','ช่วงวันที่',from?`${shortDate(from)} – ${to?shortDate(to):'ไม่มีกำหนด'}`
       +(span?` (รวม ${span} วัน)`:''):'ยังไม่ได้เลือก')}
-   ${field('clock','วันทำงาน',days.length?days.join(' '):'ยังไม่ได้เลือก')}
-   ${field('org','จำนวนพนักงาน',picked===null?'ตามเป้าหมายที่เลือก':`${picked} คน`)}
+   ${field('clock','วันทำงาน',chips,true)}
+   ${picked===null?field('org','จำนวนพนักงาน','ตามเป้าหมายที่เลือก')
+     :field('org','จำนวนพนักงาน',`<b class="big">${picked} คน</b>`,true)}
   </dl>
   <div class="bar" style="flex-direction:column;align-items:stretch">
    <button class="btn solid" id="asgSave" style="justify-content:center;height:44px"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>จัดกะให้พนักงาน</button>
@@ -2264,63 +2308,71 @@ function countAssignTargets(){
 const pickedGroup=new Set();
 let editingGroup=null, shiftGroups=[];
 
-/* หน้าเลือกคนเข้ากลุ่มใช้ตารางหน้าตาเดียวกับหน้าพนักงาน พร้อมรูปโปรไฟล์
-   เหตุผล: คนจำเพื่อนร่วมงานจากหน้า ไม่ใช่จากรหัสพนักงาน การเลือกผิดคนไม่มีอะไรฟ้อง
-   จนกว่าจะถึงวันเข้ากะ */
+/* ═══ ตารางเลือกคน ใช้ร่วมกันระหว่างหน้ากลุ่มกับหน้าจัดกะ ═══
+   สองหน้านี้ถามคำถามเดียวกันคือ "เอาใครบ้าง" ถ้าแยกโค้ดกันจะเพี้ยนกันในที่สุด
+   ต่างกันแค่ว่าเก็บผลไว้ที่ Set ไหน */
+const branchOfPerson=person=>person.branch_name||'ไม่มีสาขา';
+
+function personRowsHtml(tag,list,picked){
+ return list.map(person=>`<tr class="${picked.has(person.id)?'pick-on':''}"
+    data-pick-row="${tag}" data-person="${person.id}">
+   <td class="tick"><input type="checkbox" data-pick-one="${tag}" value="${person.id}"${
+     picked.has(person.id)?' checked':''} aria-labelledby="${tag}nm-${person.id}"></td>
+   <td data-label="พนักงาน"><span class="person">
+     <span class="hrng-person-avatar" data-profile-avatar="${person.id}"></span>
+     <span class="nm" id="${tag}nm-${person.id}" translate="no">${esc(HRNGProfile.name(person))}</span>
+   </span></td>
+   <td data-label="รหัสพนักงาน" class="num" translate="no">${esc(person.employee_code||'—')}</td>
+   <td data-label="บริษัท / สาขา"><span translate="no">${esc(person.company||'—')}</span>
+     <span class="sub" translate="no">${esc(branchOfPerson(person))}</span></td>
+   <td data-label="ตำแหน่ง"><span translate="no">${esc(person.position||'ไม่ระบุตำแหน่ง')}</span></td>
+   <td data-label="สถานะ"><span class="tag go-tag">ปกติ</span></td>
+  </tr>`).join('')||'<tr class="empty-row"><td colspan="6">ไม่พบพนักงานตามคำค้น</td></tr>';
+}
+/* ชิปมาจากสาขาที่มีคนอยู่จริง เอาเฉพาะห้าสาขาที่คนเยอะสุด
+   ถ้าโชว์ทุกสาขา วันที่นำเข้า Dunkin 539 ร้าน แถวชิปจะยาวกว่าตาราง */
+function personChipsHtml(tag,people,active){
+ const tally=new Map();
+ for(const person of people){
+  const name=branchOfPerson(person);
+  tally.set(name,(tally.get(name)||0)+1);
+ }
+ const top=[...tally.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
+ const chips=[['','ทั้งหมด',people.length],...top.map(([name,count])=>[name,name,count])];
+ return `<span class="pick">${chips.map(([value,label,count])=>
+   `<button class="btn" type="button" data-chip="${tag}" value="${esc(value)}"
+      aria-pressed="${value===active}"><span translate="${value?'no':'yes'}">${esc(label)}</span>
+     <span class="count" translate="no">(${count})</span></button>`).join('')}</span>`;
+}
+function paintFaces(container,list){
+ container.querySelectorAll('[data-profile-avatar]').forEach(box=>
+   HRNGProfile.avatar(box,list.find(person=>String(person.id)===box.dataset.profileAvatar)));
+}
+/* ติ๊กหัวตารางสะท้อนเฉพาะคนที่เห็นอยู่หน้านี้ ไม่ใช่ทั้งระบบ
+   ครึ่งทางต้องเป็นขีดกลาง ไม่ใช่ติ๊กเต็ม ไม่งั้นกดแล้วจะล้างของที่เลือกไว้โดยไม่ตั้งใจ */
+function syncTickAll(box,shown,picked){
+ const count=shown.filter(person=>picked.has(person.id)).length;
+ box.checked=shown.length>0&&count===shown.length;
+ box.indeterminate=count>0&&count<shown.length;
+}
+
+/* หน้าเลือกคนเข้ากลุ่มใช้ตารางร่วมข้างบน ต่างกันแค่เก็บผลไว้ที่ pickedGroup */
 let grpChip='';
-const grpBranchOf=person=>person.branch_name||'ไม่มีสาขา';
 
 function grpFiltered(){
  const query=($('grpSearch').value||'').trim().toLowerCase();
  return shiftTargets.employees.filter(person=>targetMatches(person,query)&&
-   (!grpChip||grpBranchOf(person)===grpChip));
+   (!grpChip||branchOfPerson(person)===grpChip));
 }
-function renderGroupChips(){
- /* ชิปมาจากสาขาที่มีคนอยู่จริง เอาเฉพาะห้าสาขาที่คนเยอะสุด
-    ถ้าโชว์ทุกสาขา วันที่นำเข้า Dunkin 539 ร้าน แถวชิปจะยาวกว่าตาราง */
- const tally=new Map();
- for(const person of shiftTargets.employees){
-  const name=grpBranchOf(person);
-  tally.set(name,(tally.get(name)||0)+1);
- }
- const top=[...tally.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
- const chips=[['','ทั้งหมด',shiftTargets.employees.length],
-   ...top.map(([name,count])=>[name,name,count])];
- $('grpChips').innerHTML=`<span class="pick">${chips.map(([value,label,count])=>
-   `<button class="btn" type="button" data-grp-chip="${esc(value)}"
-      aria-pressed="${value===grpChip}"><span translate="${value?'no':'yes'}">${esc(label)}</span>
-     <span class="count" translate="no">(${count})</span></button>`).join('')}</span>`;
-}
-
 function renderGroupPicker(){
  if(!shiftTargets||!$('grpList'))return;
- renderGroupChips();
- const list=grpFiltered();
- const info=paginate('grp',list);
- const shown=info.slice;
- $('grpList').innerHTML=shown.map(person=>`<tr class="${
-    pickedGroup.has(person.id)?'pick-on':''}" data-grp-row="${person.id}">
-   <td class="tick"><input type="checkbox" data-grp-pick="${person.id}"${
-     pickedGroup.has(person.id)?' checked':''} aria-labelledby="grpnm-${person.id}"></td>
-   <td data-label="พนักงาน"><span class="person">
-     <span class="hrng-person-avatar" data-profile-avatar="${person.id}"></span>
-     <span class="nm" id="grpnm-${person.id}" translate="no">${esc(HRNGProfile.name(person))}</span>
-   </span></td>
-   <td data-label="รหัสพนักงาน" class="num" translate="no">${esc(person.employee_code||'—')}</td>
-   <td data-label="บริษัท / สาขา"><span translate="no">${esc(person.company||'—')}</span>
-     <span class="sub" translate="no">${esc(grpBranchOf(person))}</span></td>
-   <td data-label="ตำแหน่ง"><span translate="no">${esc(person.position||'ไม่ระบุตำแหน่ง')}</span></td>
-   <td data-label="สถานะ"><span class="tag go-tag">ปกติ</span></td>
-  </tr>`).join('')||'<tr class="empty-row"><td colspan="6">ไม่พบพนักงานตามคำค้น</td></tr>';
- $('grpList').querySelectorAll('[data-profile-avatar]').forEach(box=>
-   HRNGProfile.avatar(box,shown.find(p=>String(p.id)===box.dataset.profileAvatar)));
+ $('grpChips').innerHTML=personChipsHtml('grp',shiftTargets.employees,grpChip);
+ const info=paginate('grp',grpFiltered());
+ $('grpList').innerHTML=personRowsHtml('grp',info.slice,pickedGroup);
+ paintFaces($('grpList'),info.slice);
  $('grpPager').innerHTML=pagerHtml('grp',info);
  $('grpCount').textContent=`เลือกไว้ ${pickedGroup.size} คน`;
- /* ติ๊กหัวตารางสะท้อนเฉพาะคนที่เห็นอยู่หน้านี้ ไม่ใช่ทั้งระบบ
-    ครึ่งทางต้องเป็นขีดกลาง ไม่ใช่ติ๊กเต็ม ไม่งั้นกดแล้วจะล้างของที่เลือกไว้โดยไม่ตั้งใจ */
- const picked=shown.filter(person=>pickedGroup.has(person.id)).length;
- $('grpTickAll').checked=shown.length>0&&picked===shown.length;
- $('grpTickAll').indeterminate=picked>0&&picked<shown.length;
+ syncTickAll($('grpTickAll'),info.slice,pickedGroup);
  renderGroupSummary();
  if(window.HRNGLang)HRNGLang.apply();
 }
@@ -2330,7 +2382,7 @@ function renderGroupSummary(){
  const total=shiftTargets.employees.length;
  const tally=new Map();
  for(const person of chosen){
-  const name=grpBranchOf(person);
+  const name=branchOfPerson(person);
   tally.set(name,(tally.get(name)||0)+1);
  }
  const name=$('grpName').value.trim();
@@ -2371,32 +2423,46 @@ function renderGroupSummary(){
  if(window.HRNGLang)HRNGLang.apply();
 }
 
-$('grpChips').addEventListener('click',event=>{
- const chip=event.target.closest('[data-grp-chip]');
- if(!chip)return;
- grpChip=chip.dataset.grpChip;pages.grp=1;renderGroupPicker();
+/* ตัวเลือกของตารางเลือกคนทั้งสองหน้า ผูกที่ document ที่เดียว
+   แต่ละหน้าบอกแค่ว่าเก็บผลไว้ที่ Set ไหน และวาดใหม่ยังไง */
+const PICKERS={
+ grp:{picked:()=>pickedGroup,shown:()=>paginate('grp',grpFiltered()).slice,
+      chip:value=>{grpChip=value;},draw:()=>renderGroupPicker()},
+ tgt:{picked:()=>pickedEmployees,shown:()=>paginate('tgt',targetFiltered()).slice,
+      chip:value=>{tgtChip=value;},draw:()=>renderTargetList()},
+};
+document.addEventListener('click',event=>{
+ const chip=event.target.closest('[data-chip]');
+ if(chip){
+  const picker=PICKERS[chip.dataset.chip];
+  picker.chip(chip.value);pages[chip.dataset.chip]=1;picker.draw();
+  return;
+ }
+ if(event.target.closest('#grpRename')){$('grpName').focus();return;}
+ /* กดที่ไหนในแถวก็ติ๊กได้ ไม่ต้องเล็งช่องเล็ก ๆ ทางซ้าย
+    ยกเว้นกดที่ช่องติ๊กเอง ซึ่งเบราว์เซอร์สลับให้แล้วและจะยิง change ตามมา */
+ const row=event.target.closest('[data-pick-row]');
+ if(!row||event.target.matches('[data-pick-one]'))return;
+ const picker=PICKERS[row.dataset.pickRow],picked=picker.picked();
+ const id=Number(row.dataset.person);
+ picked.has(id)?picked.delete(id):picked.add(id);
+ picker.draw();
+});
+document.addEventListener('change',event=>{
+ const box=event.target.closest('[data-pick-one]');
+ if(box){
+  const picker=PICKERS[box.dataset.pickOne],id=Number(box.value);
+  box.checked?picker.picked().add(id):picker.picked().delete(id);
+  picker.draw();
+  return;
+ }
+ const all=event.target.closest('[data-tick-all]');
+ if(!all)return;
+ const picker=PICKERS[all.dataset.tickAll],picked=picker.picked();
+ picker.shown().forEach(person=>all.checked?picked.add(person.id):picked.delete(person.id));
+ picker.draw();
 });
 $('grpName').addEventListener('input',renderGroupSummary);
-/* กดที่ไหนในแถวก็ติ๊กได้ ไม่ต้องเล็งช่องเล็ก ๆ ทางซ้าย */
-$('grpList').addEventListener('click',event=>{
- if(event.target.matches('[data-grp-pick]'))return;
- const row=event.target.closest('[data-grp-row]');
- if(!row)return;
- const box=row.querySelector('[data-grp-pick]');
- box.checked=!box.checked;
- box.checked?pickedGroup.add(Number(box.dataset.grpPick))
-            :pickedGroup.delete(Number(box.dataset.grpPick));
- renderGroupPicker();
-});
-$('grpTickAll').addEventListener('change',()=>{
- const shown=paginate('grp',grpFiltered()).slice;
- shown.forEach(person=>$('grpTickAll').checked?pickedGroup.add(person.id)
-                                              :pickedGroup.delete(person.id));
- renderGroupPicker();
-});
-document.addEventListener('click',event=>{
- if(event.target.closest('#grpRename'))$('grpName').focus();
-});
 function renderGroups(){
  $('grpRows').innerHTML=shiftGroups.map(row=>`<div class="row">
    <span class="main"><span class="nm" translate="no">${esc(row.name)}</span>
@@ -2418,12 +2484,6 @@ $('grpAll').addEventListener('click',()=>{
 $('grpNone').addEventListener('click',()=>{pickedGroup.clear();renderGroupPicker();});
 document.addEventListener('click',event=>{
  if(event.target.closest('#grpReset'))resetGroupForm();});
-$('grpList').addEventListener('change',event=>{
- const pick=event.target.closest('[data-grp-pick]');
- if(!pick)return;
- const id=Number(pick.dataset.grpPick);
- pick.checked?pickedGroup.add(id):pickedGroup.delete(id);
- renderGroupPicker();});
 document.addEventListener('click',async event=>{
  if(!event.target.closest('#grpSave'))return;
  const name=$('grpName').value.trim();
