@@ -415,6 +415,33 @@
   .monthlist .d{font-weight:700;color:var(--red);flex:0 0 34px;font-variant-numeric:tabular-nums}
   .monthlist .empty{padding:var(--s4) 0;font-size:12.5px}
 
+  /* ── ตารางเลือกคนเข้ากลุ่ม ── */
+  .dtable th.tick,.dtable td.tick{width:1%;padding-right:0}
+  .dtable td.tick::before{display:none}
+  .dtable .person{display:flex;align-items:center;gap:var(--s3);min-width:0}
+  .dtable .person .hrng-person-avatar{width:30px;height:30px;flex:0 0 30px}
+  .dtable .sub{display:block;font-size:11.5px;color:var(--muted)}
+  .detailhead .mark{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+    background:var(--green-soft);color:var(--green-strong);flex-shrink:0}
+  .detailhead .mark svg{width:20px;height:20px}
+  .bignum{margin:2px 0 0;display:flex;align-items:baseline;gap:var(--s2)}
+  .bignum b{font-size:26px;font-weight:700;color:var(--green-strong);letter-spacing:-.02em}
+  .bignum span{font-size:12.5px;color:var(--muted)}
+  .tally{display:flex;flex-direction:column;gap:var(--s1)}
+  .tally > div{display:flex;align-items:center;gap:var(--s2);font-size:13px}
+  .tally .mark{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
+    background:var(--bg);color:var(--muted);flex-shrink:0}
+  .tally .mark svg{width:14px;height:14px}
+  .tally .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tally .count{background:var(--green-soft);color:var(--green-strong);border-radius:6px;
+    padding:1px 8px;font-size:12px;font-weight:650;font-variant-numeric:tabular-nums}
+  .faces{display:flex;flex-direction:column;gap:var(--s2)}
+  .faces > div{display:flex;align-items:center;gap:var(--s2);font-size:13px;min-width:0}
+  .faces .hrng-person-avatar{width:28px;height:28px;flex:0 0 28px}
+  .faces .hrng-person-avatar.more{background:var(--bg);color:var(--muted);font-size:14px;
+    display:grid;place-items:center}
+  .faces span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
   /* ── ประวัติการแก้ไข ── */
   .auditmark{width:28px;height:28px;border-radius:8px;display:inline-grid;place-items:center;
     background:var(--bg);color:var(--ink-2);border:1px solid var(--line);
@@ -763,26 +790,40 @@
         <p><b>ข้อควรรู้</b> — ระบบอ่านรายชื่อในกลุ่ม ณ ตอนที่กดจัดกะ
         แก้รายชื่อทีหลังจะไม่ย้อนไปแก้กะที่จัดไปแล้ว คนที่เพิ่งเพิ่มเข้ากลุ่มต้องจัดกะให้ใหม่อีกครั้ง</p>
       </div>
+      <div class="split">
+        <div>
       <div class="card shift-form">
         <div class="grid2">
           <label>ชื่อกลุ่ม <input id="grpName" maxlength="200" placeholder="ทีมเปิดร้าน"></label>
           <label>หมายเหตุ <input id="grpNote" maxlength="500" placeholder="ไม่บังคับ"></label>
         </div>
-        <div class="target-box">
-          <div class="target-tools">
-            <input class="search" id="grpSearch" placeholder="กรองชื่อ รหัสพนักงาน สาขา ตำแหน่ง หรือบริษัท">
-            <button class="ghost" type="button" id="grpAll">เลือกที่เห็นทั้งหมด</button>
-            <button class="ghost" type="button" id="grpNone">ล้างที่เลือก</button>
-            <span class="count" id="grpCount"></span>
-          </div>
-          <div class="target-list" id="grpList"></div>
-        </div>
-        <div class="bar">
-          <button class="solid" id="grpSave">บันทึกกลุ่ม</button>
-          <button class="ghost" id="grpReset" hidden>ยกเลิกการแก้ไข</button>
-          <span class="count" id="grpEditing"></span>
-        </div>
       </div>
+
+      <h3 class="shift-head">เลือกพนักงานเข้ากลุ่ม</h3>
+      <div class="bar">
+        <input class="search" id="grpSearch" placeholder="ค้นหาชื่อ รหัสพนักงาน สาขา ตำแหน่ง หรือบริษัท">
+        <button class="btn" type="button" id="grpAll">เลือกที่เห็นทั้งหมด</button>
+        <button class="btn" type="button" id="grpNone">ล้างที่เลือก</button>
+        <span class="count" id="grpCount"></span>
+      </div>
+      <div class="bar" id="grpChips" role="group" aria-label="กรองรายชื่อ"></div>
+      <div class="tablewrap">
+        <table class="dtable">
+          <thead><tr>
+            <th class="tick"><input type="checkbox" id="grpTickAll"
+              aria-label="เลือกทุกคนที่เห็น"></th>
+            <th>พนักงาน</th><th>รหัสพนักงาน</th><th>บริษัท / สาขา</th>
+            <th>ตำแหน่ง</th><th>สถานะ</th>
+          </tr></thead>
+          <tbody id="grpList"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="grpPager"></div>
+        </div>
+        <div class="detailwrap"><div class="detailcard" id="grpSummary"></div></div>
+      </div>
+
+      <h3 class="shift-head">กลุ่มที่มี</h3>
       <div class="list" id="grpRows"></div>
     </section>
 
@@ -1703,8 +1744,8 @@ function activeField(active){return `<div class="field"><label for="edit-is_acti
 /* ═══ เลขหน้าแบบใช้ร่วมกัน ═══
    ตารางใช้เลขหน้า ส่วนรายการแบบการ์ด (พนักงาน/สาขา) ใช้ปุ่ม "แสดงเพิ่ม"
    ต่างกันโดยตั้งใจ: ตารางคนมักอยากกระโดดไปหน้าท้าย ๆ ส่วนรายชื่อมักไล่ดูลงไปเรื่อย ๆ */
-const pages={tpl:1,asg:1,audit:1};
-const pageSize={tpl:10,asg:10,audit:10};
+const pages={tpl:1,asg:1,audit:1,grp:1};
+const pageSize={tpl:10,asg:10,audit:10,grp:10};
 
 function paginate(name,rows){
  const size=pageSize[name];
@@ -1739,7 +1780,8 @@ function pagerHtml(name,info){
      aria-label="หน้าถัดไป"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   </span>`;
 }
-const PAGE_RENDER={tpl:()=>renderTemplates(),asg:()=>renderAssignments(),audit:()=>renderAudit()};
+const PAGE_RENDER={tpl:()=>renderTemplates(),asg:()=>renderAssignments(),
+ audit:()=>renderAudit(),grp:()=>renderGroupPicker()};
 document.addEventListener('click',event=>{
  const button=event.target.closest('[data-page]');
  if(!button||button.disabled)return;
@@ -2222,17 +2264,139 @@ function countAssignTargets(){
 const pickedGroup=new Set();
 let editingGroup=null, shiftGroups=[];
 
+/* หน้าเลือกคนเข้ากลุ่มใช้ตารางหน้าตาเดียวกับหน้าพนักงาน พร้อมรูปโปรไฟล์
+   เหตุผล: คนจำเพื่อนร่วมงานจากหน้า ไม่ใช่จากรหัสพนักงาน การเลือกผิดคนไม่มีอะไรฟ้อง
+   จนกว่าจะถึงวันเข้ากะ */
+let grpChip='';
+const grpBranchOf=person=>person.branch_name||'ไม่มีสาขา';
+
+function grpFiltered(){
+ const query=($('grpSearch').value||'').trim().toLowerCase();
+ return shiftTargets.employees.filter(person=>targetMatches(person,query)&&
+   (!grpChip||grpBranchOf(person)===grpChip));
+}
+function renderGroupChips(){
+ /* ชิปมาจากสาขาที่มีคนอยู่จริง เอาเฉพาะห้าสาขาที่คนเยอะสุด
+    ถ้าโชว์ทุกสาขา วันที่นำเข้า Dunkin 539 ร้าน แถวชิปจะยาวกว่าตาราง */
+ const tally=new Map();
+ for(const person of shiftTargets.employees){
+  const name=grpBranchOf(person);
+  tally.set(name,(tally.get(name)||0)+1);
+ }
+ const top=[...tally.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
+ const chips=[['','ทั้งหมด',shiftTargets.employees.length],
+   ...top.map(([name,count])=>[name,name,count])];
+ $('grpChips').innerHTML=`<span class="pick">${chips.map(([value,label,count])=>
+   `<button class="btn" type="button" data-grp-chip="${esc(value)}"
+      aria-pressed="${value===grpChip}"><span translate="${value?'no':'yes'}">${esc(label)}</span>
+     <span class="count" translate="no">(${count})</span></button>`).join('')}</span>`;
+}
+
 function renderGroupPicker(){
  if(!shiftTargets||!$('grpList'))return;
- const query=($('grpSearch').value||'').trim().toLowerCase();
- const list=shiftTargets.employees.filter(person=>targetMatches(person,query));
- $('grpList').innerHTML=list.map(person=>`<label>
-   <input type="checkbox" data-grp-pick="${person.id}"${pickedGroup.has(person.id)?' checked':''}>
-   <span class="nm" translate="no">${esc(person.employee_code)} · ${esc(person.full_name)}</span>
-   <span class="who"><span translate="no">${esc(person.branch_name)||'ไม่มีสาขา'}</span> · <span translate="no">${esc(person.position)||'ไม่ระบุตำแหน่ง'}</span></span>
-  </label>`).join('')||'<div class="empty">ไม่พบพนักงานตามคำค้น</div>';
- $('grpCount').textContent=`เลือกไว้ ${pickedGroup.size} คน · แสดง ${list.length} จาก ${shiftTargets.employees.length}`;
+ renderGroupChips();
+ const list=grpFiltered();
+ const info=paginate('grp',list);
+ const shown=info.slice;
+ $('grpList').innerHTML=shown.map(person=>`<tr class="${
+    pickedGroup.has(person.id)?'pick-on':''}" data-grp-row="${person.id}">
+   <td class="tick"><input type="checkbox" data-grp-pick="${person.id}"${
+     pickedGroup.has(person.id)?' checked':''} aria-labelledby="grpnm-${person.id}"></td>
+   <td data-label="พนักงาน"><span class="person">
+     <span class="hrng-person-avatar" data-profile-avatar="${person.id}"></span>
+     <span class="nm" id="grpnm-${person.id}" translate="no">${esc(HRNGProfile.name(person))}</span>
+   </span></td>
+   <td data-label="รหัสพนักงาน" class="num" translate="no">${esc(person.employee_code||'—')}</td>
+   <td data-label="บริษัท / สาขา"><span translate="no">${esc(person.company||'—')}</span>
+     <span class="sub" translate="no">${esc(grpBranchOf(person))}</span></td>
+   <td data-label="ตำแหน่ง"><span translate="no">${esc(person.position||'ไม่ระบุตำแหน่ง')}</span></td>
+   <td data-label="สถานะ"><span class="tag go-tag">ปกติ</span></td>
+  </tr>`).join('')||'<tr class="empty-row"><td colspan="6">ไม่พบพนักงานตามคำค้น</td></tr>';
+ $('grpList').querySelectorAll('[data-profile-avatar]').forEach(box=>
+   HRNGProfile.avatar(box,shown.find(p=>String(p.id)===box.dataset.profileAvatar)));
+ $('grpPager').innerHTML=pagerHtml('grp',info);
+ $('grpCount').textContent=`เลือกไว้ ${pickedGroup.size} คน`;
+ /* ติ๊กหัวตารางสะท้อนเฉพาะคนที่เห็นอยู่หน้านี้ ไม่ใช่ทั้งระบบ
+    ครึ่งทางต้องเป็นขีดกลาง ไม่ใช่ติ๊กเต็ม ไม่งั้นกดแล้วจะล้างของที่เลือกไว้โดยไม่ตั้งใจ */
+ const picked=shown.filter(person=>pickedGroup.has(person.id)).length;
+ $('grpTickAll').checked=shown.length>0&&picked===shown.length;
+ $('grpTickAll').indeterminate=picked>0&&picked<shown.length;
+ renderGroupSummary();
+ if(window.HRNGLang)HRNGLang.apply();
 }
+
+function renderGroupSummary(){
+ const chosen=shiftTargets.employees.filter(person=>pickedGroup.has(person.id));
+ const total=shiftTargets.employees.length;
+ const tally=new Map();
+ for(const person of chosen){
+  const name=grpBranchOf(person);
+  tally.set(name,(tally.get(name)||0)+1);
+ }
+ const name=$('grpName').value.trim();
+ const sample=chosen.slice(0,5);
+ $('grpSummary').innerHTML=`<h2>สรุปกลุ่ม</h2>
+  <div class="detailhead">
+   <span class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c0-3.1 2.7-4.8 6-4.8s6 1.7 6 4.8"/><path d="M16 5.6a3.2 3.2 0 0 1 0 6.3"/><path d="M17.5 14.6c2.1.5 3.5 1.9 3.5 4.4"/></svg></span>
+   <span style="flex:1;min-width:0"><span class="nm" translate="${name?'no':'yes'}">${
+     esc(name||'ยังไม่ได้ตั้งชื่อกลุ่ม')}</span></span>
+   <button class="helpbtn" type="button" id="grpRename" aria-label="แก้ชื่อกลุ่ม"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg></button>
+  </div>
+  <p class="hintlabel" style="margin:0">จำนวนพนักงานที่เลือก</p>
+  <p class="bignum"><b>${chosen.length} คน</b> <span>จากทั้งหมด ${total} คน</span></p>
+  <p class="hintlabel" style="margin:var(--s3) 0 var(--s2)">แยกตามสาขา</p>
+  ${tally.size?`<div class="tally">${[...tally.entries()]
+    .sort((a,b)=>b[1]-a[1]).map(([branch,count])=>`<div>
+      <span class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+      <span class="nm" translate="no">${esc(branch)}</span>
+      <span class="count">${count}</span></div>`).join('')}</div>`
+   :'<p class="hintlabel">ยังไม่ได้เลือกใคร</p>'}
+  ${sample.length?`<p class="hintlabel" style="margin:var(--s4) 0 var(--s2)">ตัวอย่างรายชื่อที่เลือก</p>
+   <div class="faces">${sample.map(person=>`<div>
+     <span class="hrng-person-avatar" data-sample-avatar="${person.id}"></span>
+     <span translate="no">${esc(HRNGProfile.name(person))}</span></div>`).join('')}
+    ${chosen.length>sample.length?`<div><span class="hrng-person-avatar more">…</span>
+      <span>และอีก ${chosen.length-sample.length} คน</span></div>`:''}</div>`:''}
+  <div class="bar" style="flex-direction:column;align-items:stretch">
+   <button class="btn solid" id="grpSave" style="justify-content:center;height:44px"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 4v5h7V4M8.5 20v-6h7v6"/></svg>บันทึกกลุ่ม</button>
+   <button class="btn" id="grpReset" style="justify-content:center">ยกเลิก</button>
+   <span class="count" id="grpEditing"></span>
+  </div>`;
+ $('grpSummary').querySelectorAll('[data-sample-avatar]').forEach(box=>
+   HRNGProfile.avatar(box,sample.find(p=>String(p.id)===box.dataset.sampleAvatar)));
+ if(editingGroup){
+  const row=shiftGroups.find(g=>g.id===editingGroup);
+  if(row)$('grpEditing').textContent='กำลังแก้ไข '+row.name;
+ }
+ if(window.HRNGLang)HRNGLang.apply();
+}
+
+$('grpChips').addEventListener('click',event=>{
+ const chip=event.target.closest('[data-grp-chip]');
+ if(!chip)return;
+ grpChip=chip.dataset.grpChip;pages.grp=1;renderGroupPicker();
+});
+$('grpName').addEventListener('input',renderGroupSummary);
+/* กดที่ไหนในแถวก็ติ๊กได้ ไม่ต้องเล็งช่องเล็ก ๆ ทางซ้าย */
+$('grpList').addEventListener('click',event=>{
+ if(event.target.matches('[data-grp-pick]'))return;
+ const row=event.target.closest('[data-grp-row]');
+ if(!row)return;
+ const box=row.querySelector('[data-grp-pick]');
+ box.checked=!box.checked;
+ box.checked?pickedGroup.add(Number(box.dataset.grpPick))
+            :pickedGroup.delete(Number(box.dataset.grpPick));
+ renderGroupPicker();
+});
+$('grpTickAll').addEventListener('change',()=>{
+ const shown=paginate('grp',grpFiltered()).slice;
+ shown.forEach(person=>$('grpTickAll').checked?pickedGroup.add(person.id)
+                                              :pickedGroup.delete(person.id));
+ renderGroupPicker();
+});
+document.addEventListener('click',event=>{
+ if(event.target.closest('#grpRename'))$('grpName').focus();
+});
 function renderGroups(){
  $('grpRows').innerHTML=shiftGroups.map(row=>`<div class="row">
    <span class="main"><span class="nm" translate="no">${esc(row.name)}</span>
@@ -2242,26 +2406,26 @@ function renderGroups(){
  </div>`).join('')||'<div class="empty">ยังไม่มีกลุ่ม</div>';
 }
 function resetGroupForm(){
- editingGroup=null;pickedGroup.clear();
+ editingGroup=null;pickedGroup.clear();grpChip='';pages.grp=1;
  $('grpName').value='';$('grpNote').value='';$('grpSearch').value='';
- $('grpSave').textContent='บันทึกกลุ่ม';$('grpReset').hidden=true;$('grpEditing').textContent='';
  renderGroupPicker();
 }
-$('grpSearch').addEventListener('input',renderGroupPicker);
+$('grpSearch').addEventListener('input',()=>{pages.grp=1;renderGroupPicker();});
 $('grpAll').addEventListener('click',()=>{
- const query=($('grpSearch').value||'').trim().toLowerCase();
- shiftTargets.employees.filter(person=>targetMatches(person,query))
-  .forEach(person=>pickedGroup.add(person.id));
+ // "ที่เห็น" คือทุกคนที่ผ่านตัวกรอง ไม่ใช่แค่หน้านี้ ไม่งั้นต้องกดซ้ำทุกหน้า
+ grpFiltered().forEach(person=>pickedGroup.add(person.id));
  renderGroupPicker();});
 $('grpNone').addEventListener('click',()=>{pickedGroup.clear();renderGroupPicker();});
-$('grpReset').addEventListener('click',resetGroupForm);
+document.addEventListener('click',event=>{
+ if(event.target.closest('#grpReset'))resetGroupForm();});
 $('grpList').addEventListener('change',event=>{
  const pick=event.target.closest('[data-grp-pick]');
  if(!pick)return;
  const id=Number(pick.dataset.grpPick);
  pick.checked?pickedGroup.add(id):pickedGroup.delete(id);
- $('grpCount').textContent=`เลือกไว้ ${pickedGroup.size} คน`;});
-$('grpSave').addEventListener('click',async()=>{
+ renderGroupPicker();});
+document.addEventListener('click',async event=>{
+ if(!event.target.closest('#grpSave'))return;
  const name=$('grpName').value.trim();
  if(!name){banner('ตั้งชื่อกลุ่มก่อน',true);return;}
  if(!pickedGroup.size){banner('เลือกพนักงานอย่างน้อย 1 คน',true);return;}
@@ -2284,9 +2448,8 @@ $('grpRows').addEventListener('click',async event=>{
   editingGroup=group.id;pickedGroup.clear();
   members.items.forEach(row=>pickedGroup.add(row.employee_id));
   $('grpName').value=group.name;$('grpNote').value=group.note||'';
-  $('grpSave').textContent='บันทึกการแก้ไข';$('grpReset').hidden=false;
-  $('grpEditing').textContent='กำลังแก้ไข '+group.name;
-  renderGroupPicker();
+  grpChip='';pages.grp=1;
+  renderGroupPicker();$('grpName').scrollIntoView({block:'nearest'});
  }catch(error){banner(error.message,true);}
 });
 
