@@ -26,6 +26,9 @@
     --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
     --r:12px; --r-sm:9px;
     --shadow:0 1px 2px rgba(20,23,26,.04), 0 1px 1px rgba(20,23,26,.03);
+    --shadow-lift:0 6px 20px rgba(20,23,26,.10), 0 2px 6px rgba(20,23,26,.05);
+    /* เส้นโค้งเดียวทั้งระบบ ออกเร็วแล้วค่อย ๆ จบ ให้รู้สึกว่าของตอบสนองทันที */
+    --ease:cubic-bezier(.22,.61,.36,1);
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -49,6 +52,15 @@
     padding:0 var(--s3);height:38px;font-size:14px;font-weight:500;white-space:nowrap;
     box-shadow:var(--shadow);transition:background .12s,border-color .12s}
   .btn:hover{background:var(--bg);border-color:#d5dbe1}
+  /* ยุบเล็กน้อยตอนกด เป็นคำตอบทันทีว่าระบบรับรู้แล้ว ก่อนที่เครือข่ายจะตอบ
+     ปุ่มที่กดไม่ได้ต้องไม่ยุบ ไม่งั้นจะดูเหมือนกดติดทั้งที่ไม่ได้ทำอะไร */
+  button:active:not(:disabled){transform:scale(.97)}
+  button{transition:transform .12s var(--ease),background-color .15s var(--ease),
+    border-color .15s var(--ease),box-shadow .15s var(--ease)}
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
+    button:active:not(:disabled){transform:none}
+  }
   .btn.solid{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
   .btn.solid:hover{background:var(--green-strong);border-color:var(--green-strong)}
   .btn.icon{width:38px;padding:0;justify-content:center}
@@ -88,7 +100,9 @@
   #shell.on{display:block}
   /* แถบบนต้องอยู่ใต้แผงเมนูบนจอแคบ ไม่งั้นมันจะบังปุ่มปิดที่หัวแผง
      บนจอกว้างแถบซ้ายเริ่มที่ 56px อยู่แล้ว จึงไม่ทับกันไม่ว่าจะลำดับไหน */
-  .topwrap{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--line)}
+  .topwrap{position:sticky;top:0;z-index:30;border-bottom:1px solid var(--line);
+    background:rgba(255,255,255,.88);backdrop-filter:saturate(180%) blur(12px)}
+  @supports not (backdrop-filter:blur(1px)){.topwrap{background:var(--paper)}}
   header.top{display:flex;align-items:center;gap:var(--s3);height:56px;padding:0 var(--s4)}
   header .brand{display:flex;align-items:center;gap:var(--s2);font-weight:700;font-size:15.5px;
     flex:1;min-width:0;letter-spacing:-.01em}
@@ -488,6 +502,20 @@
   #backdrop.on{display:grid}
   .modal{background:var(--paper);border-radius:var(--r);width:min(540px,100%);padding:var(--s5);
     margin:auto;box-shadow:0 12px 40px rgba(20,23,26,.2)}
+  /* บนมือถือหน้าต่างกลางจอทำให้นิ้วต้องเอื้อมขึ้นไปบนสุด และคีย์บอร์ดดันจนล้น
+     เปลี่ยนเป็นแผ่นเลื่อนขึ้นจากขอบล่าง ซึ่งเป็นที่ที่นิ้วอยู่อยู่แล้ว */
+  @media (max-width:700px){
+    #backdrop.on{display:flex;align-items:flex-end;padding:0}
+    .modal,.modal.branch-editor{width:100%;max-height:92vh;overflow:auto;margin:0;
+      border-radius:var(--r) var(--r) 0 0;padding:var(--s4) var(--s4) var(--s5);
+      animation:sheet-up .22s var(--ease)}
+    .modal::before{content:"";display:block;width:36px;height:4px;border-radius:2px;
+      background:var(--line);margin:0 auto var(--s4)}
+    .modal .actions{position:sticky;bottom:0;background:var(--paper);
+      padding-top:var(--s3);margin-top:var(--s4)}
+  }
+  @keyframes sheet-up{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}
+  @media (prefers-reduced-motion:reduce){.modal{animation:none}}
   .modal.branch-editor{width:min(760px,100%)}
   .modal h2{font-size:18px;margin-bottom:var(--s4)}
   .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--s3)}
