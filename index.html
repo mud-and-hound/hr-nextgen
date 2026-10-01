@@ -39,6 +39,9 @@
   /* ไอคอนจากคลัง svg-icon วาดเส้นขอบด้วย fill ไม่ใช่ stroke จึงต้องกลับค่าให้ */
   svg.filled{fill:currentColor;stroke:none}
   .sronly{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  /* คลาสอย่าง .shift-head ตั้ง display:flex ซึ่งชนะ [hidden] ตามปกติ
+     ซ่อนด้วย hidden แล้วยังเห็นอยู่คือบั๊กที่หาสาเหตุยาก จึงบังคับไว้ที่นี่ที่เดียว */
+  [hidden]{display:none!important}
 
   /* ── ปุ่ม ── */
   .btn{display:inline-flex;align-items:center;gap:var(--s2);border:1px solid var(--line);
@@ -91,9 +94,17 @@
     flex:1;min-width:0;letter-spacing:-.01em}
   header .mark{width:28px;height:28px;border-radius:8px;background:var(--green);display:grid;
     place-items:center;color:#fff;flex-shrink:0}
-  header .who{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  header .who b{color:var(--ink-2);font-weight:600}
-  @media (max-width:520px){header .who{display:none}}
+  /* ชิปผู้ใช้: ชื่อกับบทบาทอ่านเป็นสองบรรทัด ไม่ใช่ต่อกันด้วยจุดจนอ่านยาก */
+  .whochip{display:flex;align-items:center;gap:var(--s2);min-width:0}
+  .whochip .face{width:32px;height:32px;border-radius:50%;background:var(--green-soft);
+    color:var(--green-strong);display:grid;place-items:center;font-size:13px;font-weight:700;
+    flex-shrink:0;text-transform:uppercase}
+  .whochip .lines{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+  .whochip b{font-size:13px;color:var(--ink);font-weight:650;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .whochip span#whoId{font-size:11.5px;color:var(--muted);overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  @media (max-width:520px){.whochip .lines{display:none}}
 
   /* ── เมนู ──
      จอกว้าง: แถบซ้ายอยู่ประจำที่ ปุ่มแฮมเบอร์เกอร์ยุบ/กางมัน (คลาส navoff)
@@ -133,6 +144,34 @@
 
   /* คอลัมน์เนื้อหาแคบ อ่านง่ายกว่ายืดเต็มจอ */
   main{max-width:760px;margin:0 auto;padding:var(--s5) var(--s4) var(--s6)}
+
+  /* ── รายการซ้าย + รายละเอียดขวา ──
+     จอแคบไม่มีที่ให้สองคอลัมน์ รายละเอียดจึงไหลลงมาอยู่ใต้รายการแทน
+     ไม่ได้ซ่อน เพราะคนกดแถวแล้วต้องเห็นผลของการกดเสมอ */
+  .split{display:grid;gap:var(--s4);align-items:start}
+  .detailcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
+    padding:var(--s4);box-shadow:var(--shadow)}
+  .detailcard h2{font-size:15px;margin-bottom:var(--s3);letter-spacing:-.01em}
+  .detailcard .empty{padding:var(--s5) 0}
+  .dl{display:flex;flex-direction:column;gap:var(--s2);margin:0}
+  .dl > div{display:flex;align-items:baseline;gap:var(--s3);font-size:13px}
+  /* ป้ายไทยยาวกว่าอังกฤษ ถ้าแคบกว่านี้คำว่า "ปฏิทินวันหยุด" จะตกบรรทัด */
+  .dl dt{flex:0 0 116px;color:var(--muted);display:flex;align-items:center;gap:6px;
+    font-size:12.5px;white-space:nowrap}
+  .dl dt svg{width:14px;height:14px;flex-shrink:0;color:#b9c1c9}
+  .dl dd{margin:0;flex:1;min-width:0;color:var(--ink);overflow-wrap:anywhere;font-weight:500}
+  .detailcard .bar{margin:var(--s4) 0 0}
+  .detailhead{display:flex;align-items:flex-start;gap:var(--s3);margin-bottom:var(--s4)}
+  .detailhead .nm{font-weight:650;font-size:15px;letter-spacing:-.01em}
+  .detailhead .sub{font-size:12.5px;color:var(--muted);display:block;margin-top:2px}
+  .row.pick-on{background:var(--green-soft)}
+  .row.pick-on:hover:not(:disabled){background:var(--green-soft)}
+
+  @media (min-width:1180px){
+    main.wide{max-width:1280px}
+    main.wide .split{grid-template-columns:minmax(0,1fr) 316px}
+    main.wide .split > .detailwrap{position:sticky;top:76px}
+  }
 
   @media (min-width:980px){
     #drawer{position:fixed;inset:56px auto 0 0;width:244px;display:block;z-index:20}
@@ -186,6 +225,8 @@
   /* ── ตัวเลขสรุป ── */
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2);margin-bottom:var(--s4)}
   @media (max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}}
+  /* หน้าประวัติมีสี่ใบ ให้เรียงแถวเดียวบนจอกว้าง ไม่ใช่ 3+1 ที่ดูเหมือนตกหล่น */
+  @media (min-width:900px){.stats.four{grid-template-columns:repeat(4,1fr)}}
   .stat{display:flex;flex-direction:column;gap:2px;align-items:flex-start;background:var(--paper);
     border:1px solid var(--line);border-radius:var(--r);padding:var(--s3);text-align:left;
     box-shadow:var(--shadow);transition:border-color .12s,background .12s}
@@ -230,6 +271,7 @@
   .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:5px;line-height:1.5;
     background:var(--bg);color:var(--muted);border:1px solid var(--line);font-weight:500}
   .tag.warn{background:var(--amber-soft);color:var(--amber);border-color:#f1e0bf}
+  .tag.go-tag{background:var(--green-soft);color:var(--green-strong);border-color:#bfe3cd}
   .tag.late{background:var(--red-soft);color:var(--red);border-color:#f4d2cf}
   /* ปิดใช้งานไม่ใช่ความผิดพลาด จึงเป็นสีเทา ไม่ใช่สีแดงเหมือนการมาสาย */
   .tag.off{background:var(--line-soft);color:var(--muted);border-color:var(--line)}
@@ -292,6 +334,114 @@
   .more{width:100%;justify-content:center;border:0;border-top:1px solid var(--line-soft);
     border-radius:0;box-shadow:none;height:42px;color:var(--ink-2)}
   .more:active{transform:scale(.99)}
+
+  /* ── ตารางจริง มีหัวคอลัมน์ ──
+     จอแคบกว่า 860px หัวคอลัมน์หายไป แต่ละช่องพับเป็นบรรทัดพร้อมป้ายของตัวเอง
+     ดีกว่าให้เลื่อนตารางแนวนอน ซึ่งทำให้มองไม่เห็นว่ากำลังอ่านแถวไหนอยู่ */
+  /* overflow-x:auto ไม่ใช่ hidden — ถ้าตารางกว้างกว่าช่องที่มี ต้องเลื่อนไปดูได้
+     ไม่ใช่ตัดปุ่มจัดการทิ้งเงียบ ๆ จนกดไม่ได้ */
+  .tablewrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
+    overflow-x:auto;box-shadow:var(--shadow)}
+  .dtable{width:100%;border-collapse:collapse;font-size:13.5px}
+  .dtable th{text-align:left;font-size:11px;font-weight:700;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.05em;padding:var(--s2) var(--s3);
+    background:#fafbfc;border-bottom:1px solid var(--line);white-space:nowrap}
+  .dtable td{padding:var(--s3);border-top:1px solid var(--line-soft);vertical-align:middle}
+  .dtable tbody tr:first-child td{border-top:0}
+  .dtable tbody tr:hover{background:#fafbfc}
+  .dtable tbody tr.pick-on,.dtable tbody tr.pick-on:hover{background:var(--green-soft)}
+  .dtable .nm{font-weight:600}
+  .dtable .num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .dtable .act{display:flex;gap:var(--s1);justify-content:flex-end}
+  .dtable .act .btn{height:32px;font-size:12.5px;padding:0 var(--s2);gap:var(--s1)}
+  .dtable td:last-child{width:1%;white-space:nowrap}
+  /* ในตารางปุ่มเหลือไอคอน เพราะข้างตารางมีแผงรายละเอียดที่มีปุ่มพร้อมคำอยู่แล้ว
+     ป้ายคำยังอยู่ใน aria-label และโผล่กลับมาตอนจอแคบที่ไม่มีแผงนั้น */
+  .dtable .act .btn .lbl{display:none}
+  .dtable .act .btn{width:32px;padding:0;justify-content:center}
+  .dtable .act .btn svg{width:14px;height:14px}
+  .btn.danger{color:var(--red);border-color:#f0d3d0;background:var(--red-soft)}
+  .btn.danger:hover{background:#fbe2e0;border-color:#e8bdb8}
+  .btn.go{color:var(--green-strong);border-color:#bfe3cd;background:var(--green-soft)}
+  .btn.go:hover{background:#dcf1e5;border-color:#a9d9bb}
+  .empty-row td{padding:var(--s6) var(--s4);text-align:center;color:var(--muted);font-size:13.5px}
+  @media (max-width:860px){
+    .dtable thead{display:none}
+    .dtable tbody tr{display:block;border-top:1px solid var(--line);padding:var(--s2) 0}
+    .dtable tbody tr:first-child{border-top:0}
+    .dtable td{display:flex;align-items:baseline;gap:var(--s3);border:0;padding:3px var(--s4)}
+    .dtable td::before{content:attr(data-label);flex:0 0 112px;color:var(--muted);font-size:12px}
+    .dtable td.act-cell::before{display:none}
+    .dtable .act{justify-content:flex-start;margin-top:var(--s1)}
+    .dtable .act .btn{width:auto;padding:0 var(--s2)}
+    .dtable .act .btn .lbl{display:inline}
+  }
+
+  /* ── ปฏิทินวันหยุด ── */
+  .calpicks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:var(--s3);margin-bottom:var(--s4)}
+  .calpick{display:flex;align-items:center;gap:var(--s3);background:var(--paper);
+    border:1px solid var(--line);border-radius:var(--r);padding:var(--s3) var(--s4);
+    text-align:left;box-shadow:var(--shadow);transition:border-color .12s}
+  .calpick:hover{border-color:#cfd6dd}
+  .calpick[aria-pressed="true"]{border-color:var(--green);background:var(--green-soft)}
+  .calpick .mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+    background:var(--bg);color:var(--ink-2);flex-shrink:0}
+  .calpick[aria-pressed="true"] .mark{background:#fff;color:var(--green-strong)}
+  .calpick .mark svg{width:18px;height:18px}
+  .calpick .nm{font-weight:650;font-size:14px;display:block}
+  .calpick .sub{font-size:12px;color:var(--muted);display:block}
+  .monthbar{display:flex;align-items:center;gap:var(--s2);margin-bottom:var(--s3)}
+  .monthbar b{font-size:15px}
+  .monthsplit{display:grid;gap:var(--s4);grid-template-columns:minmax(0,1fr)}
+  /* ตารางเดือนมีขอบเขตของมันเอง ถ้าปล่อยยืดเต็มคอลัมน์ ช่องวันจะใหญ่จนดูเป็นปุ่มใหญ่ ๆ */
+  @media (min-width:720px){.monthsplit{grid-template-columns:minmax(0,420px) minmax(0,1fr)}}
+  .monthgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .monthgrid .dowhead{text-align:center;font-size:11.5px;color:var(--muted);font-weight:700;
+    padding-bottom:var(--s1)}
+  .monthgrid button{aspect-ratio:1;border:0;background:none;border-radius:50%;
+    font-size:13.5px;color:var(--ink);display:grid;place-items:center;position:relative;
+    font-variant-numeric:tabular-nums}
+  .monthgrid button:hover:not(:disabled){background:var(--bg)}
+  .monthgrid button.pad{color:#c6ccd3}
+  .monthgrid button.today{outline:1.5px solid var(--green);outline-offset:-2px}
+  .monthgrid button.holiday{background:var(--red-soft);color:var(--red);font-weight:650}
+  .monthgrid button.holiday.pick-on{background:var(--red);color:#fff}
+  .monthlist b{font-size:12.5px;display:block;margin-bottom:var(--s2)}
+  .monthlist button{display:flex;gap:var(--s2);align-items:baseline;width:100%;text-align:left;
+    border:0;background:none;padding:var(--s2);border-radius:var(--r-sm);font-size:12.5px}
+  .monthlist button:hover{background:var(--bg)}
+  .monthlist button[aria-pressed="true"]{background:var(--green-soft)}
+  .monthlist .d{font-weight:700;color:var(--red);flex:0 0 34px;font-variant-numeric:tabular-nums}
+  .monthlist .empty{padding:var(--s4) 0;font-size:12.5px}
+
+  /* ── ประวัติการแก้ไข ── */
+  .auditmark{width:28px;height:28px;border-radius:8px;display:inline-grid;place-items:center;
+    background:var(--bg);color:var(--ink-2);border:1px solid var(--line);
+    margin-right:var(--s2);vertical-align:middle;flex-shrink:0}
+  .auditmark svg{width:15px;height:15px}
+  .auditmark.go{background:var(--green-soft);color:var(--green-strong);border-color:#bfe3cd}
+  .auditmark.danger{background:var(--red-soft);color:var(--red);border-color:#f0d3d0}
+  .diff{display:flex;flex-direction:column;gap:var(--s2)}
+  .diffrow{display:grid;grid-template-columns:1fr auto 1fr;gap:var(--s2);align-items:center;
+    font-size:12.5px}
+  .diffrow .k{grid-column:1/-1;color:var(--muted);font-size:11.5px;font-weight:600}
+  .diffrow .was{background:var(--red-soft);color:var(--red);border:1px solid #f4d2cf;
+    border-radius:var(--r-sm);padding:4px var(--s2);overflow-wrap:anywhere}
+  .diffrow .now{background:var(--green-soft);color:var(--green-strong);border:1px solid #bfe3cd;
+    border-radius:var(--r-sm);padding:4px var(--s2);overflow-wrap:anywhere}
+  .diffrow .arrow{color:var(--muted)}
+
+  /* ── เลขหน้า ── */
+  .pager{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s3);
+    font-size:12.5px;color:var(--muted)}
+  .pager .grow{flex:1}
+  .pager .pages{display:inline-flex;gap:var(--s1)}
+  .pager .pages .btn{min-width:32px;height:32px;padding:0 var(--s2);justify-content:center}
+  .pager .pages .btn[aria-current="page"]{background:var(--green);border-color:var(--green);
+    color:#fff;font-weight:650}
+  .pager .btn.icon{width:32px;height:32px}
+  .pager .btn:active{transform:scale(.95)}
 
   .summary{text-align:center;margin:var(--s3) 0 0;font-size:12.5px;color:var(--muted)}
   .summary b{color:var(--ink-2);font-weight:650}
@@ -417,7 +567,10 @@
     <span class="brand"><span class="mark" data-dev-login>
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
     </span>HR NextGen</span>
-    <span class="who"><b id="whoName">—</b> · <span id="whoId">—</span></span>
+    <span class="whochip">
+      <span class="face" id="whoFace" aria-hidden="true">—</span>
+      <span class="lines"><b id="whoName">—</b><span id="whoId">—</span></span>
+    </span>
   </header>
   </div>
 
@@ -462,7 +615,7 @@
     </nav>
   </div>
 
-  <main>
+  <main class="wide">
     <p id="demobar" role="status">กำลังโหลดข้อมูล…</p>
     <nav class="crumb" id="crumb" aria-label="เส้นทางหน้า" hidden></nav>
     <!-- ═══ วันนี้ — หน้าแรก เปิดมาต้องเห็นทันทีว่าใครเข้าออกกี่โมง ═══ -->
@@ -505,14 +658,22 @@
           <select id="userLimit" aria-label="จำนวนรายการที่แสดง"></select>
         </span>
       </div>
-      <div class="list" id="userRows"></div>
-      <p class="summary" id="userCount"></p>
+      <div class="split">
+        <div>
+          <div class="list" id="userRows"></div>
+          <p class="summary" id="userCount"></p>
+        </div>
+        <div class="detailwrap">
+          <div class="detailcard" id="userDetail"></div>
+        </div>
+      </div>
     </section>
 
     <!-- ═══ กะเวลา ═══ -->
     <section class="panel" id="panel-shift-templates">
       <div class="viewhead"><div style="flex:1"><h1>แบบกะ</h1>
         <p class="sub">ตั้งเวลาเข้า–ออก เวลาพัก และชั่วโมงทำงานของกะหนึ่งอัน</p></div>
+        <button class="btn solid" id="tplAdd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>เพิ่มแบบกะ</button>
         <button class="helpbtn" type="button" data-help="tpl" aria-expanded="false"
           aria-controls="help-tpl" aria-label="วิธีใช้หัวข้อแบบกะ"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></div>
       <div class="help" id="help-tpl" hidden>
@@ -531,7 +692,7 @@
         </ul>
         <p>กะที่ผิด ม.23 หรือ ม.27 บันทึกไม่ได้</p>
       </div>
-      <div class="card shift-form">
+      <div class="card shift-form" id="tplForm" hidden>
         <div class="grid2">
           <label>รหัสกะ <input id="tplCode" maxlength="32" placeholder="M1"></label>
           <label>ชื่อกะ <input id="tplName" maxlength="200" placeholder="กะเช้า"></label>
@@ -546,11 +707,44 @@
         <div class="shift-preview" id="tplPreview" role="status" aria-live="polite"></div>
         <div class="bar">
           <button class="solid" id="tplSave">บันทึกกะ</button>
+          <button class="ghost" id="tplClose">ปิดฟอร์ม</button>
           <button class="ghost" id="tplReset" hidden>ยกเลิกการแก้ไข</button>
           <span class="count" id="tplEditing"></span>
         </div>
       </div>
-      <div class="list" id="tplRows"></div>
+
+      <div class="bar">
+        <input class="search" id="tplSearch" placeholder="ค้นหารหัสกะ หรือชื่อกะ">
+        <label class="shown"><span class="sronly">สถานะ</span>
+          <select id="tplStatus">
+            <option value="">ทุกสถานะ</option>
+            <option value="on">ใช้งาน</option>
+            <option value="off">ปิดใช้งาน</option>
+          </select></label>
+        <label class="shown"><svg class="filled" viewBox="0 0 24 24" aria-hidden="true"><path d="M24,.5c0,.276-.224,.5-.5,.5H9.5c-.276,0-.5-.224-.5-.5s.224-.5,.5-.5h14c.276,0,.5,.224,.5,.5Zm-3.5,4.5H9.5c-.276,0-.5,.224-.5,.5s.224,.5,.5,.5h11c.276,0,.5-.224,.5-.5s-.224-.5-.5-.5Zm-3,5H9.5c-.276,0-.5,.224-.5,.5s.224,.5,.5,.5h8c.276,0,.5-.224,.5-.5s-.224-.5-.5-.5Zm-3,5h-5c-.276,0-.5,.224-.5,.5s.224,.5,.5,.5h5c.276,0,.5-.224,.5-.5s-.224-.5-.5-.5Zm-5.354,4.561l-3.146,3.146V.5c0-.276-.224-.5-.5-.5s-.5,.224-.5,.5V22.707l-3.146-3.146c-.195-.195-.512-.195-.707,0s-.195,.512,0,.707l3.293,3.293c.292,.292,.676,.438,1.061,.438s.768-.146,1.061-.438l3.293-3.293c.195-.195,.195-.512,0-.707s-.512-.195-.707,0Z"/></svg>
+          <select id="tplSort" aria-label="เรียงตาม">
+            <option value="code">รหัสกะ (ก-ฮ)</option>
+            <option value="start">เวลาเข้างาน</option>
+            <option value="name">ชื่อกะ (ก-ฮ)</option>
+          </select></label>
+        <span class="count grow" id="tplTotal" style="text-align:right"></span>
+      </div>
+
+      <div class="split">
+        <div>
+          <div class="tablewrap">
+            <table class="dtable">
+              <thead><tr>
+                <th>รหัสกะ</th><th>ชื่อกะ</th><th>เวลาเข้า – ออก</th>
+                <th>ชั่วโมงทำงาน</th><th>เวลาพัก</th><th>สถานะ</th><th></th>
+              </tr></thead>
+              <tbody id="tplRows"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="tplPager"></div>
+        </div>
+        <div class="detailwrap"><div class="detailcard" id="tplDetail"></div></div>
+      </div>
     </section>
 
     <section class="panel" id="panel-shift-groups">
@@ -613,6 +807,8 @@
         เพราะวันนั้นจะตอบไม่ได้ว่าเข้ากะไหน ติ๊กแทนที่กะเดิมที่ทับกันถ้าตั้งใจให้ทับ</p>
         <p>จัดกะให้เฉพาะพนักงานที่เปิดใช้งานอยู่ คนที่ปิดใช้งานแล้วจะถูกข้าม</p>
       </div>
+      <div class="split">
+        <div>
       <div class="card shift-form">
         <div class="grid2">
           <label>กะ <select id="asgTemplate"></select></label>
@@ -633,17 +829,27 @@
         </fieldset>
         <div id="asgTargetBox"></div>
         <div class="shift-preview" id="asgPreview" role="status" aria-live="polite"></div>
-        <div class="bar">
-          <button class="solid" id="asgSave">จัดกะ</button>
-          <label class="inline"><input type="checkbox" id="asgReplace"> แทนที่กะเดิมที่ทับกัน</label>
-        </div>
       </div>
+        </div>
+        <div class="detailwrap"><div class="detailcard" id="asgSummary"></div></div>
+      </div>
+
+      <h3 class="shift-head">รายการจัดกะล่าสุด</h3>
       <div class="bar">
         <input class="search" id="asgSearch" placeholder="ค้นหาชื่อ รหัสพนักงาน สาขา หรือชื่อกะ">
-        <span class="count" id="asgCount"></span>
+        <span class="count grow" id="asgCount" style="text-align:right"></span>
         <button class="clearbtn" id="asgClear" hidden>ล้างตัวกรอง</button>
       </div>
-      <div class="list" id="asgRows"></div>
+      <div class="tablewrap">
+        <table class="dtable">
+          <thead><tr>
+            <th>พนักงาน</th><th>กะ</th><th>วันที่เริ่ม</th><th>วันสิ้นสุด</th>
+            <th>วันทำงาน</th><th></th>
+          </tr></thead>
+          <tbody id="asgRows"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="asgPager"></div>
     </section>
 
     <!-- ═══ สาขา ═══ -->
@@ -656,22 +862,59 @@
           <select id="branchLimit" aria-label="จำนวนรายการที่แสดง"></select>
         </span>
         <button class="btn" id="bulkBtn" hidden>ปรับรัศมีที่เลือก</button></div>
-      <div class="list" id="branchRows"></div>
-      <p class="summary" id="branchCount"></p>
+      <div class="split">
+        <div>
+          <div class="list" id="branchRows"></div>
+          <p class="summary" id="branchCount"></p>
+        </div>
+        <div class="detailwrap">
+          <div class="detailcard" id="branchDetail"></div>
+        </div>
+      </div>
     </section>
 
     <!-- ═══ ปฏิทินวันหยุด ═══ -->
     <section class="panel" id="panel-calendars">
-      <div class="viewhead"><h1>ปฏิทินวันหยุด</h1></div>
-      <div class="note" style="margin:0 0 16px">
-        <b>มีได้หลายชุด</b> — ออฟฟิศกับหน้าร้านหยุดคนละวัน จึงใช้คนละปฏิทิน
-        ผูกให้พนักงานแต่ละคนได้ในหน้าพนักงาน
-        ม.29 กำหนดว่าวันหยุดตามประเพณีต้องไม่น้อยกว่า 13 วันต่อปี รวมวันแรงงานแห่งชาติ
-        ปฏิทินที่ยังไม่ครบจะถูกเตือนแต่ยังบันทึกได้
+      <div class="viewhead"><div style="flex:1"><h1>ปฏิทินวันหยุด</h1>
+        <p class="sub">จัดการวันหยุดประจำปี แยกตามกลุ่มพนักงาน พร้อมดูทั้งเดือนในหน้าเดียว</p></div>
+        <button class="btn solid" id="calAdd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>สร้างปฏิทิน</button>
+        <button class="helpbtn" type="button" data-help="cal" aria-expanded="false"
+          aria-controls="help-cal" aria-label="วิธีใช้หน้าปฏิทินวันหยุด"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></div>
+      <div class="help" id="help-cal" hidden>
+        <p><b>มีได้หลายชุด</b> — ออฟฟิศกับหน้าร้านหยุดคนละวัน จึงใช้คนละปฏิทิน
+        เลือกการ์ดด้านบนเพื่อสลับดูทีละชุด แล้วผูกให้พนักงานแต่ละคนได้ในหน้าพนักงาน</p>
+        <p><b>ม.29</b> วันหยุดตามประเพณีต้องไม่น้อยกว่า 13 วันต่อปี รวมวันแรงงานแห่งชาติ
+        ปฏิทินที่ยังไม่ครบจะถูกเตือนแต่ยังบันทึกได้ เพราะกรอกทั้งปีไม่เสร็จในรอบเดียว</p>
+        <p>วันที่กดได้ในตารางคือวันหยุดเท่านั้น การเพิ่มหรือลบวันหยุดทำในฟอร์มหลังปุ่มสร้างปฏิทิน
+        หรือปุ่มแก้ไขปฏิทินในแผงขวา</p>
       </div>
 
-      <h3 class="shift-head">สร้างหรือแก้ไขปฏิทิน</h3>
-      <div class="card shift-form">
+      <div class="calpicks" id="calPicks"></div>
+
+      <div class="split">
+        <div>
+          <div class="card" style="padding:var(--s4)">
+            <div class="monthbar">
+              <b id="calMonthName" translate="no"></b><span class="grow"></span>
+              <button class="btn icon" id="calPrev" aria-label="เดือนก่อนหน้า"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+              <button class="btn" id="calToday">วันนี้</button>
+              <button class="btn icon" id="calNext" aria-label="เดือนถัดไป"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            </div>
+            <div class="monthsplit">
+              <div class="monthgrid" id="calGrid"></div>
+              <div class="monthlist">
+                <b>วันหยุดในเดือนนี้</b>
+                <div id="calMonthRows"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="detailwrap"><div class="detailcard" id="calDetail"></div></div>
+      </div>
+
+
+      <h3 class="shift-head" id="calFormHead" hidden>สร้างหรือแก้ไขปฏิทิน</h3>
+      <div class="card shift-form" id="calForm" hidden>
         <div class="grid2">
           <label>ชื่อปฏิทิน <input id="calName" maxlength="200" placeholder="ปฏิทินสำนักงาน"></label>
           <label>หมายเหตุ <input id="calNote" maxlength="500" placeholder="ไม่บังคับ"></label>
@@ -688,19 +931,47 @@
         <div class="shift-preview" id="calWarn" role="status" aria-live="polite"></div>
         <div class="bar">
           <button class="btn solid" id="calSave">บันทึกปฏิทิน</button>
+          <button class="btn" id="calClose">ปิดฟอร์ม</button>
           <button class="btn" id="calReset" hidden>ยกเลิกการแก้ไข</button>
           <span class="count" id="calEditing"></span>
         </div>
       </div>
 
-      <h3 class="shift-head">ปฏิทินที่มี</h3>
-      <div class="list" id="calRows"></div>
     </section>
 
     <!-- ═══ ประวัติการแก้ไข ═══ -->
     <section class="panel" id="panel-audit">
-      <div class="viewhead"><h1>ประวัติการแก้ไข</h1></div>
-      <div class="list" id="auditRows"></div>
+      <div class="viewhead"><div style="flex:1"><h1>ประวัติการแก้ไข</h1>
+        <p class="sub">ติดตามการเพิ่ม แก้ไข และปิดใช้งาน เพื่อให้ตรวจย้อนหลังได้</p></div>
+        <button class="btn" id="auditExport"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M8 11.5l4 4 4-4"/><path d="M4.5 19.5h15"/></svg>ส่งออกข้อมูล</button></div>
+
+      <div class="stats four" id="auditStats"></div>
+
+      <div class="bar">
+        <input class="search" id="auditSearch" placeholder="ค้นหากิจกรรม ผู้ใช้งาน หรือโมดูล">
+        <label class="shown"><span class="sronly">ประเภทกิจกรรม</span>
+          <select id="auditAction"><option value="">ทุกกิจกรรม</option></select></label>
+        <label class="shown"><span class="sronly">โมดูล</span>
+          <select id="auditModule"><option value="">ทุกโมดูล</option></select></label>
+        <label class="shown"><span class="sronly">ผู้ใช้งาน</span>
+          <select id="auditUser"><option value="">ทุกผู้ใช้งาน</option></select></label>
+      </div>
+      <div class="bar" id="auditChips" role="group" aria-label="กรองตามโมดูล"></div>
+
+      <div class="split">
+        <div>
+          <div class="tablewrap">
+            <table class="dtable">
+              <thead><tr>
+                <th>กิจกรรม</th><th>โมดูล</th><th>ผู้ดำเนินการ</th><th>วันเวลา</th>
+              </tr></thead>
+              <tbody id="auditRows"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="auditPager"></div>
+        </div>
+        <div class="detailwrap"><div class="detailcard" id="auditDetail"></div></div>
+      </div>
     </section>
   </main>
 </div>
@@ -759,7 +1030,7 @@ async function api(path,options={}){
 function sessionEnded(){
  devSession=false;token=null;users=[];branches=[];brands=[];calendars=[];saving=false;closeModal();
  $('shell').classList.remove('on');$('loginView').style.display='grid';
- ['todayRows','userRows','branchRows','auditRows','calRows','calDates','modalBody'].forEach(id=>$(id).replaceChildren());
+ ['todayRows','userRows','branchRows','auditRows','calDates','modalBody'].forEach(id=>$(id).replaceChildren());
  clearShifts();setDrawer(false);dayRows=[];dayKey='';dayOpen=null;dayDetail.clear();
  showError('loginAlert','หมดเวลาใช้งาน กรุณาเข้าสู่ระบบใหม่');
 }
@@ -789,6 +1060,8 @@ async function loadData(){
 async function acceptAdminLogin(data){
  devSession=data.development===true;token=data.token;$('pw').value='';showError('loginAlert','');
  $('whoName').textContent=data.user.display_name;$('whoId').textContent=data.user.username;
+ /* อักษรย่อจากชื่อที่แสดง ถ้าไม่มีก็ใช้ชื่อบัญชี จะได้ไม่เหลือวงกลมเปล่า */
+ $('whoFace').textContent=(data.user.display_name||data.user.username||'?').trim()[0]||'?';
  $('loginView').style.display='none';$('shell').classList.add('on');
  HRNGProfile.languageControl($('nameLanguageControl'));
  $('dayPick').value=bangkokToday();
@@ -867,7 +1140,7 @@ function setCrumb(button){
 const PANEL_OPEN={
  audit:loadAudit, today:loadDay,
  'shift-templates':openShiftsTab, 'shift-groups':openShiftsTab, 'shift-assign':openShiftsTab,
- calendars:()=>{if(!$('calDates').children.length)resetCalendarForm();},
+ calendars:()=>{if(!$('calDates').children.length)resetCalendarForm();renderCalendars();},
 };
 function goPanel(button){
  document.querySelectorAll('#drawer nav button[data-panel]').forEach(x=>{
@@ -1149,7 +1422,7 @@ const RETIRED_FACE='<svg class="filled" viewBox="0 0 24 24" aria-hidden="true">'
 function userRowHtml(u){
  const face=u.is_active?`<span class="hrng-person-avatar" data-profile-avatar="${u.id}"></span>`
    :`<span class="hrng-person-avatar">${RETIRED_FACE}</span>`;
- return `<button class="row${u.is_active?'':' off'}" data-edit-user="${u.id}">
+ return `<button class="row${u.is_active?'':' off'}${u.id===pickedUser?' pick-on':''}" data-pick-user="${u.id}">
    ${face}
    <span class="main"><span class="hrng-person-name nm" translate="no">${esc(HRNGProfile.name(u))}</span>
      <span class="sub"><span translate="no">${esc(u.employee_code||'ยังไม่ระบุ')} · ${
@@ -1192,12 +1465,17 @@ function renderUsers(){
    HRNGProfile.avatar(el,list.find(u=>String(u.id)===el.dataset.profileAvatar)));
  $('userCount').innerHTML=`<b>${rows.length}</b> คน`
    +(rows.length<users.length?` จากทั้งหมด ${users.length}`:'');
+ renderUserDetail();
 }
 
 // เปลี่ยนภาษาแสดงชื่อแล้วรายชื่อต้องเปลี่ยนตามทันที ไม่ต้องโหลดใหม่
 window.addEventListener('hrng:name-language',()=>{renderUsers();renderDay();});
 // สลับภาษาระบบแล้ว วันที่ต้องเปลี่ยนปฏิทินตาม จึงต้องวาดหัวใหม่
-window.addEventListener('hrng:lang',()=>{if(dayKey)$('todayDate').textContent=dayHeading(dayKey);});
+window.addEventListener('hrng:lang',()=>{
+ if(dayKey)$('todayDate').textContent=dayHeading(dayKey);
+ if(calMonth)renderMonth();
+ if(auditItems.length)renderAudit();
+});
 
 /* ═══ สาขา ═══ */
 $('branchSearch').addEventListener('input',renderBranches);
@@ -1221,9 +1499,9 @@ function renderBranches(){
   const name=key?brands.find(r=>r.id===key)?.name:null;
   return `<div class="grouphead"><span${name?' translate="no"':''}>${
     esc(name||'ไม่สังกัดแบรนด์')}</span><span class="count">${rows.length} สาขา</span></div>`+
-   rows.map(b=>`<div class="row${b.is_active?'':' off'}">
+   rows.map(b=>`<div class="row${b.is_active?'':' off'}${b.id===pickedBranch?' pick-on':''}">
      <input type="checkbox" class="pick" data-id="${b.id}" aria-labelledby="bname-${b.id}">
-     <button class="main" data-edit-branch="${b.id}" style="border:0;background:none;text-align:left;padding:0">
+     <button class="main" data-pick-branch="${b.id}" style="border:0;background:none;text-align:left;padding:0">
        <span class="nm" id="bname-${b.id}" translate="no">${esc(b.name)}</span>
        <span class="sub"><span translate="no">${esc(b.code)}</span> · รัศมี ${b.radius_m} ม.${
          b.lat==null?' · <span class="tag warn">ยังไม่มีพิกัด</span>':''}${
@@ -1232,6 +1510,7 @@ function renderBranches(){
  }).join('')+footer||'<div class="empty">ไม่พบสาขา</div>';
  $('branchCount').innerHTML=`<b>${kept.length}</b> สาขา`
    +(kept.length<branches.length?` จากทั้งหมด ${branches.length}`:'');
+ renderBranchDetail();
  syncBulk();
 }
 
@@ -1240,25 +1519,318 @@ function syncBulk(){const n=picked().length;$('bulkBtn').hidden=!n;$('bulkBtn').
 $('branchRows').addEventListener('change',event=>{if(event.target.classList.contains('pick'))syncBulk();});
 
 /* ═══ ประวัติการแก้ไข ═══ */
+const AUDIT_ACTION={create:'เพิ่มข้อมูล',update:'แก้ไขข้อมูล',retire:'ปิดใช้งาน',
+ assign:'จัดกะ',unassign:'ยกเลิกการจัดกะ',bulk_radius:'ปรับรัศมีหลายสาขา'};
+const AUDIT_MODULE={employee:'พนักงาน',branch:'สาขา',shift_template:'กะเวลา',
+ shift_group:'กะเวลา',shift_assignment:'กะเวลา',holiday_calendar:'ปฏิทินวันหยุด'};
+/* สีไอคอนบอกชนิดการกระทำตั้งแต่กวาดตา เขียวคือเพิ่ม ฟ้าคือแก้ แดงคือปิด/ลบ */
+const AUDIT_LOOK={
+ create:{tone:'go',icon:'<path d="M12 5v14M5 12h14"/>'},
+ update:{tone:'',icon:'<path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/>'},
+ retire:{tone:'danger',icon:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'},
+ assign:{tone:'go',icon:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/>'},
+ unassign:{tone:'danger',icon:'<path d="M6 6l12 12M18 6L6 18"/>'},
+ bulk_radius:{tone:'',icon:'<circle cx="12" cy="12" r="8"/><path d="M12 12h6"/>'},
+};
+let auditItems=[],pickedAudit=null,auditChip='';
+
 async function loadAudit(){
- $('auditRows').innerHTML='<div class="empty">กำลังโหลดประวัติ…</div>';
+ $('auditRows').innerHTML='<tr class="empty-row"><td colspan="4">กำลังโหลดประวัติ…</td></tr>';
  try{
   const d=await api('/audit');
-  $('auditRows').innerHTML=d.items.map(a=>`<div class="row">
-    <span class="main"><span class="nm"><span>${esc(({create:'เพิ่ม',update:'แก้ไข',retire:'ปิดใช้งาน',
-      assign:'จัดกะ',unassign:'ยกเลิกกะ',bulk_radius:'ปรับรัศมีหลายสาขา'})[a.action]||a.action)}</span> <span>${
-      esc({employee:'ข้อมูลพนักงาน',branch:'ข้อมูลสาขา',shift_template:'แบบกะ',shift_group:'กลุ่ม',
-           shift_assignment:'การจัดกะ'}[a.entity_type]||a.entity_type)}</span> <span translate="no">#${a.entity_id}</span></span>
-      <span class="sub"><span translate="no">${esc(a.username)}</span> · ${
-        esc(new Date(a.created_at).toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}</span></span>
-  </div>`).join('')||'<div class="empty">ยังไม่มีประวัติการแก้ไข</div>';
- }catch(e){$('auditRows').innerHTML=`<div class="empty">${esc(e.message)}</div>`;}
+  auditItems=d.items;
+  fillAuditFilters();
+  renderAudit();
+ }catch(e){$('auditRows').innerHTML=`<tr class="empty-row"><td colspan="4">${esc(e.message)}</td></tr>`;}
 }
+
+function fillAuditFilters(){
+ const keep=(box,values,blank)=>{
+  const chosen=box.value;
+  box.innerHTML=`<option value="">${blank}</option>`+values.map(value=>
+    `<option value="${esc(value)}" translate="no">${esc(value)}</option>`).join('');
+  box.value=values.includes(chosen)?chosen:'';
+ };
+ keep($('auditUser'),[...new Set(auditItems.map(a=>a.username))].sort(),'ทุกผู้ใช้งาน');
+ const actions=[...new Set(auditItems.map(a=>a.action))];
+ $('auditAction').innerHTML='<option value="">ทุกกิจกรรม</option>'+actions.map(value=>
+   `<option value="${esc(value)}">${esc(AUDIT_ACTION[value]||value)}</option>`).join('');
+ const modules=[...new Set(auditItems.map(a=>AUDIT_MODULE[a.entity_type]||a.entity_type))];
+ $('auditModule').innerHTML='<option value="">ทุกโมดูล</option>'+modules.map(value=>
+   `<option value="${esc(value)}">${esc(value)}</option>`).join('');
+}
+
+const auditModuleOf=row=>AUDIT_MODULE[row.entity_type]||row.entity_type;
+const bangkokDay=value=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',
+ year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(value));
+
+function auditList(){
+ const query=$('auditSearch').value.trim().toLowerCase();
+ const action=$('auditAction').value,module_=$('auditModule').value,user=$('auditUser').value;
+ const today=bangkokToday();
+ return auditItems.filter(row=>{
+  if(action&&row.action!==action)return false;
+  if(module_&&auditModuleOf(row)!==module_)return false;
+  if(user&&row.username!==user)return false;
+  if(auditChip==='today'&&bangkokDay(row.created_at)!==today)return false;
+  if(auditChip&&auditChip!=='today'&&auditModuleOf(row)!==auditChip)return false;
+  if(!query)return true;
+  return [AUDIT_ACTION[row.action]||row.action,auditModuleOf(row),row.username,
+          '#'+row.entity_id].join(' ').toLowerCase().includes(query);
+ });
+}
+
+function renderAuditStats(){
+ const today=bangkokToday();
+ const count=test=>auditItems.filter(test).length;
+ const cards=[
+  ['กิจกรรมวันนี้','',count(a=>bangkokDay(a.created_at)===today)],
+  ['การแก้ไขข้อมูล','',count(a=>a.action==='update')],
+  ['การเพิ่มข้อมูล','',count(a=>a.action==='create')],
+  ['การปิดใช้งาน','warn',count(a=>a.action==='retire'||a.action==='unassign')],
+ ];
+ $('auditStats').innerHTML=cards.map(([label,tone,value])=>
+   `<div class="stat ${tone}"><span class="k">${esc(label)}</span>
+     <span class="n">${value}</span><span class="k">รายการ</span></div>`).join('');
+}
+
+function renderAuditChips(){
+ const today=bangkokToday();
+ const groups=[...new Set(auditItems.map(auditModuleOf))];
+ const chips=[['','ทั้งหมด',auditItems.length],
+   ['today','วันนี้',auditItems.filter(a=>bangkokDay(a.created_at)===today).length],
+   ...groups.map(name=>[name,name,auditItems.filter(a=>auditModuleOf(a)===name).length])];
+ $('auditChips').innerHTML=`<span class="pick">${chips.map(([value,label,count])=>
+   `<button class="btn" data-audit-chip="${esc(value)}" aria-pressed="${value===auditChip}">${
+     esc(label)}<span class="count" translate="no">(${count})</span></button>`).join('')}</span>`;
+}
+
+function renderAudit(){
+ renderAuditStats();renderAuditChips();
+ const list=auditList();
+ const info=paginate('audit',list);
+ $('auditRows').innerHTML=info.slice.map(row=>{
+  const look=AUDIT_LOOK[row.action]||AUDIT_LOOK.update;
+  return `<tr class="${row.id===pickedAudit?'pick-on':''}" data-pick-audit="${row.id}">
+   <td data-label="กิจกรรม"><span class="auditmark ${look.tone}"><svg viewBox="0 0 24 24" aria-hidden="true">${
+     look.icon}</svg></span><span class="nm">${esc(AUDIT_ACTION[row.action]||row.action)}
+     <span translate="no">#${row.entity_id}</span></span></td>
+   <td data-label="โมดูล"><span class="tag">${esc(auditModuleOf(row))}</span></td>
+   <td data-label="ผู้ดำเนินการ"><span translate="no">${esc(row.username)}</span></td>
+   <td data-label="วันเวลา" class="num" translate="no">${esc(auditWhen(row.created_at))}</td>
+  </tr>`;
+ }).join('')||'<tr class="empty-row"><td colspan="4">ยังไม่มีประวัติการแก้ไข</td></tr>';
+ $('auditPager').innerHTML=pagerHtml('audit',info);
+ renderAuditDetail();
+ if(window.HRNGLang)HRNGLang.apply();
+}
+const auditWhen=value=>new Date(value).toLocaleString(
+  window.HRNGLang?HRNGLang.locale():'th-TH',{timeZone:'Asia/Bangkok'});
+
+/* ก่อน/หลังการแก้ไข: เทียบเฉพาะคีย์ที่เปลี่ยนจริง ถ้าโชว์ทุกคีย์จะหาจุดที่เปลี่ยนไม่เจอ
+   คีย์ที่เป็นเวลาแก้ไขและเลขรุ่นเปลี่ยนทุกครั้งอยู่แล้ว จึงไม่นับว่าเป็นการเปลี่ยนแปลง */
+const AUDIT_SKIP=new Set(['version','updated_at','created_at']);
+function auditChanges(before,after){
+ const keys=[...new Set([...Object.keys(before||{}),...Object.keys(after||{})])]
+   .filter(key=>!AUDIT_SKIP.has(key));
+ return keys.filter(key=>JSON.stringify(before?.[key])!==JSON.stringify(after?.[key]))
+   .map(key=>({key,from:before?.[key],to:after?.[key]}));
+}
+const auditValue=value=>value===null||value===undefined||value===''?'—'
+  :typeof value==='object'?JSON.stringify(value):String(value);
+
+function renderAuditDetail(){
+ const row=auditItems.find(a=>a.id===pickedAudit);
+ if(!row){$('auditDetail').innerHTML=detailEmpty('กดแถวในตารางเพื่อดูรายละเอียด');return;}
+ const changes=auditChanges(row.before_data,row.after_data);
+ $('auditDetail').innerHTML=`<h2>รายละเอียดกิจกรรม</h2>
+  <div class="detailhead"><span style="flex:1;min-width:0">
+    <span class="nm">${esc(AUDIT_ACTION[row.action]||row.action)}
+      <span translate="no">#${row.entity_id}</span></span>
+    <span class="sub">${esc(auditModuleOf(row))}</span></span></div>
+  <dl class="dl">
+   ${field('org','ผู้ดำเนินการ',row.username)}
+   ${field('clock','วันเวลา',auditWhen(row.created_at))}
+  </dl>
+  <h2 style="margin-top:16px">ก่อน / หลังการแก้ไข</h2>
+  ${changes.length?`<div class="diff">${changes.map(change=>`<div class="diffrow">
+    <span class="k" translate="no">${esc(change.key)}</span>
+    <span class="was" translate="no">${esc(auditValue(change.from))}</span>
+    <span class="arrow" aria-hidden="true">→</span>
+    <span class="now" translate="no">${esc(auditValue(change.to))}</span>
+   </div>`).join('')}</div>`
+  :'<p class="hintlabel">ไม่มีค่าใดเปลี่ยนแปลง</p>'}`;
+ if(window.HRNGLang)HRNGLang.apply();
+}
+
+$('auditRows').addEventListener('click',event=>{
+ const row=event.target.closest('[data-pick-audit]');
+ if(!row)return;
+ pickedAudit=Number(row.dataset.pickAudit);renderAudit();
+});
+$('auditChips').addEventListener('click',event=>{
+ const chip=event.target.closest('[data-audit-chip]');
+ if(!chip)return;
+ auditChip=chip.dataset.auditChip;pages.audit=1;renderAudit();
+});
+['auditSearch','auditAction','auditModule','auditUser'].forEach(id=>
+ $(id).addEventListener('input',()=>{pages.audit=1;renderAudit();}));
+
+/* ส่งออกเป็น CSV จากสิ่งที่กรองไว้อยู่ ไม่ใช่ทั้งหมด เพราะคนกดมักกรองมาแล้ว
+   นำหน้าด้วย BOM ไม่งั้น Excel บนวินโดวส์เปิดภาษาไทยเป็นขยะ */
+$('auditExport').addEventListener('click',()=>{
+ const rows=auditList();
+ if(!rows.length){banner('ไม่มีรายการให้ส่งออก',true);return;}
+ const cell=value=>`"${String(value??'').replace(/"/g,'""')}"`;
+ const csv=['วันเวลา,กิจกรรม,โมดูล,รหัสข้อมูล,ผู้ดำเนินการ,รายการที่เปลี่ยน',
+  ...rows.map(row=>[auditWhen(row.created_at),AUDIT_ACTION[row.action]||row.action,
+    auditModuleOf(row),'#'+row.entity_id,row.username,
+    auditChanges(row.before_data,row.after_data).map(c=>c.key).join(' ')].map(cell).join(','))
+ ].join('\r\n');
+ const link=document.createElement('a');
+ link.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+ link.download=`hrng-audit-${bangkokToday()}.csv`;
+ document.body.append(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(link.href),1000);
+ banner(`ส่งออก ${rows.length} รายการแล้ว`);
+});
 
 /* ═══ หน้าต่างแก้ไข ═══ */
 function inputField(key,label,value='',type='text',extra=''){return `<div class="field"><label for="edit-${key}">${label}</label><input id="edit-${key}" data-k="${key}" type="${type}" value="${esc(value)}" ${extra}></div>`;}
 function value(key){return $('edit-'+key).value.trim();}
 function activeField(active){return `<div class="field"><label for="edit-is_active">สถานะ</label><select id="edit-is_active"><option value="true"${active?' selected':''}>เปิดใช้งาน</option><option value="false"${!active?' selected':''}>ปิดใช้งาน</option></select></div>`;}
+
+/* ═══ เลขหน้าแบบใช้ร่วมกัน ═══
+   ตารางใช้เลขหน้า ส่วนรายการแบบการ์ด (พนักงาน/สาขา) ใช้ปุ่ม "แสดงเพิ่ม"
+   ต่างกันโดยตั้งใจ: ตารางคนมักอยากกระโดดไปหน้าท้าย ๆ ส่วนรายชื่อมักไล่ดูลงไปเรื่อย ๆ */
+const pages={tpl:1,asg:1,audit:1};
+const pageSize={tpl:10,asg:10,audit:10};
+
+function paginate(name,rows){
+ const size=pageSize[name];
+ const last=Math.max(1,Math.ceil(rows.length/size));
+ if(pages[name]>last)pages[name]=last;        // กรองแล้วหน้าหายไป ต้องถอยมาหน้าสุดท้าย
+ const from=(pages[name]-1)*size;
+ return {slice:rows.slice(from,from+size),from,last,total:rows.length};
+}
+function pagerHtml(name,info){
+ if(!info.total)return '';
+ const page=pages[name];
+ /* หน้าเยอะ ๆ ไม่แสดงปุ่มทุกหน้า แสดงรอบ ๆ หน้าปัจจุบัน ไม่งั้นแถวปุ่มจะยาวกว่าตาราง */
+ const window_=[...Array(info.last).keys()].map(i=>i+1)
+   .filter(n=>n===1||n===info.last||Math.abs(n-page)<=1);
+ let numbers='',previous=0;
+ for(const n of window_){
+  if(previous&&n-previous>1)numbers+='<span class="count">…</span>';
+  numbers+=`<button class="btn" data-page="${name}:${n}"${
+    n===page?' aria-current="page"':''}>${n}</button>`;
+  previous=n;
+ }
+ return `<label class="shown"><span class="sronly">จำนวนรายการที่แสดง</span>
+   <select data-size="${name}">${[10,20,50,100].map(v=>
+     `<option value="${v}"${v===pageSize[name]?' selected':''}>${v}</option>`).join('')}</select>
+   </label><span>รายการต่อหน้า</span><span class="grow"></span>
+  <span>${info.from+1} - ${info.from+info.slice.length} จาก ${info.total} รายการ</span>
+  <span class="pages">
+   <button class="btn icon" data-page="${name}:${page-1}" data-arrow="prev"${page===1?' disabled':''}
+     aria-label="หน้าก่อนหน้า"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+   ${numbers}
+   <button class="btn icon" data-page="${name}:${page+1}" data-arrow="next"${page===info.last?' disabled':''}
+     aria-label="หน้าถัดไป"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+  </span>`;
+}
+const PAGE_RENDER={tpl:()=>renderTemplates(),asg:()=>renderAssignments(),audit:()=>renderAudit()};
+document.addEventListener('click',event=>{
+ const button=event.target.closest('[data-page]');
+ if(!button||button.disabled)return;
+ const [name,number]=button.dataset.page.split(':');
+ pages[name]=Number(number);PAGE_RENDER[name]();
+});
+document.addEventListener('change',event=>{
+ const box=event.target.closest('[data-size]');
+ if(!box)return;
+ const name=box.dataset.size;
+ pageSize[name]=Number(box.value);pages[name]=1;PAGE_RENDER[name]();
+});
+
+/* ═══ แผงรายละเอียดด้านขวา ═══
+   กดแถวแล้วรายละเอียดขึ้นข้างขวา แทนที่จะเด้งหน้าต่างทับทันที
+   เหตุผล: ส่วนใหญ่กดเพื่อ "ดู" ไม่ใช่ "แก้" หน้าต่างทับบังรายการจนเทียบคนถัดไปไม่ได้
+   ปุ่มแก้ไขยังอยู่ แต่ย้ายไปอยู่ในแผง คือต้องตั้งใจอีกครั้งถึงจะเข้าโหมดแก้ */
+let pickedUser=null,pickedBranch=null;
+
+const ICONS={"id": "<path d=\"M4.5 6h15a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19.5 18h-15A1.5 1.5 0 0 1 3 16.5v-9A1.5 1.5 0 0 1 4.5 6Z\"/><path d=\"M8.5 13.5h3M14 10h3.5M14 13.5h3.5\"/>", "org": "<path d=\"M4 20V5.5A1.5 1.5 0 0 1 5.5 4h7A1.5 1.5 0 0 1 14 5.5V20\"/><path d=\"M14 10h4.5A1.5 1.5 0 0 1 20 11.5V20\"/><path d=\"M2.5 20h19\"/><path d=\"M7 8h4M7 12h4M7 16h4\"/>", "kind": "<path d=\"M4 8.5h16v10.5H4z\"/><path d=\"M9 8.5V6a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 6v2.5\"/>", "pin": "<path d=\"M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/>", "clock": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/>", "cal": "<rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15\" rx=\"2.5\"/><path d=\"M8 3v4M16 3v4M3.5 10h17\"/>", "tag": "<path d=\"M11 3h7a3 3 0 0 1 3 3v7l-9 9-10-10Z\"/><circle cx=\"16.5\" cy=\"7.5\" r=\"1.3\"/>", "ruler": "<path d=\"M3 15.5 15.5 3 21 8.5 8.5 21Z\"/><path d=\"M7 11.5 9 13.5M10 8.5 12 10.5M13 5.5 15 7.5\"/>"};
+function field(icon,label,value,raw){
+ if(value===''||value===undefined||value===null)return '';
+ return `<div><dt><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[icon]}</svg>${label}</dt>`
+   +`<dd${raw?'':' translate="no"'}>${raw?value:esc(value)}</dd></div>`;
+}
+function detailEmpty(text){return `<div class="empty">${esc(text)}</div>`;}
+
+function renderUserDetail(){
+ const u=users.find(x=>x.id===pickedUser);
+ if(!u){$('userDetail').innerHTML=detailEmpty('กดแถวในรายการเพื่อดูรายละเอียด');return;}
+ const line=u.line_bound_at?'<span class="tag">ผูก LINE แล้ว</span>'
+   :'<span class="tag warn">รอผูก LINE</span>';
+ const calendar=calendars.find(c=>c.id===u.holiday_calendar_id);
+ $('userDetail').innerHTML=`<h2>รายละเอียดพนักงาน</h2>
+  <div class="detailhead">
+    <span class="hrng-person-avatar" ${u.is_active?`data-profile-avatar="${u.id}"`:''}>${
+      u.is_active?'':RETIRED_FACE}</span>
+    <span style="flex:1;min-width:0"><span class="nm" translate="no">${esc(HRNGProfile.name(u))}</span>
+      <span class="sub" translate="no">${esc(u.position||'ไม่ระบุตำแหน่ง')}</span></span>
+    ${u.is_active?line:'<span class="tag off">ปิดใช้งาน</span>'}
+  </div>
+  <dl class="dl">
+   ${field('id','รหัสพนักงาน',u.employee_code||'ยังไม่ระบุ')}
+   ${field('org','บริษัท',u.company||'')}
+   ${field('kind','ประเภทพนักงาน',u.employment_type==='shift'?'พนักงานกะ':'พนักงานออฟฟิศ')}
+   ${field('pin','สาขา/แผนก',branchName(u))}
+   ${field('tag','แบรนด์',brandOf(u))}
+   ${field('cal','ปฏิทินวันหยุด',calendar?calendar.name:'ยังไม่ได้ผูกปฏิทิน')}
+  </dl>
+  <div class="bar"><button class="btn solid" data-edit-user="${u.id}">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg>แก้ไข</button></div>`;
+ const face=$('userDetail').querySelector('[data-profile-avatar]');
+ if(face)HRNGProfile.avatar(face,u);
+ if(window.HRNGLang)HRNGLang.apply();
+}
+
+function renderBranchDetail(){
+ const b=branches.find(x=>x.id===pickedBranch);
+ if(!b){$('branchDetail').innerHTML=detailEmpty('กดแถวในรายการเพื่อดูรายละเอียด');return;}
+ const spot=b.lat==null?'':`${b.lat}, ${b.lng}`;
+ $('branchDetail').innerHTML=`<h2>รายละเอียดสาขา</h2>
+  <div class="detailhead">
+    <span style="flex:1;min-width:0"><span class="nm" translate="no">${esc(b.name)}</span>
+      <span class="sub" translate="no">${esc(b.code)}</span></span>
+    ${b.is_active?'<span class="tag">ใช้งาน</span>':'<span class="tag off">ปิดใช้งาน</span>'}
+  </div>
+  <dl class="dl">
+   ${field('tag','แบรนด์',b.brand_name||'ไม่สังกัดแบรนด์')}
+   ${field('pin','ที่อยู่ใกล้เคียง',b.near||'')}
+   ${field('clock','พิกัด',spot||'ยังไม่มีพิกัด')}
+   ${field('ruler','รัศมีลงเวลา',b.radius_m+' เมตร')}
+  </dl>
+  <div class="bar">
+   <button class="btn solid" data-edit-branch="${b.id}">
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg>แก้ไข</button>
+   ${spot?`<button class="btn" id="branchCopy" data-spot="${esc(spot)}">
+     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"/></svg>คัดลอกพิกัด</button>
+   <a class="btn" target="_blank" rel="noopener"
+      href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot)}">
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M19 14v5.5A1.5 1.5 0 0 1 17.5 21h-13A1.5 1.5 0 0 1 3 19.5v-13A1.5 1.5 0 0 1 4.5 5H10"/></svg>เปิดในแผนที่</a>`:''}
+  </div>`;
+ if(window.HRNGLang)HRNGLang.apply();
+}
+
+/* คัดลอกพิกัดต้องมีทางสำรอง เพราะ clipboard API ใช้ไม่ได้บนหน้าที่ไม่ใช่ https */
+$('branchDetail').addEventListener('click',async event=>{
+ const button=event.target.closest('#branchCopy');
+ if(!button)return;
+ try{await navigator.clipboard.writeText(button.dataset.spot);banner('คัดลอกพิกัดแล้ว');}
+ catch(_){banner('คัดลอกไม่ได้ ให้เลือกตัวเลขพิกัดแล้วคัดลอกเอง',true);}
+});
 
 function openUser(id){
  const u=id?users.find(x=>x.id===id):{employee_code:'',full_name:'',full_name_en:'',position:'',company:'',line_user_id:'',is_active:true,employment_type:'office'};
@@ -1336,8 +1908,26 @@ function openBranch(id){
 
 $('addUserBtn').addEventListener('click',()=>openUser());
 $('addBranchBtn').addEventListener('click',()=>openBranch());
-$('userRows').addEventListener('click',e=>{const b=e.target.closest('[data-edit-user]');if(b)openUser(Number(b.dataset.editUser));});
-$('branchRows').addEventListener('click',e=>{const b=e.target.closest('[data-edit-branch]');if(b)openBranch(Number(b.dataset.editBranch));});
+$('userRows').addEventListener('click',e=>{
+ const row=e.target.closest('[data-pick-user]');
+ if(!row)return;
+ pickedUser=Number(row.dataset.pickUser);
+ document.querySelectorAll('#userRows .row').forEach(x=>x.classList.toggle('pick-on',x===row));
+ renderUserDetail();
+});
+$('branchRows').addEventListener('click',e=>{
+ const row=e.target.closest('[data-pick-branch]');
+ if(!row)return;
+ pickedBranch=Number(row.dataset.pickBranch);
+ document.querySelectorAll('#branchRows .row').forEach(
+   x=>x.classList.toggle('pick-on',x===row||x.contains(row)));
+ renderBranchDetail();
+});
+/* ปุ่มแก้ไขอยู่ในแผงรายละเอียด จึงฟังที่ document ไม่ใช่ที่รายการ */
+document.addEventListener('click',e=>{
+ const u=e.target.closest('[data-edit-user]');if(u)return openUser(Number(u.dataset.editUser));
+ const b=e.target.closest('[data-edit-branch]');if(b)return openBranch(Number(b.dataset.editBranch));
+});
 $('bulkBtn').addEventListener('click',()=>{
  const selected=branches.filter(b=>picked().includes(b.id));
  $('modalTitle').textContent='ปรับรัศมี '+selected.length+' สาขา';
@@ -1409,19 +1999,99 @@ async function previewTemplate(){
 }
 const schedulePreview=()=>{clearTimeout(previewTimer);previewTimer=setTimeout(previewTemplate,150);};
 
+let pickedTemplate=null;
+
+function templateList(){
+ const query=$('tplSearch').value.trim().toLowerCase();
+ const status=$('tplStatus').value;
+ const sort=$('tplSort').value;
+ const rows=shiftTemplates.filter(row=>
+   (!query||[row.code,row.name].join(' ').toLowerCase().includes(query))&&
+   (!status||(status==='on')===(row.is_active!==false)));
+ const by={code:(a,b)=>String(a.code).localeCompare(String(b.code)),
+           name:(a,b)=>String(a.name).localeCompare(String(b.name),'th'),
+           start:(a,b)=>a.start_minute-b.start_minute};
+ return [...rows].sort(by[sort]||by.code);
+}
+
 function renderTemplates(){
- $('tplRows').innerHTML=shiftTemplates.map(row=>`<div class="row">
-   <span class="main"><span class="nm"><span translate="no">${esc(row.code)}</span> · <span translate="no">${esc(row.name)}</span></span>
-     <span class="sub">ทำงาน ${hours(row.work_minutes)} · พัก ${row.break_minutes} นาที${
-       row.crosses_midnight?' · <span class="tag warn">ข้ามคืน</span>':''}</span></span>
-   <span class="val"><b>${row.start} – ${row.end}</b></span>
-   <span class="rowact"><button class="btn" data-tpl-edit="${row.id}">แก้ไข</button>
-     <button class="btn" data-tpl-retire="${row.id}">ปิดใช้งาน</button></span>
- </div>`).join('')||'<div class="empty">ยังไม่มีแบบกะ สร้างกะแรกด้านบน</div>';
- $('asgTemplate').innerHTML=shiftTemplates.map(row=>
+ const all=templateList();
+ const info=paginate('tpl',all);
+ $('tplRows').innerHTML=info.slice.map(row=>{
+  const live=row.is_active!==false;
+  return `<tr class="${live?'':'off'}${row.id===pickedTemplate?' pick-on':''}" data-pick-tpl="${row.id}">
+   <td data-label="รหัสกะ"><span class="nm" translate="no">${esc(row.code)}</span></td>
+   <td data-label="ชื่อกะ"><span translate="no">${esc(row.name)}</span>${
+     row.crosses_midnight?' <span class="tag warn">ข้ามคืน</span>':''}</td>
+   <td data-label="เวลาเข้า – ออก" class="num">${row.start} – ${row.end}</td>
+   <td data-label="ชั่วโมงทำงาน" class="num">${hours(row.work_minutes)}</td>
+   <td data-label="เวลาพัก" class="num">${row.break_minutes} นาที</td>
+   <td data-label="สถานะ">${live?'<span class="tag go-tag">ใช้งาน</span>'
+     :'<span class="tag off">ปิดใช้งาน</span>'}</td>
+   <td class="act-cell"><span class="act">
+     <button class="btn" data-tpl-edit="${row.id}" aria-label="แก้ไข"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg><span class="lbl">แก้ไข</span></button>
+     ${live?`<button class="btn danger" data-tpl-retire="${row.id}" aria-label="ปิดใช้งาน"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span class="lbl">ปิดใช้งาน</span></button>`
+           :`<button class="btn go" data-tpl-revive="${row.id}" aria-label="เปิดใช้งานอีกครั้ง"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/></svg><span class="lbl">เปิดใช้งานอีกครั้ง</span></button>`}
+   </span></td>
+  </tr>`;
+ }).join('')||'<tr class="empty-row"><td colspan="7">ยังไม่มีแบบกะ กดเพิ่มแบบกะด้านบน</td></tr>';
+ $('tplPager').innerHTML=pagerHtml('tpl',info);
+ $('tplTotal').textContent=`ทั้งหมด ${all.length} รายการ`;
+ renderTemplateDetail();
+ /* ตัวเลือกตอนจัดกะต้องมีเฉพาะกะที่ยังใช้งาน จะได้ไม่จัดกะที่ปิดไปแล้วให้ใคร */
+ $('asgTemplate').innerHTML=shiftTemplates.filter(row=>row.is_active!==false).map(row=>
   `<option value="${row.id}" translate="no">${esc(row.code)} · ${esc(row.name)} (${row.start}–${row.end})</option>`).join('')
   ||'<option value="">— ยังไม่มีแบบกะ —</option>';
+ if(window.HRNGLang)HRNGLang.apply();
 }
+
+function renderTemplateDetail(){
+ const row=shiftTemplates.find(x=>x.id===pickedTemplate);
+ if(!row){$('tplDetail').innerHTML=detailEmpty('กดแถวในตารางเพื่อดูรายละเอียด');return;}
+ const live=row.is_active!==false;
+ const parts=row.segments.map(part=>
+   `<span class="seg ${part.kind==='break'?'break':''}">${
+     part.kind==='break'?'พัก':'ทำงาน'} ${part.from}–${part.to}</span>`).join('');
+ $('tplDetail').innerHTML=`<h2>รายละเอียดแบบกะ</h2>
+  <div class="detailhead"><span style="flex:1;min-width:0">
+    <span class="nm" translate="no">${esc(row.code)}</span>
+    <span class="sub" translate="no">${esc(row.name)}</span></span>
+   ${live?'<span class="tag go-tag">ใช้งาน</span>':'<span class="tag off">ปิดใช้งาน</span>'}</div>
+  <dl class="dl">
+   ${field('clock','เวลาเข้างาน',row.start)}
+   ${field('clock','เวลาออกงาน',row.end)}
+   ${field('kind','เวลาทำงานสุทธิ',hours(row.work_minutes))}
+   ${field('cal','เวลาพัก',row.break_minutes+' นาที')}
+  </dl>
+  <div class="shift-preview" style="margin-top:12px">${parts}</div>
+  ${row.warnings.length?`<div class="shift-preview warn"><ul>${
+    row.warnings.map(text=>`<li>${esc(text)}</li>`).join('')}</ul></div>`:''}
+  <div class="bar">
+   <button class="btn solid" data-tpl-edit="${row.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg>แก้ไข</button>
+   ${live?`<button class="btn danger" data-tpl-retire="${row.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>ปิดใช้งาน</button>`
+         :`<button class="btn go" data-tpl-revive="${row.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/></svg>เปิดใช้งานอีกครั้ง</button>`}
+  </div>`;
+ if(window.HRNGLang)HRNGLang.apply();
+}
+
+$('tplRows').addEventListener('click',event=>{
+ if(event.target.closest('[data-tpl-edit],[data-tpl-retire],[data-tpl-revive]'))return;
+ const row=event.target.closest('[data-pick-tpl]');
+ if(!row)return;
+ pickedTemplate=Number(row.dataset.pickTpl);renderTemplates();
+});
+['tplSearch','tplStatus','tplSort'].forEach(id=>
+ $(id).addEventListener('input',()=>{pages.tpl=1;renderTemplates();}));
+
+/* ฟอร์มพับไว้เพราะส่วนใหญ่เปิดหน้านี้มาเพื่อ "ดู" ไม่ใช่ "สร้าง"
+   เปิดด้วยปุ่มเพิ่มแบบกะ หรือเปิดพร้อมข้อมูลเดิมด้วยปุ่มแก้ไข */
+function showTemplateForm(open){
+ $('tplForm').hidden=!open;
+ $('tplAdd').setAttribute('aria-expanded',String(open));
+ if(open)$('tplForm').scrollIntoView({block:'nearest'});
+}
+$('tplAdd').addEventListener('click',()=>{fillTemplateForm(null);showTemplateForm(true);});
+$('tplClose').addEventListener('click',()=>showTemplateForm(false));
 function fillTemplateForm(row){
  editingTemplate=row?row.id:null;
  $('tplCode').value=row?row.code:'';$('tplName').value=row?row.name:'';
@@ -1501,28 +2171,52 @@ function renderAssignments(){
   [row.employee_code,row.full_name,row.branch_name,row.template_code,row.template_name]
    .join(' ').toLowerCase().includes(query));
  $('asgCount').textContent=`${list.length} รายการ`+(query?` จาก ${shiftAssignments.length}`:'');
- // จัดกลุ่มตามกะ เพราะคำถามคือ "กะนี้มีใครบ้าง" ไม่ใช่ไล่ดูทีละคน
- const groups=new Map();
- for(const row of list){
-  const key=row.template_id;
-  if(!groups.has(key))groups.set(key,[]);
-  groups.get(key).push(row);
- }
- $('asgRows').innerHTML=[...groups.entries()].map(([,rows])=>{
-  const head=rows[0];
-  return `<div class="grouphead"><span><span translate="no">${esc(head.template_code)} · ${
-    esc(head.template_name)}</span> · ${hhmm(head.start_minute)} · ${hours(head.work_minutes)}</span>
-    <span class="count">${rows.length} คน</span></div>`+
-   rows.map(row=>`<div class="row">
-     <span class="main"><span class="nm" translate="no">${esc(row.full_name)}</span>
-       <span class="sub"><span translate="no">${esc(row.employee_code||'—')} · ${
-         esc(row.branch_name||'—')}</span> · ${[...row.weekdays].map((flag,index)=>
-           flag==='1'?`<span class="dow">${DOW[index]}</span>`:'').filter(Boolean).join('')}</span></span>
-     <span class="val"><b>${shortDate(row.effective_from)}</b><span>${
-       row.effective_to?'ถึง '+shortDate(row.effective_to):'ไม่มีกำหนด'}</span></span>
-     <span class="rowact"><button class="btn" data-asg-remove="${row.id}">ยกเลิกกะ</button></span>
-   </div>`).join('');
- }).join('')||'<div class="empty">ยังไม่มีการจัดกะ</div>';
+ const info=paginate('asg',list);
+ $('asgRows').innerHTML=info.slice.map(row=>`<tr>
+   <td data-label="พนักงาน"><span class="nm" translate="no">${esc(row.full_name)}</span>
+     <span class="sub" translate="no">${esc(row.employee_code||'—')} · ${esc(row.branch_name||'—')}</span></td>
+   <td data-label="กะ"><span translate="no">${esc(row.template_code)}</span>
+     <span class="sub" translate="no">${esc(row.template_name)}</span></td>
+   <td data-label="วันที่เริ่ม" class="num">${shortDate(row.effective_from)}</td>
+   <td data-label="วันสิ้นสุด" class="num">${
+     row.effective_to?shortDate(row.effective_to):'<span class="tag">ไม่มีกำหนด</span>'}</td>
+   <td data-label="วันทำงาน">${[...row.weekdays].map((flag,index)=>
+       flag==='1'?`<span class="dow">${DOW[index]}</span>`:'').filter(Boolean).join('')}</td>
+   <td class="act-cell"><span class="act">
+     <button class="btn danger" data-asg-remove="${row.id}" aria-label="ยกเลิกกะ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span class="lbl">ยกเลิกกะ</span></button>
+   </span></td>
+  </tr>`).join('')||'<tr class="empty-row"><td colspan="6">ยังไม่มีการจัดกะ</td></tr>';
+ $('asgPager').innerHTML=pagerHtml('asg',info);
+ if(window.HRNGLang)HRNGLang.apply();
+}
+
+/* สรุปการจัดกะ: บอกว่ากำลังจะเกิดอะไรขึ้นก่อนกดปุ่ม
+   ปุ่มจัดกะอยู่ในแผงนี้เพราะตัวเลข "กี่คน" คือสิ่งที่ควรอ่านก่อนกด */
+function renderAssignSummary(){
+ const template=shiftTemplates.find(row=>String(row.id)===$('asgTemplate').value);
+ const from=$('asgFrom').value,to=$('asgTo').value;
+ const days=[...document.querySelectorAll('#asgWeekdays [data-dow]')]
+   .map((box,index)=>box.checked?DOW_FULL[index]:null).filter(Boolean);
+ const picked=countAssignTargets();
+ const span=from&&to
+   ? Math.round((new Date(to)-new Date(from))/86400000)+1 : null;
+ $('asgSummary').innerHTML=`<h2>สรุปการจัดกะ</h2>
+  <dl class="dl">
+   ${field('kind','แบบกะ',template?`${template.code} · ${template.name}`:'ยังไม่ได้เลือก')}
+   ${field('cal','ช่วงวันที่',from?`${shortDate(from)} – ${to?shortDate(to):'ไม่มีกำหนด'}`
+      +(span?` (รวม ${span} วัน)`:''):'ยังไม่ได้เลือก')}
+   ${field('clock','วันทำงาน',days.length?days.join(' '):'ยังไม่ได้เลือก')}
+   ${field('org','จำนวนพนักงาน',picked===null?'ตามเป้าหมายที่เลือก':`${picked} คน`)}
+  </dl>
+  <div class="bar" style="flex-direction:column;align-items:stretch">
+   <button class="btn solid" id="asgSave" style="justify-content:center;height:44px"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>จัดกะให้พนักงาน</button>
+   <label class="inline"><input type="checkbox" id="asgReplace"> แทนที่กะเดิมที่ทับกัน</label>
+  </div>`;
+ if(window.HRNGLang)HRNGLang.apply();
+}
+/* นับได้เฉพาะตอนเลือกทีละคน วิธีอื่นเซิร์ฟเวอร์เป็นคนคลี่ว่าได้ใครบ้าง เดาแทนไม่ได้ */
+function countAssignTargets(){
+ return $('asgVia').value==='employee'?pickedEmployees.size:null;
 }
 
 const pickedGroup=new Set();
@@ -1639,15 +2333,129 @@ function calendarWarnings(){
  return problems;
 }
 
-function renderCalendars(){
- $('calRows').innerHTML=calendars.map(row=>`<div class="row">
-   <span class="main"><span class="nm" translate="no">${esc(row.name)}</span>
-     <span class="sub">${row.dates.length} วัน · ใช้อยู่ ${row.employees} คน${
-       row.note?` · <span translate="no">${esc(row.note)}</span>`:''}${
-       row.warnings.length?' · <span class="tag warn">ยังไม่ครบตาม ม.29</span>':''}</span></span>
-   <span class="rowact"><button class="btn" data-cal-edit="${row.id}">แก้ไข</button></span>
- </div>`).join('')||'<div class="empty">ยังไม่มีปฏิทิน สร้างปฏิทินแรกด้านบน</div>';
+/* ปฏิทินทั้งเดือนในหน้าเดียว แทนรายการวันที่เรียงลงมา
+   เหตุผล: คำถามจริงคือ "เดือนนี้หยุดวันไหนบ้าง" ซึ่งดูจากตารางเดือนได้ในพริบตา
+   ส่วนรายการวันที่เรียงลงมาตอบได้แค่ "มีวันไหนบ้าง" ซึ่งต้องอ่านทีละบรรทัด */
+let pickedCalendar=null,calMonth=null,pickedHoliday=null;
+const DOW_SHORT=['อา','จ','อ','พ','พฤ','ศ','ส'];
+const iso=(year,month,day)=>`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+
+function currentCalendar(){
+ return calendars.find(row=>row.id===pickedCalendar)||calendars[0]||null;
 }
+function renderCalendars(){
+ const current=currentCalendar();
+ pickedCalendar=current?current.id:null;
+ $('calPicks').innerHTML=calendars.map(row=>`<button class="calpick"
+    data-cal-pick="${row.id}" aria-pressed="${row.id===pickedCalendar}">
+   <span class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V5.5A1.5 1.5 0 0 1 5.5 4h7A1.5 1.5 0 0 1 14 5.5V20"/><path d="M14 10h4.5A1.5 1.5 0 0 1 20 11.5V20"/><path d="M2.5 20h19"/><path d="M7 8h4M7 12h4M7 16h4"/></svg></span>
+   <span style="flex:1;min-width:0"><span class="nm" translate="no">${esc(row.name)}</span>
+     <span class="sub">${row.dates.length} วัน · ใช้อยู่ ${row.employees} คน</span></span>
+   ${row.warnings.length?'<span class="tag warn">ยังไม่ครบตาม ม.29</span>':''}
+  </button>`).join('')||'<div class="empty">ยังไม่มีปฏิทิน กดสร้างปฏิทินด้านบน</div>';
+ if(!calMonth){const now=new Date();calMonth={year:now.getFullYear(),month:now.getMonth()};}
+ renderMonth();
+ if(window.HRNGLang)HRNGLang.apply();
+}
+
+function renderMonth(){
+ const current=currentCalendar();
+ const dates=current?current.dates:[];
+ const {year,month}=calMonth;
+ const holidays=new Map(dates.filter(d=>d.holiday_date.startsWith(
+   `${year}-${String(month+1).padStart(2,'0')}`)).map(d=>[d.holiday_date,d]));
+ /* ชื่อเดือนจัดรูปตามภาษาที่เลือก ไม่ใช่ไทยตายตัว จึงกัน translate="no" ไว้ด้วย
+    ปี พ.ศ. มาจากปฏิทินพุทธของ locale ไทยเอง ไม่ได้บวก 543 เอง */
+ $('calMonthName').textContent=monthLabel(year,month);
+ const first=new Date(Date.UTC(year,month,1)).getUTCDay();
+ const days=new Date(Date.UTC(year,month+1,0)).getUTCDate();
+ const before=new Date(Date.UTC(year,month,0)).getUTCDate();
+ const today=bangkokToday();
+ let cells=DOW_SHORT.map(name=>`<span class="dowhead">${name}</span>`).join('');
+ for(let i=first;i>0;i--)cells+=`<button class="pad" disabled>${before-i+1}</button>`;
+ for(let day=1;day<=days;day++){
+  const key=iso(year,month,day);
+  const holiday=holidays.get(key);
+  cells+=`<button data-cal-day="${key}" ${holiday?'':'disabled'} class="${
+    holiday?'holiday':''}${key===today?' today':''}${
+    key===pickedHoliday?' pick-on':''}">${day}</button>`;
+ }
+ const tail=(7-((first+days)%7))%7;
+ for(let day=1;day<=tail;day++)cells+=`<button class="pad" disabled>${day}</button>`;
+ $('calGrid').innerHTML=cells;
+ const rows=[...holidays.values()].sort((a,b)=>a.holiday_date.localeCompare(b.holiday_date));
+ $('calMonthRows').innerHTML=rows.map(row=>`<button data-cal-day="${row.holiday_date}"
+    aria-pressed="${row.holiday_date===pickedHoliday}">
+   <span class="d" translate="no">${shortDay(row.holiday_date)}</span>
+   <span translate="no">${esc(row.name)}</span></button>`).join('')
+  ||'<div class="empty">เดือนนี้ไม่มีวันหยุด</div>';
+ renderCalendarDetail();
+}
+
+function renderCalendarDetail(){
+ const current=currentCalendar();
+ if(!current){$('calDetail').innerHTML=detailEmpty('ยังไม่มีปฏิทิน');return;}
+ const holiday=current.dates.find(d=>d.holiday_date===pickedHoliday);
+ const today=bangkokToday();
+ const next=current.dates.filter(d=>d.holiday_date>=today)
+   .sort((a,b)=>a.holiday_date.localeCompare(b.holiday_date)).slice(0,4);
+ const head=holiday?`<div class="detailhead"><span style="flex:1;min-width:0">
+    <span class="nm" translate="no">${esc(holiday.name)}</span>
+    <span class="sub" translate="no">${esc(longDate(holiday.holiday_date))}</span></span></div>`
+  :'<p class="hintlabel">กดวันที่ในปฏิทินเพื่อดูรายละเอียดวันหยุด</p>';
+ $('calDetail').innerHTML=`<h2>รายละเอียดวันหยุด</h2>${head}
+  <dl class="dl">
+   ${field('cal','ใช้กับปฏิทิน',current.name)}
+   ${field('org','ใช้อยู่',current.employees+' คน')}
+   ${current.note?field('id','หมายเหตุ',current.note):''}
+  </dl>
+  ${current.warnings.length?`<div class="shift-preview warn"><ul>${
+    current.warnings.map(text=>`<li>${esc(text)}</li>`).join('')}</ul></div>`:''}
+  <h2 style="margin-top:16px">วันหยุดถัดไป</h2>
+  ${next.length?`<div class="monthlist">${next.map(row=>`<button data-cal-jump="${row.holiday_date}">
+     <span class="d" translate="no">${shortDay(row.holiday_date)}</span>
+     <span translate="no">${esc(row.name)}</span></button>`).join('')}</div>`
+   :'<p class="hintlabel">ไม่มีวันหยุดข้างหน้าในปฏิทินนี้</p>'}
+  <div class="bar"><button class="btn solid" data-cal-edit="${current.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg>แก้ไขปฏิทิน</button></div>`;
+ if(window.HRNGLang)HRNGLang.apply();
+}
+const uiLocale=()=>window.HRNGLang?HRNGLang.locale():'th-TH-u-ca-buddhist';
+const monthLabel=(year,month)=>new Date(Date.UTC(year,month,15)).toLocaleDateString(
+  uiLocale(),{month:'long',year:'numeric',timeZone:'UTC'});
+const shortDay=value=>new Date(value+'T00:00:00+07:00').toLocaleDateString(
+  uiLocale(),{day:'numeric',month:'short',timeZone:'Asia/Bangkok'});
+const longDate=value=>new Date(value+'T00:00:00+07:00').toLocaleDateString(
+  window.HRNGLang?HRNGLang.locale():'th-TH-u-ca-buddhist',
+  {weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Bangkok'});
+
+$('calPicks').addEventListener('click',event=>{
+ const button=event.target.closest('[data-cal-pick]');
+ if(!button)return;
+ pickedCalendar=Number(button.dataset.calPick);pickedHoliday=null;renderCalendars();
+});
+document.addEventListener('click',event=>{
+ const day=event.target.closest('[data-cal-day]');
+ if(day){pickedHoliday=day.dataset.calDay;renderMonth();return;}
+ const jump=event.target.closest('[data-cal-jump]');
+ if(jump){
+  pickedHoliday=jump.dataset.calJump;
+  calMonth={year:Number(pickedHoliday.slice(0,4)),month:Number(pickedHoliday.slice(5,7))-1};
+  renderMonth();
+ }
+});
+$('calPrev').addEventListener('click',()=>{
+ calMonth.month--;if(calMonth.month<0){calMonth.month=11;calMonth.year--;}renderMonth();});
+$('calNext').addEventListener('click',()=>{
+ calMonth.month++;if(calMonth.month>11){calMonth.month=0;calMonth.year++;}renderMonth();});
+$('calToday').addEventListener('click',()=>{
+ const now=new Date();calMonth={year:now.getFullYear(),month:now.getMonth()};renderMonth();});
+
+function showCalendarForm(open){
+ $('calForm').hidden=!open;$('calFormHead').hidden=!open;
+ if(open)$('calForm').scrollIntoView({block:'nearest'});
+}
+$('calAdd').addEventListener('click',()=>{resetCalendarForm();showCalendarForm(true);});
+$('calClose').addEventListener('click',()=>showCalendarForm(false));
 
 function resetCalendarForm(){
  editingCalendar=null;
@@ -1674,32 +2482,35 @@ $('calSave').addEventListener('click',async()=>{
   if(editingCalendar)await api('/shifts/calendars/'+editingCalendar,{method:'PUT',body:JSON.stringify(body)});
   else await api('/shifts/calendars',{method:'POST',body:JSON.stringify(body)});
   banner(`บันทึกปฏิทิน ${body.name} แล้ว (${body.dates.length} วัน)`);
-  resetCalendarForm();await loadData();
+  resetCalendarForm();showCalendarForm(false);await loadData();
  }catch(error){banner(error.message,true);}
  finally{$('calSave').disabled=false;}
 });
 
-$('calRows').addEventListener('click',event=>{
- const id=event.target.dataset.calEdit;
- if(!id)return;
- const row=calendars.find(c=>c.id===Number(id));
+/* ปุ่มแก้ไขอยู่ในแผงรายละเอียด จึงฟังที่ document */
+document.addEventListener('click',event=>{
+ const button=event.target.closest('[data-cal-edit]');
+ if(!button)return;
+ const row=calendars.find(c=>c.id===Number(button.dataset.calEdit));
+ showCalendarForm(true);
  editingCalendar=row.id;
  $('calName').value=row.name;$('calNote').value=row.note||'';
  $('calDates').innerHTML=(row.dates.length?row.dates:[{holiday_date:'',name:''}])
   .map(d=>calDateRow(d.holiday_date,d.name)).join('');
  $('calSave').textContent='บันทึกการแก้ไข';$('calReset').hidden=false;
  $('calEditing').textContent='กำลังแก้ไข '+row.name;
- calendarWarnings();window.scrollTo(0,0);
+ calendarWarnings();$('calForm').scrollIntoView({block:'nearest'});
 });
 
 async function loadShiftTab(force){
  if(shiftTabLoaded&&!force)return;
  try{
   const [templates,targets,assignments,groups]=await Promise.all([
-   api('/shifts'),api('/shifts/targets'),api('/shifts/assignments?limit=500'),api('/shifts/groups')]);
+   api('/shifts?include_inactive=true'),api('/shifts/targets'),api('/shifts/assignments?limit=500'),api('/shifts/groups')]);
   shiftTemplates=templates.items;shiftTargets=targets;shiftAssignments=assignments.items;
   shiftGroups=groups.items;shiftTabLoaded=true;
   renderTemplates();renderTargetBox();renderAssignments();renderGroups();renderGroupPicker();
+  renderAssignSummary();
  }catch(error){banner(error.message,true);}
 }
 
@@ -1735,21 +2546,49 @@ $('tplSave').addEventListener('click',async()=>{
  }catch(error){banner(error.message,true);}
  finally{$('tplSave').disabled=false;}
 });
-$('tplRows').addEventListener('click',async event=>{
- const edit=event.target.dataset.tplEdit,retire=event.target.dataset.tplRetire;
- if(edit)fillTemplateForm(shiftTemplates.find(row=>row.id===Number(edit)));
+/* ปุ่มอยู่ทั้งในตารางและในแผงรายละเอียด จึงฟังที่ document ที่เดียว */
+document.addEventListener('click',async event=>{
+ const edit=event.target.closest('[data-tpl-edit]');
+ const retire=event.target.closest('[data-tpl-retire]');
+ const revive=event.target.closest('[data-tpl-revive]');
+ if(edit){
+  fillTemplateForm(shiftTemplates.find(row=>row.id===Number(edit.dataset.tplEdit)));
+  showTemplateForm(true);
+  return;
+ }
  if(retire){
-  const row=shiftTemplates.find(item=>item.id===Number(retire));
+  const row=shiftTemplates.find(item=>item.id===Number(retire.dataset.tplRetire));
   if(!confirm(`ปิดใช้งานกะ ${row.code} ${row.name}?\nการจัดกะเดิมยังอยู่ แต่จะเลือกกะนี้ใหม่ไม่ได้`))return;
-  try{await api('/shifts/'+retire,{method:'DELETE'});banner('ปิดใช้งานกะแล้ว');await loadShiftTab(true);}
+  try{await api('/shifts/'+row.id,{method:'DELETE'});banner('ปิดใช้งานกะแล้ว');await loadShiftTab(true);}
   catch(error){banner(error.message,true);}
+  return;
+ }
+ if(revive){
+  /* เปิดใช้งานใหม่คือ PUT ทั้งก้อนกลับไปพร้อม is_active:true ไม่มี endpoint แยก
+     ส่งข้อมูลเดิมกลับไปทั้งหมด ไม่งั้นค่าที่ไม่ได้ส่งจะถูกเขียนทับด้วยค่าเริ่มต้น */
+  const row=shiftTemplates.find(item=>item.id===Number(revive.dataset.tplRevive));
+  try{
+   await api('/shifts/'+row.id,{method:'PUT',body:JSON.stringify({
+     code:row.code,name:row.name,start_minute:row.start_minute,
+     work_minutes:row.work_minutes,note:row.note||'',
+     breaks:row.breaks,is_active:true})});
+   banner('เปิดใช้งานกะแล้ว');await loadShiftTab(true);
+  }catch(error){banner(error.message,true);}
  }
 });
 
-$('asgVia').addEventListener('change',renderTargetBox);
+$('asgVia').addEventListener('change',()=>{renderTargetBox();renderAssignSummary();});
+['asgTemplate','asgFrom','asgTo'].forEach(id=>
+ $(id).addEventListener('change',renderAssignSummary));
+$('asgWeekdays').addEventListener('change',renderAssignSummary);
+document.addEventListener('change',event=>{
+ if(event.target.closest('#asgTargetBox'))renderAssignSummary();});
+document.addEventListener('click',event=>{
+ if(event.target.closest('#targetAll,#targetNone'))setTimeout(renderAssignSummary,0);});
 $('asgSearch').addEventListener('input',renderAssignments);
 $('asgClear').addEventListener('click',()=>{$('asgSearch').value='';renderAssignments();});
-$('asgSave').addEventListener('click',async()=>{
+document.addEventListener('click',async event=>{
+ if(!event.target.closest('#asgSave'))return;
  const via=$('asgVia').value;
  const body={template_id:Number($('asgTemplate').value),effective_from:$('asgFrom').value,
   effective_to:$('asgTo').value||null,weekdays:weekdayString(),via,
@@ -1776,8 +2615,9 @@ $('asgSave').addEventListener('click',async()=>{
  }finally{$('asgSave').disabled=false;}
 });
 $('asgRows').addEventListener('click',async event=>{
- const id=event.target.dataset.asgRemove;
- if(!id)return;
+ const button=event.target.closest('[data-asg-remove]');
+ if(!button)return;
+ const id=button.dataset.asgRemove;
  if(!confirm('ยกเลิกการจัดกะรายการนี้?'))return;
  try{await api('/shifts/assignments/'+id,{method:'DELETE'});banner('ยกเลิกกะแล้ว');await loadShiftTab(true);}
  catch(error){banner(error.message,true);}
