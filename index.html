@@ -83,9 +83,10 @@
   /* ── โครงหลัก ── */
   #shell{display:none}
   #shell.on{display:block}
+  /* แถบบนต้องอยู่ใต้แผงเมนูบนจอแคบ ไม่งั้นมันจะบังปุ่มปิดที่หัวแผง
+     บนจอกว้างแถบซ้ายเริ่มที่ 56px อยู่แล้ว จึงไม่ทับกันไม่ว่าจะลำดับไหน */
   .topwrap{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--line)}
-  header.top{display:flex;align-items:center;gap:var(--s3);height:56px;padding:0 var(--s4);
-    max-width:680px;margin:0 auto}
+  header.top{display:flex;align-items:center;gap:var(--s3);height:56px;padding:0 var(--s4)}
   header .brand{display:flex;align-items:center;gap:var(--s2);font-weight:700;font-size:15.5px;
     flex:1;min-width:0;letter-spacing:-.01em}
   header .mark{width:28px;height:28px;border-radius:8px;background:var(--green);display:grid;
@@ -94,6 +95,10 @@
   header .who b{color:var(--ink-2);font-weight:600}
   @media (max-width:520px){header .who{display:none}}
 
+  /* ── เมนู ──
+     จอกว้าง: แถบซ้ายอยู่ประจำที่ ปุ่มแฮมเบอร์เกอร์ยุบ/กางมัน (คลาส navoff)
+     จอแคบ: แถบเดียวกันกลายเป็นแผงเลื่อนทับหน้า (คลาส on)
+     ใช้ nav ก้อนเดียวทั้งสองโหมด จะได้ไม่มีเมนูสองชุดให้แก้ไม่ตรงกัน */
   #drawer{position:fixed;inset:0;z-index:40;display:none}
   #drawer.on{display:block}
   #drawer .veil{position:absolute;inset:0;background:rgba(15,20,25,.38)}
@@ -110,9 +115,47 @@
   #drawer nav button[aria-current="page"]{background:var(--green-soft);color:var(--green-strong);font-weight:650}
   #drawer nav button svg,#drawer nav a svg{width:18px;height:18px;flex-shrink:0;color:var(--muted)}
   #drawer nav button[aria-current="page"] svg{color:var(--green)}
+  #drawer nav button .grow{flex:1}
+  /* ปุ่ม "ยกเลิกสิทธิ์เครื่องนี้" ถูกเติมด้วยสคริปต์และไม่มีไอคอน
+     เยื้องให้ตัวอักษรตรงกับเมนูอื่น ไม่งั้นดูเหมือนหลุดออกมาจากรายการ */
+  #drawer nav button.ghost{padding-left:calc(var(--s3) + 18px + var(--s3))}
+  #drawer nav .chev{width:15px;height:15px;transition:transform .15s}
+  #drawer nav [aria-expanded="true"] .chev{transform:rotate(180deg)}
+
+  /* หัวข้อย่อย: จุดแทนไอคอน เพราะไอคอนสองชั้นทำให้สายตาหาหัวข้อหลักไม่เจอ */
+  .subnav{display:none;margin:2px 0 var(--s2)}
+  .subnav.on{display:block}
+  #drawer nav .subnav button{padding:8px var(--s3) 8px 42px;font-size:13.5px;position:relative}
+  #drawer nav .subnav button::before{content:"";position:absolute;left:25px;top:50%;
+    width:5px;height:5px;margin-top:-2.5px;border-radius:50%;background:#c5ccd4}
+  #drawer nav .subnav button[aria-current="page"]::before{background:var(--green)}
+  #drawer nav .subnav button[aria-current="page"]{background:var(--green-soft)}
 
   /* คอลัมน์เนื้อหาแคบ อ่านง่ายกว่ายืดเต็มจอ */
-  main{max-width:680px;margin:0 auto;padding:var(--s5) var(--s4) var(--s6)}
+  main{max-width:760px;margin:0 auto;padding:var(--s5) var(--s4) var(--s6)}
+
+  @media (min-width:980px){
+    #drawer{position:fixed;inset:56px auto 0 0;width:244px;display:block;z-index:20}
+    #drawer .veil{display:none}
+    #drawer nav{position:static;width:244px;height:100%;box-shadow:none;
+      border-right:1px solid var(--line);padding:var(--s3) var(--s2)}
+    #drawer [data-close-drawer]{display:none}
+    #shell:not(.navoff) main{margin-left:244px}
+    #shell.navoff #drawer{display:none}
+  }
+
+  /* ตัวเลือกภาษาแสดงชื่อมาจาก line-profile.css ซึ่งใช้ร่วมกับมินิแอพ
+     แก้ไฟล์นั้นไม่ได้เพราะจะกระทบอีกฝั่ง จึงบีบให้พอดีแถบเมนูเฉพาะที่นี่ */
+  #drawer .hrng-name-language{display:block;padding:0 var(--s3) var(--s1);font-size:12.5px;
+    color:var(--muted)}
+  #drawer .hrng-name-language select{width:100%;min-height:36px;height:36px;margin-top:var(--s1);
+    padding:0 var(--s3);border-radius:var(--r-sm);border-color:var(--line);font-size:14px}
+
+  /* ── เส้นทางหน้า: บอกว่าหน้านี้อยู่ใต้หัวข้อไหน เห็นก่อนอ่านชื่อหน้า ── */
+  .crumb{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);
+    margin:0 0 var(--s2)}
+  .crumb svg{width:13px;height:13px;color:#b9c1c9}
+  .crumb b{color:var(--ink-2);font-weight:600}
   .panel{display:none}
   .panel.on{display:block}
 
@@ -389,8 +432,14 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>วันนี้</button>
       <button data-panel="users">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.6 3.4-5.6 7.5-5.6s7.5 2 7.5 5.6"/></svg>พนักงาน</button>
-      <button data-panel="shifts">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>กะเวลา</button>
+      <button data-group="shifts" aria-expanded="true" aria-controls="subnav-shifts">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg><span class="grow">กะเวลา</span>
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>
+      <div class="subnav on" id="subnav-shifts">
+        <button data-panel="shift-templates">แบบกะ</button>
+        <button data-panel="shift-groups">กลุ่มที่ตั้งชื่อเอง</button>
+        <button data-panel="shift-assign">จัดกะให้พนักงาน</button>
+      </div>
       <button data-panel="branches">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>สาขา</button>
       <button data-panel="calendars">
@@ -415,10 +464,13 @@
 
   <main>
     <p id="demobar" role="status">กำลังโหลดข้อมูล…</p>
+    <nav class="crumb" id="crumb" aria-label="เส้นทางหน้า" hidden></nav>
     <!-- ═══ วันนี้ — หน้าแรก เปิดมาต้องเห็นทันทีว่าใครเข้าออกกี่โมง ═══ -->
     <section class="panel on" id="panel-today">
       <div class="viewhead">
-        <div style="flex:1"><h1>วันนี้</h1><p class="sub" id="todayDate">—</p></div>
+        <div style="flex:1"><h1>วันนี้</h1><!-- วันที่ถูกจัดรูปใหม่เองตอนเปลี่ยนภาษา (hrng:lang) กลไกแปลจึงต้องไม่แตะ
+             ไม่งั้นจะถูกบันทึกว่า "ยังไม่มีคำแปล" ทั้งที่แปลเองอยู่แล้ว -->
+        <p class="sub" id="todayDate" translate="no">—</p></div>
       </div>
       <div class="datebar">
         <button class="btn icon" id="dayPrev" aria-label="วันก่อนหน้า">
@@ -458,11 +510,11 @@
     </section>
 
     <!-- ═══ กะเวลา ═══ -->
-    <section class="panel" id="panel-shifts">
-      <div class="viewhead"><div style="flex:1"><h1>กะเวลา</h1>
-        <p class="sub">ตั้งแบบกะ → รวมคนเป็นกลุ่ม → จัดกะให้พนักงาน</p></div></div>
-      <h3 class="shift-head">แบบกะ
-        <button class="helpbtn" type="button" data-help="tpl" aria-expanded="false" aria-controls="help-tpl" aria-label="วิธีใช้หัวข้อแบบกะ"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></h3>
+    <section class="panel" id="panel-shift-templates">
+      <div class="viewhead"><div style="flex:1"><h1>แบบกะ</h1>
+        <p class="sub">ตั้งเวลาเข้า–ออก เวลาพัก และชั่วโมงทำงานของกะหนึ่งอัน</p></div>
+        <button class="helpbtn" type="button" data-help="tpl" aria-expanded="false"
+          aria-controls="help-tpl" aria-label="วิธีใช้หัวข้อแบบกะ"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></div>
       <div class="help" id="help-tpl" hidden>
         <p><b>ใช้ทำอะไร</b> — สร้างแม่แบบของกะไว้หนึ่งอัน เช่น กะเช้า 08:00–17:00 พัก 12:00–13:00
         สร้างครั้งเดียวแล้วใช้กับกี่คนก็ได้ แก้ที่แม่แบบทีเดียวมีผลกับทุกคนที่ใช้กะนั้น</p>
@@ -499,9 +551,13 @@
         </div>
       </div>
       <div class="list" id="tplRows"></div>
+    </section>
 
-      <h3 class="shift-head">กลุ่มที่ตั้งชื่อเอง
-        <button class="helpbtn" type="button" data-help="grp" aria-expanded="false" aria-controls="help-grp" aria-label="วิธีใช้หัวข้อกลุ่มที่ตั้งชื่อเอง"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></h3>
+    <section class="panel" id="panel-shift-groups">
+      <div class="viewhead"><div style="flex:1"><h1>กลุ่มที่ตั้งชื่อเอง</h1>
+        <p class="sub">รวมคนที่เข้ากะเดียวกันแต่ไม่ได้อยู่สาขาหรือตำแหน่งเดียวกัน</p></div>
+        <button class="helpbtn" type="button" data-help="grp" aria-expanded="false"
+          aria-controls="help-grp" aria-label="วิธีใช้หัวข้อกลุ่มที่ตั้งชื่อเอง"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></div>
       <div class="help" id="help-grp" hidden>
         <p><b>ใช้เมื่อไหร่</b> — เมื่อคนที่เข้ากะเดียวกันไม่ตรงกับสาขา ตำแหน่ง หรือบริษัท
         เช่น ทีมเปิดร้านที่ดึงคนมาจากหลายสาขา</p>
@@ -534,9 +590,13 @@
         </div>
       </div>
       <div class="list" id="grpRows"></div>
+    </section>
 
-      <h3 class="shift-head">จัดกะให้พนักงาน
-        <button class="helpbtn" type="button" data-help="asg" aria-expanded="false" aria-controls="help-asg" aria-label="วิธีใช้หัวข้อจัดกะให้พนักงาน"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></h3>
+    <section class="panel" id="panel-shift-assign">
+      <div class="viewhead"><div style="flex:1"><h1>จัดกะให้พนักงาน</h1>
+        <p class="sub">เลือกแบบกะ ช่วงวันที่ และวันทำงาน แล้วจัดให้พนักงาน</p></div>
+        <button class="helpbtn" type="button" data-help="asg" aria-expanded="false"
+          aria-controls="help-asg" aria-label="วิธีใช้หัวข้อจัดกะให้พนักงาน"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></div>
       <div class="help" id="help-asg" hidden>
         <p><b>ใช้ทำอะไร</b> — เอาแบบกะไปผูกกับคน ช่วงวันที่ และวันในสัปดาห์
         การจัดกะหนึ่งรายการคือ แบบกะ + คน + ตั้งแต่วันที่ + ถึงวันที่ + วันที่เข้ากะ
@@ -750,25 +810,79 @@ $('logoutBtn').addEventListener('click',async()=>{
 });
 $('refreshBtn').addEventListener('click',()=>{setDrawer(false);loadData().catch(()=>{});});
 
-/* ── เมนู ── */
+/* ── เมนู ──
+   จอกว้างแถบซ้ายอยู่ประจำที่ ปุ่มแฮมเบอร์เกอร์จึงหมายถึง "ยุบ/กาง" ไม่ใช่ "เปิด/ปิด"
+   จอแคบเป็นแผงเลื่อนทับหน้าเหมือนเดิม ใช้ nav ก้อนเดียวกันทั้งสองโหมด */
+const wideNav=()=>window.matchMedia('(min-width:980px)').matches;
+function navOpen(){return wideNav()?!$('shell').classList.contains('navoff')
+                                   :$('drawer').classList.contains('on');}
 function setDrawer(open){
- $('drawer').classList.toggle('on',open);
+ if(wideNav())$('shell').classList.toggle('navoff',!open);
+ else $('drawer').classList.toggle('on',open);
  $('menuBtn').setAttribute('aria-expanded',String(open));
 }
-$('menuBtn').addEventListener('click',()=>setDrawer(!$('drawer').classList.contains('on')));
-document.querySelectorAll('[data-close-drawer]').forEach(el=>el.addEventListener('click',()=>setDrawer(false)));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('backdrop').classList.contains('on'))setDrawer(false);});
+/* ย้ายข้ามเส้นแบ่งจอแล้วสถานะต้องตรงกับที่ตาเห็น ไม่งั้นปุ่มจะกดแล้วไม่มีอะไรเกิดขึ้น */
+function syncNav(){$('menuBtn').setAttribute('aria-expanded',String(navOpen()));}
+window.addEventListener('resize',syncNav);
+syncNav();
 
-document.querySelectorAll('#drawer nav button[data-panel]').forEach(b=>b.addEventListener('click',()=>{
+$('menuBtn').addEventListener('click',()=>setDrawer(!navOpen()));
+document.querySelectorAll('[data-close-drawer]').forEach(el=>el.addEventListener('click',()=>setDrawer(false)));
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&!$('backdrop').classList.contains('on')&&!wideNav())setDrawer(false);});
+
+/* หัวข้อย่อยพับได้ แต่ถ้ากำลังอยู่ในหน้าใต้หัวข้อนั้น ต้องกางค้างไว้
+   ไม่งั้นพับแล้วหน้าที่เปิดอยู่จะหายไปจากเมนู ซึ่งอ่านว่าหลงทาง */
+function setGroup(name,open){
+ const head=document.querySelector(`[data-group="${name}"]`);
+ head.setAttribute('aria-expanded',String(open));
+ $('subnav-'+name).classList.toggle('on',open);
+ markGroups();
+}
+/* พับหัวข้อตอนที่อยู่ในหน้าย่อยของมันได้ แต่ต้องย้ายเครื่องหมาย "อยู่ตรงนี้" ขึ้นมาที่หัวข้อ
+   ไม่งั้นเมนูจะไม่มีอะไรถูกเน้นเลย ซึ่งอ่านว่าหลงทาง */
+function markGroups(){
+ document.querySelectorAll('#drawer nav [data-group]').forEach(head=>{
+  const inside=!!$('subnav-'+head.dataset.group).querySelector('[aria-current="page"]');
+  if(inside&&head.getAttribute('aria-expanded')!=='true')head.setAttribute('aria-current','page');
+  else head.removeAttribute('aria-current');
+ });
+}
+document.querySelectorAll('#drawer nav [data-group]').forEach(head=>
+ head.addEventListener('click',()=>
+   setGroup(head.dataset.group,head.getAttribute('aria-expanded')!=='true')));
+
+/* เส้นทางหน้า สร้างจากเมนูโดยตรง จะได้ไม่มีชื่อหน้าเขียนไว้สองที่แล้วไม่ตรงกัน */
+const CHEV='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+function setCrumb(button){
+ const group=button.closest('.subnav');
+ if(!group){$('crumb').hidden=true;$('crumb').replaceChildren();return;}
+ const name=group.id.replace('subnav-','');
+ const parent=document.querySelector(`[data-group="${name}"] .grow`).textContent;
+ $('crumb').innerHTML=`<span>${esc(parent)}</span>${CHEV}<b>${esc(button.textContent.trim())}</b>`;
+ $('crumb').hidden=false;
+ if(window.HRNGLang)HRNGLang.apply();
+}
+
+const PANEL_OPEN={
+ audit:loadAudit, today:loadDay,
+ 'shift-templates':openShiftsTab, 'shift-groups':openShiftsTab, 'shift-assign':openShiftsTab,
+ calendars:()=>{if(!$('calDates').children.length)resetCalendarForm();},
+};
+function goPanel(button){
  document.querySelectorAll('#drawer nav button[data-panel]').forEach(x=>{
-   if(x===b)x.setAttribute('aria-current','page'); else x.removeAttribute('aria-current');});
- document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='panel-'+b.dataset.panel));
- setDrawer(false);window.scrollTo(0,0);
- if(b.dataset.panel==='audit')loadAudit();
- if(b.dataset.panel==='shifts')openShiftsTab();
- if(b.dataset.panel==='today')loadDay();
- if(b.dataset.panel==='calendars'&&!$('calDates').children.length)resetCalendarForm();
-}));
+   if(x===button)x.setAttribute('aria-current','page'); else x.removeAttribute('aria-current');});
+ const name=button.dataset.panel;
+ document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='panel-'+name));
+ const group=button.closest('.subnav');
+ if(group)setGroup(group.id.replace('subnav-',''),true);
+ setCrumb(button);markGroups();
+ if(!wideNav())setDrawer(false);
+ window.scrollTo(0,0);
+ PANEL_OPEN[name]?.();
+}
+document.querySelectorAll('#drawer nav button[data-panel]').forEach(b=>
+ b.addEventListener('click',()=>goPanel(b)));
 
 /* ═══ วันนี้ ═══
    รวมรายชื่อพนักงานกับเวลาที่ลงไว้ในวันนั้น คนที่ยังไม่มาต้องขึ้นด้วย
