@@ -162,7 +162,15 @@
   /* ── รายการซ้าย + รายละเอียดขวา ──
      จอแคบไม่มีที่ให้สองคอลัมน์ รายละเอียดจึงไหลลงมาอยู่ใต้รายการแทน
      ไม่ได้ซ่อน เพราะคนกดแถวแล้วต้องเห็นผลของการกดเสมอ */
-  .split{display:grid;gap:var(--s4);align-items:start}
+  .split{display:grid;gap:var(--s4);align-items:start;grid-template-columns:minmax(0,1fr)}
+  .split > *{min-width:0}
+  .leave-filters{display:flex;align-items:end;flex-wrap:wrap;gap:var(--s3);margin-bottom:var(--s4)}
+  .leave-filters .field{flex:1 1 160px;min-width:0;margin:0}
+  .leave-filters input,.leave-filters select{width:100%;min-width:0}
+  .leave-heading{margin-top:var(--s5);margin-bottom:var(--s3)}
+  #leaveRequestDetail textarea,#modalBody textarea{width:100%;resize:vertical;min-width:0}
+  #leaveEntitlementRows td,#leaveTypeRows td{overflow-wrap:anywhere}
+  #leaveRequestsStatus.error,#leaveTypesStatus.error,#leaveSummaryStatus.error{color:var(--red)}
   .detailcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
     padding:var(--s4);box-shadow:var(--shadow)}
   .detailcard h2{font-size:15px;margin-bottom:var(--s3);letter-spacing:-.01em}
@@ -584,8 +592,8 @@
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=20260917-1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
 <script src="https://timemud.mobile1234.site/browser-compat.js?v=20261001-1"></script>
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=20261001-brand-1"></script>
-<script src="https://timemud.mobile1234.site/i18n.js?v=20260930-1"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=20261002-leave-1"></script>
+<script src="https://timemud.mobile1234.site/i18n.js?v=20261002-leave-1"></script>
 </head>
 
 <body>
@@ -654,6 +662,8 @@
         <button data-panel="shift-groups">กลุ่มที่ตั้งชื่อเอง</button>
         <button data-panel="shift-assign">จัดกะให้พนักงาน</button>
       </div>
+      <button data-group="leave" aria-expanded="true" aria-controls="subnav-leave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l4 4v14H4V3h4M8 11h8M8 15h5"/></svg><span class="grow">การลาและสถิติ</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>
+      <div class="subnav on" id="subnav-leave"><button data-panel="leave-summary">สถิติรายบุคคล</button><button data-panel="leave-requests">ใบลาพนักงาน</button><button data-panel="leave-types">ตั้งค่าสิทธิ์การลา</button></div>
       <button data-panel="branches">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>สาขา</button>
       <button data-panel="calendars">
@@ -728,6 +738,50 @@
           <div class="detailcard" id="userDetail"></div>
         </div>
       </div>
+    </section>
+
+    <section class="panel" id="panel-leave-summary">
+      <div class="viewhead"><div><h1>สถิติรายบุคคล</h1><p class="sub">ตรวจการมาทำงานและสิทธิ์การลาของพนักงานในแต่ละปี</p></div></div>
+      <form id="leaveSummaryForm" class="leave-filters">
+        <div class="field"><label for="leavePersonSearch">ค้นหาพนักงาน</label><input id="leavePersonSearch" type="search" placeholder="ค้นหาชื่อ รหัสพนักงาน หรือสาขา"></div>
+        <div class="field"><label for="leavePerson">พนักงาน</label><select id="leavePerson" required><option value="">เลือกพนักงาน</option></select></div>
+        <div class="field"><label for="leaveYear">ปี ค.ศ.</label><input id="leaveYear" type="number" min="2020" max="2100" required></div>
+        <button class="btn solid" type="submit">ดูข้อมูล</button>
+      </form>
+      <p id="leaveSummaryStatus" role="status"></p>
+      <button class="btn" id="leaveSummaryRetry" hidden>ลองโหลดอีกครั้ง</button>
+      <div id="leaveSummaryBody" hidden>
+        <div class="detailhead"><h2 id="leaveSummaryPerson" translate="no"></h2></div>
+        <div class="stats four" id="leaveStats"></div>
+        <p class="sub" id="leaveYearContext"></p>
+        <p class="sub" id="leaveLatePolicy">ยังไม่กำหนดเกณฑ์มาสาย จึงยังไม่สรุปจำนวนครั้ง</p>
+        <p class="sub">ขาดงานนับจากวันทำงานที่ผ่านไปแล้วและไม่มีทั้งเวลาเข้าและใบลาที่อนุมัติ โปรดตรวจข้อมูลก่อนใช้ตัดสิน</p>
+        <h2 class="leave-heading">สิทธิ์การลา</h2>
+        <p class="sub">แยกสิทธิ์รายปี สิทธิ์ต่อครั้ง และวันที่ได้รับค่าจ้างตามประเภทการลา</p>
+        <div class="tablewrap"><table class="dtable"><thead><tr><th>ประเภทการลา</th><th>เกณฑ์สิทธิ์</th><th>ใช้แล้ว</th><th>รออนุมัติ</th><th>คงเหลือ</th></tr></thead><tbody id="leaveEntitlementRows"></tbody></table></div>
+        <h2 class="leave-heading">รายละเอียดรายวัน</h2>
+        <div class="bar"><label for="leaveDayFilter">สถานะ</label><select id="leaveDayFilter"><option value="">ทั้งหมด</option><option value="present">มาทำงาน</option><option value="leave">ลา</option><option value="planned_leave">ลาอนุมัติล่วงหน้า</option><option value="absent">ขาดงาน</option><option value="unassigned">ยังไม่ได้จัดกะ</option></select></div>
+        <div class="tablewrap"><table class="dtable"><thead><tr><th>วันที่</th><th>สถานะ</th><th>เข้างาน</th><th>หลังเวลาเริ่มกะ (นาที)</th></tr></thead><tbody id="leaveDayRows"></tbody></table></div>
+        <div class="pager" id="leaveDayPager"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-leave-requests">
+      <div class="viewhead"><div><h1>ใบลาพนักงาน</h1><p class="sub">ตรวจคำขอและบันทึกผลอนุมัติพร้อมหมายเหตุ</p></div><button class="btn" id="leaveRequestsReload">โหลดข้อมูลใหม่</button></div>
+      <div class="leave-filters">
+        <div class="field"><label for="leaveRequestSearch">ค้นหาพนักงาน</label><input id="leaveRequestSearch" type="search" placeholder="ค้นหาชื่อ รหัสพนักงาน หรือสาขา"></div>
+        <div class="field"><label for="leaveRequestPerson">พนักงาน</label><select id="leaveRequestPerson"><option value="">พนักงานทุกคน</option></select></div>
+        <div class="field"><label for="leaveRequestStatus">สถานะ</label><select id="leaveRequestStatus"><option value="pending">รออนุมัติ</option><option value="approved">อนุมัติแล้ว</option><option value="rejected">ไม่อนุมัติ</option><option value="cancelled">ยกเลิกแล้ว</option><option value="">ทั้งหมด</option></select></div>
+      </div>
+      <p id="leaveRequestsStatus" role="status"></p>
+      <div class="split"><div><div class="list" id="leaveRequestRows"></div><div class="pager" id="leaveRequestPager"></div></div>
+        <div class="detailwrap"><div class="detailcard" id="leaveRequestDetail"></div></div></div>
+    </section>
+
+    <section class="panel" id="panel-leave-types">
+      <div class="viewhead"><div><h1>ตั้งค่าสิทธิ์การลา</h1><p class="sub">ปรับจำนวนวันและคำอธิบาย โดยคงความหมายของประเภทการลาเดิม</p></div><button class="btn" id="leaveTypesReload">โหลดข้อมูลใหม่</button></div>
+      <p id="leaveTypesStatus" role="status"></p>
+      <div class="tablewrap"><table class="dtable"><thead><tr><th>ประเภทการลา</th><th>เกณฑ์สิทธิ์</th><th>สถานะ</th><th>แก้ไข</th></tr></thead><tbody id="leaveTypeRows"></tbody></table></div>
     </section>
 
     <!-- ═══ กะเวลา ═══ -->
@@ -1129,7 +1183,7 @@ function sessionEnded(){
  devSession=false;token=null;users=[];branches=[];brands=[];calendars=[];saving=false;closeModal();
  $('shell').classList.remove('on');$('loginView').style.display='grid';
  ['todayRows','userRows','branchRows','auditRows','calDates','modalBody'].forEach(id=>$(id).replaceChildren());
- clearShifts();setDrawer(false);dayRows=[];dayKey='';dayOpen=null;dayDetail.clear();
+ clearShifts();clearLeave();setDrawer(false);dayRows=[];dayKey='';dayOpen=null;dayDetail.clear();
  showError('loginAlert','หมดเวลาใช้งาน กรุณาเข้าสู่ระบบใหม่');
 }
 
@@ -1237,6 +1291,7 @@ function setCrumb(button){
 
 const PANEL_OPEN={
  audit:loadAudit, today:loadDay,
+ 'leave-summary':openLeaveSummary, 'leave-requests':openLeaveRequests, 'leave-types':loadLeaveTypes,
  'shift-templates':openShiftsTab, 'shift-groups':openShiftsTab, 'shift-assign':openShiftsTab,
  calendars:()=>{if(!$('calDates').children.length)resetCalendarForm();renderCalendars();},
 };
@@ -1801,8 +1856,8 @@ function activeField(active){return `<div class="field"><label for="edit-is_acti
 /* ═══ เลขหน้าแบบใช้ร่วมกัน ═══
    ตารางใช้เลขหน้า ส่วนรายการแบบการ์ด (พนักงาน/สาขา) ใช้ปุ่ม "แสดงเพิ่ม"
    ต่างกันโดยตั้งใจ: ตารางคนมักอยากกระโดดไปหน้าท้าย ๆ ส่วนรายชื่อมักไล่ดูลงไปเรื่อย ๆ */
-const pages={tpl:1,asg:1,audit:1,grp:1,tgt:1};
-const pageSize={tpl:10,asg:10,audit:10,grp:10,tgt:10};
+const pages={tpl:1,asg:1,audit:1,grp:1,tgt:1,ld:1,lr:1};
+const pageSize={tpl:10,asg:10,audit:10,grp:10,tgt:10,ld:10,lr:10};
 
 function paginate(name,rows){
  const size=pageSize[name];
@@ -1838,7 +1893,7 @@ function pagerHtml(name,info){
   </span>`;
 }
 const PAGE_RENDER={tpl:()=>renderTemplates(),asg:()=>renderAssignments(),
- audit:()=>renderAudit(),grp:()=>renderGroupPicker(),tgt:()=>renderTargetList()};
+ audit:()=>renderAudit(),grp:()=>renderGroupPicker(),tgt:()=>renderTargetList(),ld:()=>renderLeaveDays(),lr:()=>loadLeaveRequests()};
 document.addEventListener('click',event=>{
  const button=event.target.closest('[data-page]');
  if(!button||button.disabled)return;
@@ -1889,7 +1944,7 @@ function renderUserDetail(){
    ${field('cal','ปฏิทินวันหยุด',calendar?calendar.name:'ยังไม่ได้ผูกปฏิทิน')}
   </dl>
   <div class="bar"><button class="btn solid" data-edit-user="${u.id}">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg>แก้ไข</button></div>`;
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg>แก้ไข</button><button class="btn" data-user-summary="${u.id}">สถิติรายบุคคล</button></div>`;
  const face=$('userDetail').querySelector('[data-profile-avatar]');
  if(face)HRNGProfile.avatar(face,u);
  if(window.HRNGLang)HRNGLang.apply();
@@ -2876,6 +2931,171 @@ $('asgRows').addEventListener('click',async event=>{
  catch(error){banner(error.message,true);}
 });
 
+/* ═══ การลาและสถิติ: ใช้ตัวเลขจาก API เดียวกับมินิแอพ ไม่คิดกฎใหม่ในหน้า ═══ */
+let leaveSummary=null,leaveTypes=[],leaveRequests=[],pickedLeaveRequest=null;
+let leaveSummarySeq=0,leaveRequestSeq=0,leaveTypeSeq=0,leaveDeciding=false;
+const LEAVE_STATUS={pending:'รออนุมัติ',approved:'อนุมัติแล้ว',rejected:'ไม่อนุมัติ',cancelled:'ยกเลิกแล้ว'};
+const DAY_OUTCOME={present:'มาทำงาน',leave:'ลา',absent:'ขาดงาน',holiday:'วันหยุดตามปฏิทิน',weekly_off:'วันหยุดประจำสัปดาห์',unassigned:'ยังไม่ได้จัดกะ',planned_leave:'ลาอนุมัติล่วงหน้า',not_yet:'ยังไม่สรุป'};
+const lt=thai=>window.HRNGLang?HRNGLang.t(thai):thai;
+function leaveStatus(id,message,error=false){$(id).textContent=message;$(id).classList.toggle('error',error);}
+function renderLeavePeople(selectId,queryId){
+ const select=$(selectId),selected=select.value,query=$(queryId).value.trim().toLowerCase();
+ const people=users.filter(u=>String(u.id)===selected||!query||[u.employee_code,u.full_name,u.full_name_en,branchName(u)].join(' ').toLowerCase().includes(query));
+ select.innerHTML=`<option value="">${selectId==='leavePerson'?'เลือกพนักงาน':'พนักงานทุกคน'}</option>`+people.map(u=>`<option value="${u.id}" translate="no">${esc(u.employee_code)} · ${esc(HRNGProfile.name(u))}</option>`).join('');
+ select.value=selected;
+ if(window.HRNGLang)HRNGLang.apply();
+}
+function openLeaveSummary(){
+ renderLeavePeople('leavePerson','leavePersonSearch');
+ if(!$('leaveYear').value)$('leaveYear').value=bangkokToday().slice(0,4);
+ if($('leavePerson').value)loadLeaveSummary();
+ else leaveStatus('leaveSummaryStatus','เลือกพนักงานและปีเพื่อดูสถิติ');
+}
+async function loadLeaveSummary(){
+ const id=$('leavePerson').value,year=$('leaveYear').value,seq=++leaveSummarySeq;
+ leaveSummary=null;$('leaveSummaryBody').hidden=true;$('leaveSummaryRetry').hidden=true;
+ if(!id){leaveStatus('leaveSummaryStatus','เลือกพนักงานและปีเพื่อดูสถิติ');return;}
+ if(!$('leaveYear').reportValidity())return;
+ leaveStatus('leaveSummaryStatus','กำลังโหลดข้อมูล…');
+ try{
+  const data=await api(`/leave/summary?employee_id=${id}&year=${year}`);
+  if(seq!==leaveSummarySeq||!token)return;
+  leaveSummary=data;pages.ld=1;renderLeaveSummary();leaveStatus('leaveSummaryStatus','');
+ }catch(error){if(seq===leaveSummarySeq){leaveStatus('leaveSummaryStatus',error.message,true);$('leaveSummaryRetry').hidden=false;}}
+}
+function entitlementRule(row){
+ const basis=row.entitlement_basis||'annual',count=row.count_basis==='calendar'?'วันปฏิทิน':'วันตามตารางงาน';
+ const label=basis==='annual'?'สิทธิ์ต่อปี':basis==='per_event'?'สิทธิ์ต่อครั้ง':'ตามเหตุจำเป็น';
+ const value=basis==='unlimited'?'':`${esc(row.days_per_year)} `;
+ const paid=row.paid_days==null?'':`<span class="sub"><span>วันที่ได้รับค่าจ้าง</span>: ${esc(row.paid_days)} · ${esc(row.paid_rate??100)}%</span>`;
+ return `<span>${label}</span>${value?`<span>: ${value}</span><span>${count}</span>`:''}${paid}`;
+}
+function renderLeaveSummary(){
+ if(!leaveSummary)return;
+ const data=leaveSummary,c=data.counts;
+ $('leaveSummaryBody').hidden=false;
+ $('leaveSummaryPerson').textContent=`${data.employee.employee_code} · ${data.employee.full_name} · ${data.year}`;
+ $('leaveStats').innerHTML=[['มาทำงาน',c.present],['มาสาย',data.late_policy_pending?'—':c.late??'—'],['ลา',c.leave],['ขาดงาน',c.absent]].map(([label,value])=>`<div class="stat"><span class="n">${esc(value)}</span><span class="k">${label}</span></div>`).join('');
+ $('leaveLatePolicy').hidden=!data.late_policy_pending;
+ $('leaveYearContext').innerHTML=`<span>ลาอนุมัติล่วงหน้า</span>: ${esc(c.planned_leave??0)} · <span>วันที่ยังไม่ได้จัดกะ</span>: ${esc(c.unassigned??0)}`;
+ $('leaveEntitlementRows').innerHTML=data.entitlements.map(row=>{
+  const remaining=row.entitlement_basis==='annual'&&row.remaining!=null?esc(row.remaining)
+   :row.paid_remaining!=null?`${esc(row.paid_remaining)} <span>วันที่ได้รับค่าจ้าง</span>`:'—';
+  return `<tr><td data-label="ประเภทการลา"><span><span translate="no">${esc(row.name)}</span><span class="sub" translate="no">${esc(row.note)}</span></span></td><td data-label="เกณฑ์สิทธิ์"><span>${entitlementRule(row)}</span></td><td data-label="ใช้แล้ว">${esc(row.used)}</td><td data-label="รออนุมัติ">${esc(row.pending)}</td><td data-label="คงเหลือ"><span>${remaining}</span></td></tr>`;
+ }).join('')||'<tr class="empty-row"><td colspan="5">ยังไม่มีประเภทการลา</td></tr>';
+ renderLeaveDays();
+ if(window.HRNGLang)HRNGLang.apply();
+}
+function renderLeaveDays(){
+ const wanted=$('leaveDayFilter').value;
+ const info=paginate('ld',(leaveSummary?.days||[]).filter(row=>!wanted||row.outcome===wanted));
+ $('leaveDayRows').innerHTML=info.slice.map(row=>`<tr><td data-label="วันที่"><span translate="no">${esc(shortDate(row.date))}</span></td><td data-label="สถานะ"><span>${esc(DAY_OUTCOME[row.outcome]||row.outcome)}${row.leave?`<span class="sub" translate="no">${esc(row.leave)}</span>`:''}${row.holiday_name?`<span class="sub" translate="no">${esc(row.holiday_name)}</span>`:''}</span></td><td data-label="เข้างาน">${row.first_in?esc(clockTime(row.first_in)):'—'}</td><td data-label="หลังเวลาเริ่มกะ (นาที)">${esc(row.late_minutes??'—')}</td></tr>`).join('')||'<tr class="empty-row"><td colspan="4">ไม่พบข้อมูลตามตัวกรอง</td></tr>';
+ $('leaveDayPager').innerHTML=pagerHtml('ld',info);
+ if(window.HRNGLang)HRNGLang.apply();
+}
+function openLeaveRequests(){renderLeavePeople('leaveRequestPerson','leaveRequestSearch');loadLeaveRequests();}
+async function loadLeaveRequests(){
+ const seq=++leaveRequestSeq,offset=(pages.lr-1)*pageSize.lr;
+ const query=new URLSearchParams({limit:pageSize.lr,offset});
+ if($('leaveRequestStatus').value)query.set('status',$('leaveRequestStatus').value);
+ if($('leaveRequestPerson').value)query.set('employee_id',$('leaveRequestPerson').value);
+ leaveStatus('leaveRequestsStatus','กำลังโหลดข้อมูล…');leaveRequests=[];
+ $('leaveRequestRows').replaceChildren();$('leaveRequestPager').replaceChildren();
+ pickedLeaveRequest=null;renderLeaveRequestDetail();
+ try{
+  const data=await api('/leave/requests?'+query);
+  if(seq!==leaveRequestSeq||!token)return;
+  if(offset>=data.total&&pages.lr>1){pages.lr=Math.max(1,Math.ceil(data.total/pageSize.lr));return loadLeaveRequests();}
+  leaveRequests=data.items;
+  renderLeaveRequestRows();
+  $('leaveRequestPager').innerHTML=pagerHtml('lr',{slice:data.items,from:offset,last:Math.max(1,Math.ceil(data.total/pageSize.lr)),total:data.total});
+  leaveStatus('leaveRequestsStatus','');
+  if(window.HRNGLang)HRNGLang.apply();
+ }catch(error){if(seq===leaveRequestSeq)leaveStatus('leaveRequestsStatus',error.message,true);}
+}
+function renderLeaveRequestRows(){
+  $('leaveRequestRows').innerHTML=leaveRequests.map(row=>`<button class="row" data-leave-request="${row.id}"><span class="main"><span class="nm" translate="no">${esc(row.employee_code)} · ${esc(row.full_name)}</span><span class="sub" translate="no">${esc(row.leave_type_name)} · ${esc(shortDate(row.date_from))} – ${esc(shortDate(row.date_to))}</span></span><span class="tag${row.status==='pending'?' warn':''}">${LEAVE_STATUS[row.status]||esc(row.status)}</span></button>`).join('')||'<div class="empty">ไม่พบใบลาตามตัวกรอง</div>';
+ if(window.HRNGLang)HRNGLang.apply();
+}
+function renderLeaveRequestDetail(){
+ const row=leaveRequests.find(item=>item.id===pickedLeaveRequest);
+ if(!row){$('leaveRequestDetail').innerHTML=detailEmpty('เลือกใบลาเพื่อดูรายละเอียด');return;}
+ $('leaveRequestDetail').innerHTML=`<h2>รายละเอียดใบลา</h2><dl class="dl">${field('id','พนักงาน',row.employee_code+' · '+row.full_name)}${field('cal','ประเภทการลา',row.leave_type_name)}${field('cal','ตั้งแต่',shortDate(row.date_from))}${field('cal','ถึง',shortDate(row.date_to))}${field('cal','จำนวนวัน',row.days)}${field('tag','สถานะ',LEAVE_STATUS[row.status],true)}${field('tag','เหตุผลการลา',row.reason||'—')}${field('tag','หมายเหตุการพิจารณา',row.decision_note||'—')}</dl>${row.status==='pending'?`<div class="field leave-heading"><label for="leaveDecisionNote">หมายเหตุการพิจารณา (ไม่บังคับ)</label><textarea id="leaveDecisionNote" translate="no" maxlength="500" rows="3"></textarea></div><p id="leaveDecisionError" class="alert err" role="alert" hidden></p><div class="bar"><button class="btn solid" data-leave-decision="approved">อนุมัติ</button><button class="btn danger" data-leave-decision="rejected">ไม่อนุมัติ</button></div>`:''}`;
+ if(window.HRNGLang)HRNGLang.apply();
+}
+async function loadLeaveTypes(){
+ const seq=++leaveTypeSeq;leaveTypes=[];leaveStatus('leaveTypesStatus','กำลังโหลดข้อมูล…');$('leaveTypeRows').replaceChildren();
+ try{
+  const data=await api('/leave/types');if(seq!==leaveTypeSeq||!token)return;
+  leaveTypes=data.items;renderLeaveTypes();leaveStatus('leaveTypesStatus','');
+ }catch(error){if(seq===leaveTypeSeq)leaveStatus('leaveTypesStatus',error.message,true);}
+}
+function renderLeaveTypes(){
+ $('leaveTypeRows').innerHTML=leaveTypes.map(row=>`<tr><td data-label="ประเภทการลา"><span><span translate="no">${esc(row.name)}</span><span class="sub" translate="no">${esc(row.note)}</span></span></td><td data-label="เกณฑ์สิทธิ์"><span>${entitlementRule(row)}</span></td><td data-label="สถานะ"><span class="tag${row.is_active?'':' off'}">${row.is_active?'เปิดใช้งาน':'ปิดใช้งาน'}</span></td><td data-label="แก้ไข"><button class="btn" data-leave-type="${row.id}">แก้ไข</button></td></tr>`).join('')||'<tr class="empty-row"><td colspan="4">ยังไม่มีประเภทการลา</td></tr>';
+ if(window.HRNGLang)HRNGLang.apply();
+}
+$('leaveSummaryForm').addEventListener('submit',event=>{event.preventDefault();loadLeaveSummary();});
+$('leaveSummaryRetry').addEventListener('click',loadLeaveSummary);
+$('leavePerson').addEventListener('change',loadLeaveSummary);
+$('leaveYear').addEventListener('change',loadLeaveSummary);
+$('leavePersonSearch').addEventListener('input',()=>renderLeavePeople('leavePerson','leavePersonSearch'));
+$('leaveRequestSearch').addEventListener('input',()=>renderLeavePeople('leaveRequestPerson','leaveRequestSearch'));
+$('leaveDayFilter').addEventListener('change',()=>{pages.ld=1;renderLeaveDays();});
+['leaveRequestPerson','leaveRequestStatus'].forEach(id=>$(id).addEventListener('change',()=>{pages.lr=1;loadLeaveRequests();}));
+$('leaveRequestsReload').addEventListener('click',loadLeaveRequests);
+$('leaveTypesReload').addEventListener('click',loadLeaveTypes);
+$('leaveRequestRows').addEventListener('click',event=>{
+ const button=event.target.closest('[data-leave-request]');if(!button||leaveDeciding)return;
+ pickedLeaveRequest=Number(button.dataset.leaveRequest);renderLeaveRequestDetail();
+ $('leaveRequestDetail').scrollIntoView({block:'nearest'});
+});
+$('leaveRequestDetail').addEventListener('click',async event=>{
+ const button=event.target.closest('[data-leave-decision]');if(!button||leaveDeciding)return;
+ const id=pickedLeaveRequest,body={status:button.dataset.leaveDecision,decision_note:$('leaveDecisionNote').value.trim()};
+ leaveDeciding=true;showError('leaveDecisionError','');
+ $('leaveRequestDetail').querySelectorAll('button,textarea').forEach(el=>el.disabled=true);
+ try{
+  await api('/leave/requests/'+id,{method:'PUT',body:JSON.stringify(body)});
+  await loadLeaveRequests();banner('บันทึกผลการพิจารณาแล้ว');
+  if(leaveSummary)loadLeaveSummary();
+ }catch(error){if($('leaveDecisionError'))showError('leaveDecisionError',error.message);else leaveStatus('leaveRequestsStatus',error.message,true);}
+ finally{leaveDeciding=false;$('leaveRequestDetail').querySelectorAll('button,textarea').forEach(el=>el.disabled=false);}
+});
+$('leaveTypeRows').addEventListener('click',event=>{
+ const button=event.target.closest('[data-leave-type]');if(!button)return;
+ const row=leaveTypes.find(item=>item.id===Number(button.dataset.leaveType));
+ const label=row.entitlement_basis==='per_event'?'จำนวนวันต่อครั้ง':row.entitlement_basis==='unlimited'?'วันที่ได้รับค่าจ้างต่อปี':'จำนวนวันต่อปี';
+ $('modalTitle').textContent=lt('แก้ไขสิทธิ์การลา');
+ $('modalBody').innerHTML=`<p translate="no">${esc(row.name)}</p><p class="sub">${entitlementRule(row)}</p>${inputField('leave_days',label,row.days_per_year,'number','min="0" max="366" step="0.5" required')}<div class="field"><label for="edit-leave_note">หมายเหตุ</label><textarea id="edit-leave_note" translate="no" rows="4" maxlength="500">${esc(row.note)}</textarea></div>${activeField(row.is_active)}`;
+ openModal(async()=>{
+  if(!$('edit-leave_days').checkValidity()){ $('edit-leave_days').reportValidity();throw new Error(lt('กรอกจำนวนวันตั้งแต่ 0 ถึง 366')); }
+  const body={days_per_year:Number(value('leave_days')),note:value('leave_note'),is_active:$('edit-is_active').value==='true'};
+  if(row.version!=null)body.version=row.version;
+  await api('/leave/types/'+row.id,{method:'PUT',body:JSON.stringify(body)});
+  await loadLeaveTypes();if(leaveSummary)await loadLeaveSummary();
+ });
+ if(window.HRNGLang)HRNGLang.apply();
+});
+document.addEventListener('click',event=>{
+ const button=event.target.closest('[data-user-summary]');if(!button)return;
+ $('leavePersonSearch').value='';renderLeavePeople('leavePerson','leavePersonSearch');
+ $('leavePerson').value=button.dataset.userSummary;
+ goPanel(document.querySelector('[data-panel="leave-summary"]'));
+});
+window.addEventListener('hrng:lang',()=>{
+ renderLeavePeople('leavePerson','leavePersonSearch');renderLeavePeople('leaveRequestPerson','leaveRequestSearch');
+ renderLeaveSummary();renderLeaveTypes();renderLeaveRequestRows();
+ if(pickedLeaveRequest&&!leaveDeciding){const note=$('leaveDecisionNote')?.value;renderLeaveRequestDetail();if(note!=null&&$('leaveDecisionNote'))$('leaveDecisionNote').value=note;}
+});
+function clearLeave(){
+ ++leaveSummarySeq;++leaveRequestSeq;++leaveTypeSeq;leaveSummary=null;leaveTypes=[];leaveRequests=[];pickedLeaveRequest=null;
+ ['leaveStats','leaveEntitlementRows','leaveDayRows','leaveDayPager','leaveRequestRows','leaveRequestPager','leaveRequestDetail','leaveTypeRows','leaveSummaryPerson'].forEach(id=>$(id).replaceChildren());
+ ['leavePersonSearch','leaveRequestSearch','leavePerson','leaveRequestPerson'].forEach(id=>$(id).value='');
+ renderLeavePeople('leavePerson','leavePersonSearch');renderLeavePeople('leaveRequestPerson','leaveRequestSearch');
+ $('leaveSummaryBody').hidden=true;$('leaveSummaryRetry').hidden=true;
+ ['leaveSummaryStatus','leaveRequestsStatus','leaveTypesStatus'].forEach(id=>leaveStatus(id,''));
+}
+
 function openModal(handler){branchMapController?.destroy();branchMapController=null;$('backdrop').querySelector('.modal').classList.remove('branch-editor');lastFocus=document.activeElement;onSave=handler;showError('modalError','');$('backdrop').classList.add('on');$('shell').inert=true;$('modalSave').disabled=false;setTimeout(()=>$('modalBody').querySelector('input,select')?.focus(),0);}
 function closeModal(){if(saving)return;branchMapController?.destroy();branchMapController=null;$('backdrop').querySelector('.modal').classList.remove('branch-editor');$('backdrop').classList.remove('on');$('shell').inert=false;onSave=null;lastFocus?.focus();}
 $('modalCancel').addEventListener('click',closeModal);
@@ -2892,7 +3112,7 @@ document.addEventListener('keydown',e=>{
  if(!$('backdrop').classList.contains('on'))return;
  if(e.key==='Escape'){e.preventDefault();closeModal();}
  if(e.key==='Tab'){
-  const items=[...$('backdrop').querySelectorAll('input,select,button,a[href],[tabindex]')].filter(el=>!el.disabled&&el.tabIndex>=0&&el.getClientRects().length),first=items[0],last=items.at(-1);
+  const items=[...$('backdrop').querySelectorAll('input,select,textarea,button,a[href],[tabindex]')].filter(el=>!el.disabled&&el.tabIndex>=0&&el.getClientRects().length),first=items[0],last=items.at(-1);
   if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
  }
 });
