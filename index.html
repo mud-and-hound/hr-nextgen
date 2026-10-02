@@ -592,8 +592,10 @@
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=20260917-1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
 <script src="https://timemud.mobile1234.site/browser-compat.js?v=20261001-1"></script>
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=20261002-branch-picker-1"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=20261002-hr-admin-1"></script>
 <script src="https://timemud.mobile1234.site/i18n.js?v=20261002-leave-1"></script>
+<link rel="stylesheet" href="https://timemud.mobile1234.site/hr-admin.css?v=20261002-hr-admin-1">
+<link rel="stylesheet" href="https://timemud.mobile1234.site/planning-import.css?v=20261002-hrs-1">
 </head>
 
 <body>
@@ -636,7 +638,7 @@
     <span class="brand"><span class="mark" data-dev-login>
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
     </span>HR NextGen</span>
-    <span class="whochip">
+    <span class="whochip" translate="no">
       <span class="face" id="whoFace" aria-hidden="true">—</span>
       <span class="lines"><b id="whoName">—</b><span id="whoId">—</span></span>
     </span>
@@ -649,27 +651,12 @@
       <button class="btn icon" data-close-drawer aria-label="ปิด" style="align-self:flex-end;border:0">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
-      <h2>ส่วนต่าง ๆ</h2>
-      <button data-panel="today" aria-current="page">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>วันนี้</button>
-      <button data-panel="users">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.6 3.4-5.6 7.5-5.6s7.5 2 7.5 5.6"/></svg>พนักงาน</button>
-      <button data-group="shifts" aria-expanded="true" aria-controls="subnav-shifts">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg><span class="grow">กะเวลา</span>
-        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>
-      <div class="subnav on" id="subnav-shifts">
-        <button data-panel="shift-templates">แบบกะ</button>
-        <button data-panel="shift-groups">กลุ่มที่ตั้งชื่อเอง</button>
-        <button data-panel="shift-assign">จัดกะให้พนักงาน</button>
-      </div>
-      <button data-group="leave" aria-expanded="true" aria-controls="subnav-leave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l4 4v14H4V3h4M8 11h8M8 15h5"/></svg><span class="grow">การลาและสถิติ</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>
-      <div class="subnav on" id="subnav-leave"><button data-panel="leave-summary">สถิติรายบุคคล</button><button data-panel="leave-requests">ใบลาพนักงาน</button><button data-panel="leave-types">ตั้งค่าสิทธิ์การลา</button></div>
-      <button data-panel="branches">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>สาขา</button>
-      <button data-panel="calendars">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/><path d="M8.5 14.5h2M13.5 14.5h2"/></svg>ปฏิทินวันหยุด</button>
-      <button data-panel="audit">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2"/><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 4v4h4"/></svg>ประวัติการแก้ไข</button>
+<h2>ส่วนต่าง ๆ</h2><button data-panel="hr-dashboard">ภาพรวมองค์กร</button><button data-panel="today" aria-current="page">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>วันนี้</button><button data-group="organization" aria-expanded="true" aria-controls="subnav-organization"><span class="grow">องค์กรและพนักงาน</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-organization"><button data-panel="hr-organization">โครงสร้างองค์กร</button><button data-panel="hr-positions">ตำแหน่งงาน</button><button data-panel="users">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.6 3.4-5.6 7.5-5.6s7.5 2 7.5 5.6"/></svg>พนักงาน</button><button data-panel="hr-profiles">ประวัติพนักงาน</button><button data-panel="branches">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>สาขา</button></div><button data-group="shifts" aria-expanded="true" aria-controls="subnav-shifts"><span class="grow">กะเวลา</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-shifts"><button data-panel="shift-templates">แบบกะ</button><button data-panel="shift-groups">กลุ่มที่ตั้งชื่อเอง</button><button data-panel="shift-assign">จัดกะให้พนักงาน</button><button data-panel="hr-planning">ตารางกำลังคนรายเดือน</button><button data-panel="calendars">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/><path d="M8.5 14.5h2M13.5 14.5h2"/></svg>ปฏิทินวันหยุด</button></div><button data-group="leave" aria-expanded="true" aria-controls="subnav-leave"><span class="grow">การลาและสถิติ</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-leave"><button data-panel="leave-summary">สถิติรายบุคคล</button><button data-panel="leave-requests">ใบลาพนักงาน</button><button data-panel="leave-types">ตั้งค่าสิทธิ์การลา</button><button data-panel="hr-overtime">คำขอโอที</button></div><button data-group="documents" aria-expanded="true" aria-controls="subnav-documents"><span class="grow">การสื่อสารองค์กร</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-documents"><button data-panel="hr-notices">ประกาศและการรับทราบ</button><button data-panel="hr-policies">นโยบายบริษัท</button></div><button data-group="reports" aria-expanded="true" aria-controls="subnav-reports"><span class="grow">รายงานและประวัติ</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-reports"><button data-panel="hr-reports">รายงานข้อมูล</button><button data-panel="audit">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2"/><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 4v4h4"/></svg>ประวัติการแก้ไข</button></div>
       <h2>ภาษา</h2>
       <div class="langpick" translate="no" style="justify-content:flex-start;margin:4px 6px 8px">
         <button type="button" data-lang-pick="th" aria-pressed="true" lang="th">ไทย</button>
@@ -1149,18 +1136,23 @@
 const API_BASE='https://timemud.mobile1234.site';
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let adminGeneration=0,adminIdentity='',adminUser=null;
 let devSession=false,token=null,users=[],branches=[],brands=[],calendars=[],onSave=null,saving=false,lastFocus=null,branchMapController=null;
 
 function banner(message,error=false){$('demobar').textContent=message;$('demobar').classList.toggle('error',error);}
 function showError(id,message){const el=$(id);el.textContent=message;el.hidden=!message;}
 
 async function api(path,options={}){
+ const generation=adminGeneration;
  const headers={'Content-Type':'application/json',...(token?{'Authorization':'Bearer '+token}:{})};
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+ const abortExternal=()=>controller.abort();
+ if(options.signal?.aborted)controller.abort();else options.signal?.addEventListener('abort',abortExternal,{once:true});
  try{
   let extra=null;
   const r=await fetch(API_BASE+'/api/admin'+path,{...options,headers,cache:'no-store',signal:controller.signal});
   const data=await r.json().catch(()=>({}));
+  if(generation!==adminGeneration){const e=new Error('เซสชันเปลี่ยนแล้ว กรุณาโหลดข้อมูลใหม่');e.stale=true;throw e;}
   if(!r.ok){
    if(r.status===401 && path!=='/login')sessionEnded();
    let message=typeof data.detail==='string'?data.detail:'ทำรายการไม่สำเร็จ';
@@ -1176,11 +1168,12 @@ async function api(path,options={}){
   if(e.name==='AbortError')throw new Error('รอการตอบกลับนานเกินไป กรุณาโหลดข้อมูลใหม่เพื่อตรวจว่ารายการถูกบันทึกแล้วหรือไม่');
   if(e instanceof TypeError)throw new Error('เชื่อมต่อ Server ไม่สำเร็จ กรุณาตรวจการเชื่อมต่อแล้วลองใหม่');
   throw e;
- }finally{clearTimeout(timer);}
+ }finally{clearTimeout(timer);options.signal?.removeEventListener('abort',abortExternal);}
 }
 
 function sessionEnded(){
- devSession=false;token=null;users=[];branches=[];brands=[];calendars=[];saving=false;closeModal();
+ ++adminGeneration;adminIdentity='';adminUser=null;window.HRNGAdmin?.reset();
+ devSession=false;token=null;users=[];branches=[];brands=[];calendars=[];saving=false;closeModal();window.dispatchEvent(new CustomEvent('hrng:admin-session'));
  $('shell').classList.remove('on');$('loginView').style.display='grid';
  ['todayRows','userRows','branchRows','auditRows','calDates','modalBody'].forEach(id=>$(id).replaceChildren());
  clearShifts();clearLeave();setDrawer(false);dayRows=[];dayKey='';dayOpen=null;dayDetail.clear();
@@ -1195,14 +1188,18 @@ const clockTime=value=>new Date(value).toLocaleTimeString('th-TH',{hour:'2-digit
 const CLOCK_LABEL={in:'เข้างาน',out:'ออกงาน',break_start:'เริ่มพัก',break_end:'กลับเข้างาน'};
 
 async function loadData(){
+ const generation=adminGeneration;
  banner('กำลังโหลดข้อมูล…');
  try{
   const [b,brandList,calendarList]=await Promise.all(
     [api('/branches'),api('/brands'),api('/shifts/calendars')]);
+  if(generation!==adminGeneration)return;
   brands=brandList.items;calendars=calendarList.items;
   let all=[],offset=0,total=0;
   do{const page=await api('/employees?limit=500&offset='+offset);all.push(...page.items);total=page.total;offset+=page.items.length;if(!page.items.length)break;}while(offset<total);
+  if(generation!==adminGeneration)return;
   branches=b.items;users=all;
+  window.dispatchEvent(new CustomEvent('hrng:admin-data'));
   renderUsers();renderBranches();renderCalendars();
   // Navigation is usable while login data loads. Refresh selectors once people arrive,
   // retaining any search or selection entered on an already-open leave screen.
@@ -1214,7 +1211,8 @@ async function loadData(){
 }
 
 async function acceptAdminLogin(data){
- devSession=data.development===true;token=data.token;$('pw').value='';showError('loginAlert','');
+ ++adminGeneration;adminIdentity=adminGeneration+':'+data.user.username;adminUser={id:data.user.id,username:data.user.username};
+ devSession=data.development===true;token=data.token;window.dispatchEvent(new CustomEvent('hrng:admin-session'));$('pw').value='';showError('loginAlert','');
  $('whoName').textContent=data.user.display_name;$('whoId').textContent=data.user.username;
  /* อักษรย่อจากชื่อที่แสดง ถ้าไม่มีก็ใช้ชื่อบัญชี จะได้ไม่เหลือวงกลมเปล่า */
  $('whoFace').textContent=(data.user.display_name||data.user.username||'?').trim()[0]||'?';
@@ -1300,6 +1298,7 @@ const PANEL_OPEN={
  calendars:()=>{if(!$('calDates').children.length)resetCalendarForm();renderCalendars();},
 };
 function goPanel(button){
+ if(!button||window.HRNGAdmin?.canNavigate(button.dataset.panel)===false)return false;
  document.querySelectorAll('#drawer nav button[data-panel]').forEach(x=>{
    if(x===button)x.setAttribute('aria-current','page'); else x.removeAttribute('aria-current');});
  const name=button.dataset.panel;
@@ -1310,6 +1309,7 @@ function goPanel(button){
  if(!wideNav())setDrawer(false);
  window.scrollTo(0,0);
  PANEL_OPEN[name]?.();
+ return true;
 }
 document.querySelectorAll('#drawer nav button[data-panel]').forEach(b=>
  b.addEventListener('click',()=>goPanel(b)));
@@ -1665,8 +1665,8 @@ function renderBranches(){
          b.is_active?'':' · <span class="tag off">ปิดใช้งาน</span>'}</span></button>
    </div>`).join('');
  }).join('')+footer||'<div class="empty">ไม่พบสาขา</div>';
- $('branchCount').innerHTML=`<b>${kept.length}</b> สาขา`
-   +(kept.length<branches.length?` จากทั้งหมด ${branches.length}`:'');
+ $('branchCount').innerHTML=`<b>${kept.length} สาขา</b>`
+   +(kept.length<branches.length?` <span>จากทั้งหมด</span> ${branches.length}`:'');
  renderBranchDetail();
  syncBulk();
 }
@@ -3122,10 +3122,23 @@ document.addEventListener('keydown',e=>{
  }
 });
 
+
+window.HRNGAdminBridge={
+ api,
+ session:()=>({active:!!token,identity:adminIdentity,user:adminUser?{...adminUser}:null,development:devSession}),
+ openPanel:name=>goPanel(document.querySelector('#drawer nav button[data-panel="'+name+'"]')),
+ currentPanel:()=>document.querySelector('.panel.on')?.id.replace('panel-','')||'',
+ hasUnsavedChanges:()=>!!saving||$('backdrop').classList.contains('on')||!!window.HRNGAdmin?.hasUnsavedChanges()||!!window.HRNGPlanningImport?.hasUnsavedChanges(),
+ people:()=>users.map(p=>({...p})),branches:()=>branches.map(b=>({...b})),
+ registerPanel:(name,handler)=>{PANEL_OPEN[name]=handler;}
+};
 </script>
+<script src="https://timemud.mobile1234.site/hr-admin.js?v=20261002-hr-admin-1"></script>
 <script src="https://timemud.mobile1234.site/dev-login.js?v=20260917-2"></script>
 <script>
 if(window.HRNGDevLogin)HRNGDevLogin.attach({baseUrl:API_BASE,kind:'admin',isLoggedIn:()=>Boolean(token),onSuccess:acceptAdminLogin,onError:message=>showError('loginAlert',message)});
 </script>
+<script src="https://timemud.mobile1234.site/planning-import.js?v=20261002-hrs-1"></script>
+<script src="https://timemud.mobile1234.site/admin-webmcp.js?v=20261002-hrs-1"></script>
 </body>
 </html>
