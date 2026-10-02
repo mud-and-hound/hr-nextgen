@@ -1204,6 +1204,10 @@ async function loadData(){
   do{const page=await api('/employees?limit=500&offset='+offset);all.push(...page.items);total=page.total;offset+=page.items.length;if(!page.items.length)break;}while(offset<total);
   branches=b.items;users=all;
   renderUsers();renderBranches();renderCalendars();
+  // Navigation is usable while login data loads. Refresh selectors once people arrive,
+  // retaining any search or selection entered on an already-open leave screen.
+  renderLeavePeople('leavePerson','leavePersonSearch');
+  renderLeavePeople('leaveRequestPerson','leaveRequestSearch');
   await loadDay(true);
   banner((devSession?'Dev · ข้อมูลทดสอบ · ':'ข้อมูลจริง · ')+users.filter(u=>u.is_active).length+' คน · '+branches.length+' สาขา');
  }catch(e){banner(e.message,true);throw e;}
