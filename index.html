@@ -582,6 +582,10 @@
     .target-list label{flex-wrap:wrap}
     .target-list .who{max-width:100%;white-space:normal;flex-basis:100%;padding-left:23px}
   }
+  /* แอดมินแบรนด์ (เจ้าของสั่ง 7 ต.ค. 2569): ซ่อนเมนูส่วนกลางและปุ่มแก้ค่ากลาง เซิร์ฟเวอร์ปฏิเสธเองอยู่แล้ว
+     ตรงนี้แค่ไม่ให้เห็นปุ่มที่กดแล้วได้แต่ข้อความว่าทำไม่ได้ */
+  body.brand-admin [data-central-only]{display:none!important}
+  .rolechip{align-self:center;margin-left:8px;white-space:nowrap}
   @media (forced-colors:active){
     .dot,.dot.in,.dot.done,.dot.warn{background:CanvasText;box-shadow:none}
     .langpick button[aria-pressed="true"],.stat[aria-pressed="true"]{background:Highlight;color:HighlightText}
@@ -592,7 +596,7 @@
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=ebdc1abb3da1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
 <script src="https://timemud.mobile1234.site/browser-compat.js?v=3e6b68f6b12d"></script>
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=d3994eadcbcf"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=848f97d1fbfc"></script>
 <script src="https://timemud.mobile1234.site/i18n.js?v=54631cd2fd41"></script>
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-admin.css?v=e131edda2e5f">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/planning-import.css?v=6daf54db0938">
@@ -643,6 +647,7 @@
       <span class="face" id="whoFace" aria-hidden="true">—</span>
       <span class="lines"><b id="whoName">—</b><span id="whoId">—</span></span>
     </span>
+    <span class="tag rolechip" id="whoRole" hidden><span>แอดมินแบรนด์</span> · <span id="whoBrands" translate="no"></span></span>
   </header>
   </div>
 
@@ -654,9 +659,9 @@
       </button>
 <h2>ส่วนต่าง ๆ</h2><button data-panel="hr-dashboard">ภาพรวมองค์กร</button><button data-panel="today" aria-current="page">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>วันนี้</button><button data-group="organization" aria-expanded="true" aria-controls="subnav-organization"><span class="grow">องค์กรและพนักงาน</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-organization"><button data-panel="hr-organization">โครงสร้างองค์กร</button><button data-panel="hr-positions">ตำแหน่งงาน</button><button data-panel="hr-companies">นิติบุคคล</button><button data-panel="hr-readiness">ความพร้อมของข้อมูล</button><button data-panel="users">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.6 3.4-5.6 7.5-5.6s7.5 2 7.5 5.6"/></svg>พนักงาน</button><button data-panel="hr-profiles">ประวัติพนักงาน</button><button data-panel="hr-rights">สิทธิ์พนักงาน</button><button data-panel="branches">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>สาขา</button></div><button data-group="shifts" aria-expanded="true" aria-controls="subnav-shifts"><span class="grow">กะเวลา</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-shifts"><button data-panel="shift-templates">แบบกะ</button><button data-panel="shift-groups">กลุ่มที่ตั้งชื่อเอง</button><button data-panel="shift-assign">จัดกะให้พนักงาน</button><button data-panel="hr-planning">ตารางกำลังคนรายเดือน</button><button data-panel="calendars">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/><path d="M8.5 14.5h2M13.5 14.5h2"/></svg>ปฏิทินวันหยุด</button></div><button data-group="leave" aria-expanded="true" aria-controls="subnav-leave"><span class="grow">การลาและสถิติ</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-leave"><button data-panel="leave-summary">สถิติรายบุคคล</button><button data-panel="leave-requests">ใบลาพนักงาน</button><button data-panel="leave-types">ตั้งค่าสิทธิ์การลา</button><button data-panel="hr-overtime">คำขอโอที</button><button data-panel="hr-requests">คำขอพนักงาน</button></div><button data-group="documents" aria-expanded="true" aria-controls="subnav-documents"><span class="grow">การสื่อสารองค์กร</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-documents"><button data-panel="hr-notices">ประกาศและการรับทราบ</button><button data-panel="hr-policies">นโยบายบริษัท</button></div><button data-group="reports" aria-expanded="true" aria-controls="subnav-reports"><span class="grow">รายงานและประวัติ</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-reports"><button data-panel="hr-reports">รายงานข้อมูล</button><button data-panel="audit">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.6 3.4-5.6 7.5-5.6s7.5 2 7.5 5.6"/></svg>พนักงาน</button><button data-panel="hr-profiles">ประวัติพนักงาน</button><button data-panel="hr-rights" data-central-only>สิทธิ์พนักงาน</button><button data-panel="branches">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>สาขา</button><button data-panel="hr-admins" data-central-only>บัญชีแอดมิน</button></div><button data-group="shifts" aria-expanded="true" aria-controls="subnav-shifts"><span class="grow">กะเวลา</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-shifts"><button data-panel="shift-templates">แบบกะ</button><button data-panel="shift-groups">กลุ่มที่ตั้งชื่อเอง</button><button data-panel="shift-assign">จัดกะให้พนักงาน</button><button data-panel="hr-planning">ตารางกำลังคนรายเดือน</button><button data-panel="calendars">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/><path d="M8.5 14.5h2M13.5 14.5h2"/></svg>ปฏิทินวันหยุด</button></div><button data-group="leave" aria-expanded="true" aria-controls="subnav-leave"><span class="grow">การลาและสถิติ</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-leave"><button data-panel="leave-summary">สถิติรายบุคคล</button><button data-panel="leave-requests">ใบลาพนักงาน</button><button data-panel="leave-types">ตั้งค่าสิทธิ์การลา</button><button data-panel="hr-overtime">คำขอโอที</button><button data-panel="hr-requests">คำขอพนักงาน</button></div><button data-group="documents" aria-expanded="true" aria-controls="subnav-documents" data-central-only><span class="grow">การสื่อสารองค์กร</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-documents" data-central-only><button data-panel="hr-notices">ประกาศและการรับทราบ</button><button data-panel="hr-policies">นโยบายบริษัท</button></div><button data-group="reports" aria-expanded="true" aria-controls="subnav-reports"><span class="grow">รายงานและประวัติ</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="subnav on" id="subnav-reports"><button data-panel="hr-reports">รายงานข้อมูล</button><button data-panel="audit" data-central-only>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2"/><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 4v4h4"/></svg>ประวัติการแก้ไข</button></div>
       <h2>ภาษา</h2>
       <div class="langpick" translate="no" style="justify-content:flex-start;margin:4px 6px 8px">
@@ -776,7 +781,7 @@
     <section class="panel" id="panel-shift-templates">
       <div class="viewhead"><div style="flex:1"><h1>แบบกะ</h1>
         <p class="sub">ตั้งเวลาเข้า–ออก เวลาพัก และชั่วโมงทำงานของกะหนึ่งอัน</p></div>
-        <button class="btn solid" id="tplAdd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>เพิ่มแบบกะ</button>
+        <button class="btn solid" id="tplAdd" data-central-only><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>เพิ่มแบบกะ</button>
         <button class="helpbtn" type="button" data-help="tpl" aria-expanded="false"
           aria-controls="help-tpl" aria-label="วิธีใช้หัวข้อแบบกะ"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></div>
       <div class="help" id="help-tpl" hidden>
@@ -868,7 +873,7 @@
       </div>
       <div class="split">
         <div>
-      <div class="card shift-form">
+      <div class="card shift-form" data-central-only>
         <div class="grid2">
           <label>ชื่อกลุ่ม <input id="grpName" maxlength="200" placeholder="ทีมเปิดร้าน"></label>
           <label>หมายเหตุ <input id="grpNote" maxlength="500" placeholder="ไม่บังคับ"></label>
@@ -995,13 +1000,13 @@
     <!-- ═══ สาขา ═══ -->
     <section class="panel" id="panel-branches">
       <div class="viewhead"><h1>สาขา</h1>
-        <button class="btn solid" id="addBranchBtn">เพิ่มสาขา</button></div>
+        <button class="btn solid" id="addBranchBtn" data-central-only>เพิ่มสาขา</button></div>
       <div class="bar"><input class="search" id="branchSearch" placeholder="ค้นหารหัสหรือชื่อสาขา">
         <span class="shown">
           <svg class="filled" viewBox="0 0 24 24" aria-hidden="true"><path d="M24,.5c0,.276-.224,.5-.5,.5H9.5c-.276,0-.5-.224-.5-.5s.224-.5,.5-.5h14c.276,0,.5,.224,.5,.5Zm-3.5,4.5H9.5c-.276,0-.5,.224-.5,.5s.224,.5,.5,.5h11c.276,0,.5-.224,.5-.5s-.224-.5-.5-.5Zm-3,5H9.5c-.276,0-.5,.224-.5,.5s.224,.5,.5,.5h8c.276,0,.5-.224,.5-.5s-.224-.5-.5-.5Zm-3,5h-5c-.276,0-.5,.224-.5,.5s.224,.5,.5,.5h5c.276,0,.5-.224,.5-.5s-.224-.5-.5-.5Zm-5.354,4.561l-3.146,3.146V.5c0-.276-.224-.5-.5-.5s-.5,.224-.5,.5V22.707l-3.146-3.146c-.195-.195-.512-.195-.707,0s-.195,.512,0,.707l3.293,3.293c.292,.292,.676,.438,1.061,.438s.768-.146,1.061-.438l3.293-3.293c.195-.195,.195-.512,0-.707s-.512-.195-.707,0Z"/></svg>
           <select id="branchLimit" aria-label="จำนวนรายการที่แสดง"></select>
         </span>
-        <button class="btn" id="bulkBtn" hidden>ปรับรัศมีที่เลือก</button></div>
+        <button class="btn" id="bulkBtn" hidden data-central-only>ปรับรัศมีที่เลือก</button></div>
       <div class="split">
         <div>
           <div class="list" id="branchRows"></div>
@@ -1017,7 +1022,7 @@
     <section class="panel" id="panel-calendars">
       <div class="viewhead"><div style="flex:1"><h1>ปฏิทินวันหยุด</h1>
         <p class="sub">จัดการวันหยุดประจำปี แยกตามกลุ่มพนักงาน พร้อมดูทั้งเดือนในหน้าเดียว</p></div>
-        <button class="btn solid" id="calAdd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>สร้างปฏิทิน</button>
+        <button class="btn solid" id="calAdd" data-central-only><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>สร้างปฏิทิน</button>
         <button class="helpbtn" type="button" data-help="cal" aria-expanded="false"
           aria-controls="help-cal" aria-label="วิธีใช้หน้าปฏิทินวันหยุด"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></div>
       <div class="help" id="help-cal" hidden>
@@ -1190,7 +1195,7 @@ async function api(path,options={}){
 
 function sessionEnded(){
  ++adminGeneration;adminIdentity='';adminUser=null;window.HRNGAdmin?.reset();
- devSession=false;token=null;users=[];branches=[];brands=[];calendars=[];companies=[];orgUnits=[];positionList=[];placementReady=false;companyLinked=false;saving=false;closeModal();window.dispatchEvent(new CustomEvent('hrng:admin-session'));
+ devSession=false;token=null;users=[];branches=[];brands=[];calendars=[];companies=[];orgUnits=[];positionList=[];placementReady=false;companyLinked=false;saving=false;applyAdminRole(null);closeModal();window.dispatchEvent(new CustomEvent('hrng:admin-session'));
  $('shell').classList.remove('on');$('loginView').style.display='grid';
  ['todayRows','userRows','branchRows','auditRows','calDates','modalBody'].forEach(id=>$(id).replaceChildren());
  clearShifts();clearLeave();setDrawer(false);dayRows=[];dayKey='';dayOpen=null;dayDetail.clear();
@@ -1247,7 +1252,23 @@ async function acceptAdminLogin(data){
  $('loginView').style.display='none';$('shell').classList.add('on');
  HRNGProfile.languageControl($('nameLanguageControl'));
  $('dayPick').value=bangkokToday();
+ // แอดมินกลางหรือแอดมินแบรนด์ — ถามเซิร์ฟเวอร์ก่อนโหลดข้อมูล ถามไม่ได้ให้ซ่อนส่วนกลางไว้ก่อน (ปลอดภัยกว่า)
+ const generation=adminGeneration;
+ // การซ่อนเป็นแค่ความสะดวก เซิร์ฟเวอร์ตรวจเองทุกคำขอ จึงซ่อนเฉพาะเมื่อเซิร์ฟเวอร์ตอบชัดว่า central:false
+ // ถามไม่สำเร็จให้แสดงตามปกติ ไม่งั้นแอดมินกลางจะหาเมนูตัวเองไม่เจอเพราะเน็ตกระตุกครั้งเดียว
+ const me=await api('/me').catch(()=>null);
+ if(generation!==adminGeneration)return;
+ applyAdminRole(me);
  await loadData();
+}
+/* แอดมินแยกแบรนด์ (เจ้าของสั่ง 7 ต.ค. 2569): ซ่อนเมนูและปุ่มของส่วนกลาง และบอกว่าดูแลแบรนด์ไหน
+   null = ออกจากระบบหรือถามไม่สำเร็จ · เซิร์ฟเวอร์กรองข้อมูลและปฏิเสธงานส่วนกลางเองทุกคำขอ */
+function applyAdminRole(me){
+ const brand=me?.central===false;
+ document.body.classList.toggle('brand-admin',brand);
+ $('whoRole').hidden=!brand;
+ $('whoBrands').textContent=brand?(me.brands||[]).join(', '):'';
+ if(brand&&document.querySelector('#drawer [data-panel][aria-current="page"][data-central-only]'))goPanel(document.querySelector('#drawer [data-panel="today"]'));
 }
 
 $('loginForm').addEventListener('submit',async e=>{
@@ -2016,7 +2037,7 @@ function renderBranchDetail(){
    ${field('ruler','รัศมีลงเวลา',b.radius_m+' เมตร')}
   </dl>
   <div class="bar">
-   <button class="btn solid" data-edit-branch="${b.id}">
+   <button class="btn solid" data-edit-branch="${b.id}" data-central-only>
      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg>แก้ไข</button>
    ${spot?`<button class="btn" id="branchCopy" data-spot="${esc(spot)}">
      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"/></svg>คัดลอกพิกัด</button>
@@ -2325,9 +2346,9 @@ function renderTemplates(){
    <td data-label="สถานะ">${live?'<span class="tag go-tag">ใช้งาน</span>'
      :'<span class="tag off">ปิดใช้งาน</span>'}</td>
    <td class="act-cell"><span class="act">
-     <button class="btn" data-tpl-edit="${row.id}" aria-label="แก้ไข"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg><span class="lbl">แก้ไข</span></button>
-     ${live?`<button class="btn danger" data-tpl-retire="${row.id}" aria-label="ปิดใช้งาน"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span class="lbl">ปิดใช้งาน</span></button>`
-           :`<button class="btn go" data-tpl-revive="${row.id}" aria-label="เปิดใช้งานอีกครั้ง"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/></svg><span class="lbl">เปิดใช้งานอีกครั้ง</span></button>`}
+     <button class="btn" data-tpl-edit="${row.id}" aria-label="แก้ไข" data-central-only><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg><span class="lbl">แก้ไข</span></button>
+     ${live?`<button class="btn danger" data-tpl-retire="${row.id}" aria-label="ปิดใช้งาน" data-central-only><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span class="lbl">ปิดใช้งาน</span></button>`
+           :`<button class="btn go" data-tpl-revive="${row.id}" aria-label="เปิดใช้งานอีกครั้ง" data-central-only><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/></svg><span class="lbl">เปิดใช้งานอีกครั้ง</span></button>`}
    </span></td>
   </tr>`;
  }).join('')||'<tr class="empty-row"><td colspan="7">ยังไม่มีแบบกะ กดเพิ่มแบบกะด้านบน</td></tr>';
@@ -2363,9 +2384,9 @@ function renderTemplateDetail(){
   ${row.warnings.length?`<div class="shift-preview warn"><ul>${
     row.warnings.map(text=>`<li>${esc(text)}</li>`).join('')}</ul></div>`:''}
   <div class="bar">
-   <button class="btn solid" data-tpl-edit="${row.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg>แก้ไข</button>
-   ${live?`<button class="btn danger" data-tpl-retire="${row.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>ปิดใช้งาน</button>`
-         :`<button class="btn go" data-tpl-revive="${row.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/></svg>เปิดใช้งานอีกครั้ง</button>`}
+   <button class="btn solid" data-tpl-edit="${row.id}" data-central-only><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg>แก้ไข</button>
+   ${live?`<button class="btn danger" data-tpl-retire="${row.id}" data-central-only><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>ปิดใช้งาน</button>`
+         :`<button class="btn go" data-tpl-revive="${row.id}" data-central-only><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/></svg>เปิดใช้งานอีกครั้ง</button>`}
   </div>`;
  if(window.HRNGLang)HRNGLang.apply();
 }
@@ -2695,7 +2716,7 @@ function renderGroups(){
    <span class="main"><span class="nm" translate="no">${esc(row.name)}</span>
      <span class="sub" translate="no">${esc(row.note||'—')}</span></span>
    <span class="val"><b>${row.members}</b><span>คน</span></span>
-   <span class="rowact"><button class="btn" data-grp-edit="${row.id}">แก้ไข</button></span>
+   <span class="rowact"><button class="btn" data-grp-edit="${row.id}" data-central-only>แก้ไข</button></span>
  </div>`).join('')||'<div class="empty">ยังไม่มีกลุ่ม</div>';
 }
 function resetGroupForm(){
@@ -2866,7 +2887,7 @@ function renderCalendarDetail(){
      <span class="d" translate="no">${shortDay(row.holiday_date)}</span>
      <span translate="no">${esc(row.name)}</span></button>`).join('')}</div>`
    :'<p class="hintlabel">ไม่มีวันหยุดข้างหน้าในปฏิทินนี้</p>'}
-  <div class="bar"><button class="btn solid" data-cal-edit="${current.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg>แก้ไขปฏิทิน</button></div>`;
+  <div class="bar"><button class="btn solid" data-cal-edit="${current.id}" data-central-only><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="M14.5 5.5 18.5 9.5"/></svg>แก้ไขปฏิทิน</button></div>`;
  if(window.HRNGLang)HRNGLang.apply();
 }
 const uiLocale=()=>window.HRNGLang?HRNGLang.locale():'th-TH-u-ca-buddhist';
@@ -3173,7 +3194,7 @@ async function loadLeaveTypes(){
  }catch(error){if(seq===leaveTypeSeq)leaveStatus('leaveTypesStatus',error.message,true);}
 }
 function renderLeaveTypes(){
- $('leaveTypeRows').innerHTML=leaveTypes.map(row=>`<tr><td data-label="ประเภทการลา"><span><span translate="no">${esc(row.name)}</span><span class="sub" translate="no">${esc(row.note)}</span></span></td><td data-label="เกณฑ์สิทธิ์"><span>${entitlementRule(row)}</span></td><td data-label="สถานะ"><span class="tag${row.is_active?'':' off'}">${row.is_active?'เปิดใช้งาน':'ปิดใช้งาน'}</span></td><td data-label="แก้ไข"><button class="btn" data-leave-type="${row.id}">แก้ไข</button></td></tr>`).join('')||'<tr class="empty-row"><td colspan="4">ยังไม่มีประเภทการลา</td></tr>';
+ $('leaveTypeRows').innerHTML=leaveTypes.map(row=>`<tr><td data-label="ประเภทการลา"><span><span translate="no">${esc(row.name)}</span><span class="sub" translate="no">${esc(row.note)}</span></span></td><td data-label="เกณฑ์สิทธิ์"><span>${entitlementRule(row)}</span></td><td data-label="สถานะ"><span class="tag${row.is_active?'':' off'}">${row.is_active?'เปิดใช้งาน':'ปิดใช้งาน'}</span></td><td data-label="แก้ไข"><button class="btn" data-leave-type="${row.id}" data-central-only>แก้ไข</button></td></tr>`).join('')||'<tr class="empty-row"><td colspan="4">ยังไม่มีประเภทการลา</td></tr>';
  if(window.HRNGLang)HRNGLang.apply();
 }
 $('leaveSummaryForm').addEventListener('submit',event=>{event.preventDefault();loadLeaveSummary();});
@@ -3280,7 +3301,7 @@ window.HRNGAdminBridge={
  registerPanel:(name,handler)=>{PANEL_OPEN[name]=handler;}
 };
 </script>
-<script src="https://timemud.mobile1234.site/hr-admin.js?v=53c293318836"></script>
+<script src="https://timemud.mobile1234.site/hr-admin.js?v=d6d94028c9cd"></script>
 <script src="https://timemud.mobile1234.site/dev-login.js?v=9e7bf6a49dbc"></script>
 <script>
 if(window.HRNGDevLogin)HRNGDevLogin.attach({baseUrl:API_BASE,kind:'admin',isLoggedIn:()=>Boolean(token),onSuccess:acceptAdminLogin,onError:message=>showError('loginAlert',message)});
