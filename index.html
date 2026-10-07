@@ -592,7 +592,7 @@
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=ebdc1abb3da1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
 <script src="https://timemud.mobile1234.site/browser-compat.js?v=3e6b68f6b12d"></script>
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=82c05fc4c944"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=d3994eadcbcf"></script>
 <script src="https://timemud.mobile1234.site/i18n.js?v=54631cd2fd41"></script>
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-admin.css?v=e131edda2e5f">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/planning-import.css?v=6daf54db0938">
@@ -1138,7 +1138,7 @@ const API_BASE='https://timemud.mobile1234.site';
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let adminGeneration=0,adminIdentity='',adminUser=null;
-let devSession=false,token=null,users=[],branches=[],brands=[],calendars=[],companies=[],orgUnits=[],positionList=[],placementReady=false,onSave=null,saving=false,lastFocus=null,branchMapController=null;
+let devSession=false,token=null,users=[],branches=[],brands=[],calendars=[],companies=[],orgUnits=[],positionList=[],placementReady=false,companyLinked=false,onSave=null,saving=false,lastFocus=null,branchMapController=null;
 
 function banner(message,error=false){$('demobar').textContent=message;$('demobar').classList.toggle('error',error);}
 function showError(id,message){const el=$(id);el.textContent=message;el.hidden=!message;}
@@ -1190,7 +1190,7 @@ async function api(path,options={}){
 
 function sessionEnded(){
  ++adminGeneration;adminIdentity='';adminUser=null;window.HRNGAdmin?.reset();
- devSession=false;token=null;users=[];branches=[];brands=[];calendars=[];companies=[];orgUnits=[];positionList=[];placementReady=false;saving=false;closeModal();window.dispatchEvent(new CustomEvent('hrng:admin-session'));
+ devSession=false;token=null;users=[];branches=[];brands=[];calendars=[];companies=[];orgUnits=[];positionList=[];placementReady=false;companyLinked=false;saving=false;closeModal();window.dispatchEvent(new CustomEvent('hrng:admin-session'));
  $('shell').classList.remove('on');$('loginView').style.display='grid';
  ['todayRows','userRows','branchRows','auditRows','calDates','modalBody'].forEach(id=>$(id).replaceChildren());
  clearShifts();clearLeave();setDrawer(false);dayRows=[];dayKey='';dayOpen=null;dayDetail.clear();
@@ -1220,6 +1220,8 @@ async function loadData(){
   // โหลดไม่ครบ (เช่นบัญชีไม่มีสิทธิ์ดูผังองค์กร) ช่องเลือกจะว่าง กดบันทึกแล้วค่าเดิมจะถูกล้าง
   // จึงจำไว้ แล้วหน้าแก้ไขพนักงานจะล็อกสามช่องนี้และไม่ส่งค่าไป
   placementReady=!!(companyList&&unitList&&positionRows);
+  // เซิร์ฟเวอร์บอกว่าเชื่อมบริษัทกับแผนก/สาขาหรือยัง (readiness.COMPANY_LINKED) — ตอนนี้ปิดไว้ตามที่เจ้าของสั่ง
+  companyLinked=companyList?.linked===true;
   companies=companyList?.items||[];orgUnits=unitList?.items||[];positionList=positionRows?.items||[];
   let all=[],offset=0,total=0;
   do{const page=await api('/employees?limit=500&offset='+offset);all.push(...page.items);total=page.total;offset+=page.items.length;if(!page.items.length)break;}while(offset<total);
@@ -2035,21 +2037,28 @@ $('branchDetail').addEventListener('click',async event=>{
 
 /* ตำแหน่งในองค์กร: เลือกจากผัง ไม่พิมพ์เอง และทุกช่องเกี่ยวโยงกัน (เจ้าของสั่ง 7 ต.ค. 2569)
    บริษัทอยู่บนสุด → แผนกกรองตามบริษัท → สาขากรองตามแบรนด์ของบริษัท
+   ทั้งหมดนี้เฉพาะเมื่อ companyLinked — ตอนนี้ปิดไว้ นิติบุคคลเป็นข้อมูลเฉยๆ (เจ้าของสั่ง 7 ต.ค. 2569)
    ผูกได้เฉพาะบริษัทและตำแหน่งที่กรอกครบ แต่ต้องแสดงค่าที่ผูกอยู่เดิมเสมอ ไม่งั้นช่องจะว่างทั้งที่มีค่า */
 // function declaration ไม่ใช่ const เพื่อไม่ติด TDZ — lt ที่มีอยู่ประกาศไว้ท้ายไฟล์
 function tl(thai){return window.HRNGLang?HRNGLang.t(thai):thai;}
 const numberOrNull=key=>value(key)===''?null:Number(value(key));
 const positionReady=p=>(p.level_name||'').trim()&&(p.description_th||'').trim();
 function companyOptions(u){
- const rows=companies.filter(c=>(c.complete&&c.is_active)||c.id===u.codcompy);
+ // ปิดเชื่อมอยู่: นิติบุคคลเป็นข้อมูลเฉยๆ เลือกได้ทุกรายการที่เปิดใช้ แม้ยังกรอกไม่ครบ
+ const strict=c=>companyLinked&&!c.complete;
+ const rows=companies.filter(c=>(c.is_active&&!strict(c))||c.id===u.codcompy);
  return '<option value="">เลือกนิติบุคคล</option>'+rows.map(c=>
-  `<option value="${c.id}" translate="no"${c.id===u.codcompy?' selected':''}>${esc(c.namcomt)}${c.complete?'':' ('+esc(tl('ยังไม่ครบ'))+')'}</option>`).join('')
-  +(companies.some(c=>!c.complete)?`<option disabled>${esc(tl('นิติบุคคลที่ยังกรอกไม่ครบเลือกไม่ได้'))}</option>`:'');
+  `<option value="${c.id}" translate="no"${c.id===u.codcompy?' selected':''}>${esc(c.namcomt)}${strict(c)?' ('+esc(tl('ยังไม่ครบ'))+')':''}</option>`).join('')
+  +(companies.some(strict)?`<option disabled>${esc(tl('นิติบุคคลที่ยังกรอกไม่ครบเลือกไม่ได้'))}</option>`:'');
 }
 function positionOptions(u){
- const rows=positionList.filter(p=>(positionReady(p)&&p.is_active)||p.id===u.position_id);
- return '<option value="">เลือกตำแหน่ง</option>'+rows.map(p=>
-  `<option value="${p.id}" translate="no"${p.id===u.position_id?' selected':''}>${esc(p.code)} · ${esc(p.name_th)}</option>`).join('');
+ // ตำแหน่งที่ยังกรอกไม่ครบแสดงไว้แต่เลือกไม่ได้ พร้อมบอกเหตุ
+ // ไม่งั้นรายการว่างแล้วดูเหมือนระบบมองไม่เห็นตำแหน่งที่สร้างไว้ (เจ้าของเจอ 7 ต.ค. 2569)
+ const usable=p=>(positionReady(p)&&p.is_active)||p.id===u.position_id;
+ const blocked=positionList.filter(p=>p.is_active&&!usable(p));
+ const option=p=>`<option value="${p.id}" translate="no"${p.id===u.position_id?' selected':''}${usable(p)?'':' disabled'}>${esc(p.code)} · ${esc(p.name_th)}${usable(p)?'':' ('+esc(tl('ยังไม่ครบ'))+')'}</option>`;
+ return '<option value="">เลือกตำแหน่ง</option>'+positionList.filter(usable).map(option).join('')+blocked.map(option).join('')
+  +(blocked.length?`<option disabled>${esc(tl('ตำแหน่งที่ยังกรอกไม่ครบเลือกไม่ได้ กรอกระดับงานและหน้าที่รับผิดชอบที่หน้าตำแหน่ง'))}</option>`:'');
 }
 function managerOptions(u){
  // หัวหน้าที่ปิดใช้งานไปแล้วต้องยังเห็น ไม่งั้นกดบันทึกเพื่อแก้เรื่องอื่น หัวหน้าจะหลุดเงียบ ๆ
@@ -2059,12 +2068,13 @@ function managerOptions(u){
 }
 // แผนกเรียงตามสายบังคับบัญชา ย่อหน้าตามความลึก คนเลือกจะเห็นว่าแผนกไหนอยู่ใต้แผนกไหน
 function unitOptions(company,selected,keep=false){
- // ตอนเปิดหน้า แผนกที่ผูกอยู่ต้องเห็นเสมอ แม้ไม่อยู่ใต้บริษัทที่เลือก (เช่นแผนกเก่าที่ยังไม่มีบริษัท)
+ // ปิดเชื่อมอยู่: แผนกเลือกได้ทุกแผนก ไม่ต้องเลือกบริษัทก่อน
+ // เปิดเชื่อม: ตอนเปิดหน้า แผนกที่ผูกอยู่ต้องเห็นเสมอ แม้ไม่อยู่ใต้บริษัทที่เลือก (เช่นแผนกเก่าที่ยังไม่มีบริษัท)
  // ไม่งั้นกดบันทึกเพื่อแก้เรื่องอื่น แผนกจะหลุดเงียบ ๆ · เปลี่ยนบริษัทเองเมื่อไร ค่อยให้เลือกแผนกใหม่
- const stray=keep&&selected?orgUnits.find(x=>x.id===selected&&x.codcompy!==company):null;
+ const stray=companyLinked&&keep&&selected?orgUnits.find(x=>x.id===selected&&x.codcompy!==company):null;
  const strayOption=stray?`<option value="${stray.id}" translate="no" selected>${esc(stray.name_th)}</option>`:'';
- if(!company)return `<option value="">${esc(tl('เลือกนิติบุคคลก่อน'))}</option>`+strayOption;
- const mine=orgUnits.filter(x=>x.codcompy===company&&(x.is_active||x.id===selected));
+ if(companyLinked&&!company)return `<option value="">${esc(tl('เลือกนิติบุคคลก่อน'))}</option>`+strayOption;
+ const mine=orgUnits.filter(x=>(!companyLinked||x.codcompy===company)&&(x.is_active||x.id===selected));
  const out=[],walk=(parent,depth)=>mine.filter(x=>(x.parent_id??null)===parent).forEach(x=>{
   out.push(`<option value="${x.id}" translate="no"${x.id===selected?' selected':''}>${'— '.repeat(depth)}${esc(x.name_th)}</option>`);
   if(depth<20)walk(x.id,depth+1);});
@@ -2099,10 +2109,11 @@ function bindPlacement(u){
  const draw=(keepUnit,keepBranch,first=false)=>{
   const c=Number(company.value)||null;
   unit.innerHTML=unitOptions(c,keepUnit,first);
-  branch.innerHTML=branchOptions(c,keepBranch);
+  branch.innerHTML=branchOptions(companyLinked?c:null,keepBranch);
  };
  draw(u.organization_unit_id,u.branch_id,true);
- company.onchange=()=>draw(Number(unit.value)||null,Number(branch.value)||null);
+ // ปิดเชื่อมอยู่ บริษัทไม่มีผลกับแผนกหรือสาขา จึงไม่ต้องวาดใหม่ตอนเปลี่ยนบริษัท
+ company.onchange=()=>{if(companyLinked)draw(Number(unit.value)||null,Number(branch.value)||null);};
  const top=$('edit-is_top_level'),boss=$('edit-manager_employee_id');
  const lock=()=>{boss.disabled=top.checked;if(top.checked)boss.value='';};
  top.onchange=lock;lock();
@@ -3269,7 +3280,7 @@ window.HRNGAdminBridge={
  registerPanel:(name,handler)=>{PANEL_OPEN[name]=handler;}
 };
 </script>
-<script src="https://timemud.mobile1234.site/hr-admin.js?v=f60bc60cd4b0"></script>
+<script src="https://timemud.mobile1234.site/hr-admin.js?v=53c293318836"></script>
 <script src="https://timemud.mobile1234.site/dev-login.js?v=9e7bf6a49dbc"></script>
 <script>
 if(window.HRNGDevLogin)HRNGDevLogin.attach({baseUrl:API_BASE,kind:'admin',isLoggedIn:()=>Boolean(token),onSuccess:acceptAdminLogin,onError:message=>showError('loginAlert',message)});
