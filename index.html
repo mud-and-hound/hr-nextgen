@@ -523,9 +523,9 @@
       padding-top:var(--s3);margin-top:var(--s4)}
   }
   /* ตัวแก้กลุ่มเป็นหน้าต่างป๊อปอัป (เจ้าของสั่ง 8 ต.ค. 2569) กว้างพอให้ตารางเลือกคนกับสรุปอยู่ข้างกัน */
-  #grpEditor{position:fixed;inset:0;background:rgba(15,20,25,.45);z-index:50;overflow:auto;
+  #grpEditor,#asgEditor{position:fixed;inset:0;background:rgba(15,20,25,.45);z-index:50;overflow:auto;
     display:grid;place-items:center;padding:var(--s4)}
-  #grpEditor[hidden]{display:none}
+  #grpEditor[hidden],#asgEditor[hidden]{display:none}
   .grp-modal{background:var(--paper);border-radius:var(--r);width:min(1180px,100%);padding:var(--s5);
     margin:auto;box-shadow:0 12px 40px rgba(20,23,26,.2)}
   .grp-modal-head{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s4)}
@@ -533,8 +533,8 @@
   .grp-close{width:40px;height:40px;padding:0;justify-content:center}
   .grp-error{margin:0;color:var(--red);font-size:13px}
   @media (max-width:700px){
-    #grpEditor{display:flex;align-items:flex-end;padding:0}
-    #grpEditor[hidden]{display:none}
+    #grpEditor,#asgEditor{display:flex;align-items:flex-end;padding:0}
+    #grpEditor[hidden],#asgEditor[hidden]{display:none}
     .grp-modal{width:100%;max-height:94vh;overflow:auto;border-radius:var(--r) var(--r) 0 0;padding:var(--s4)}
   }
   @keyframes sheet-up{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}
@@ -936,6 +936,7 @@
     <section class="panel" id="panel-shift-assign">
       <div class="viewhead"><div style="flex:1"><h1>จัดกะให้พนักงาน</h1>
         <p class="sub">เลือกแบบกะ ช่วงวันที่ และวันทำงาน แล้วจัดให้พนักงาน</p></div>
+        <button class="btn solid" id="asgAdd" aria-expanded="false" aria-controls="asgEditor"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17M12 13v5M9.5 15.5h5"/></svg>จัดกะ</button>
         <button class="helpbtn" type="button" data-help="asg" aria-expanded="false"
           aria-controls="help-asg" aria-label="วิธีใช้หัวข้อจัดกะให้พนักงาน"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></div>
       <div class="help" id="help-asg" hidden>
@@ -954,6 +955,12 @@
         เพราะวันนั้นจะตอบไม่ได้ว่าเข้ากะไหน ติ๊กแทนที่กะเดิมที่ทับกันถ้าตั้งใจให้ทับ</p>
         <p>จัดกะให้เฉพาะพนักงานที่เปิดใช้งานอยู่ คนที่ปิดใช้งานแล้วจะถูกข้าม</p>
       </div>
+      <!-- ตัวจัดกะเป็นป๊อปอัปแบบเดียวกับกลุ่ม (เจ้าของสั่ง 8 ต.ค. 2569) -->
+      <div id="asgEditor" hidden role="dialog" aria-modal="true" aria-labelledby="asgModalTitle">
+      <div class="grp-modal">
+      <div class="grp-modal-head"><h2 id="asgModalTitle">จัดกะให้พนักงาน</h2>
+        <p class="grp-error" id="asgError" role="alert" hidden></p>
+        <button class="btn grp-close" type="button" id="asgClose" aria-label="ปิด"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
       <div class="split">
         <div>
       <div class="card shift-form">
@@ -1002,6 +1009,8 @@
       </div>
         </div>
         <div class="detailwrap"><div class="detailcard" id="asgSummary"></div></div>
+      </div>
+      </div>
       </div>
 
       <h3 class="shift-head" style="flex-wrap:wrap">รายการจัดกะล่าสุด
@@ -1952,9 +1961,9 @@ function activeField(active){return `<div class="field"><label for="edit-is_acti
    ตารางใช้เลขหน้า ส่วนรายการแบบการ์ด (พนักงาน/สาขา) ใช้ปุ่ม "แสดงเพิ่ม"
    ต่างกันโดยตั้งใจ: ตารางคนมักอยากกระโดดไปหน้าท้าย ๆ ส่วนรายชื่อมักไล่ดูลงไปเรื่อย ๆ */
 const pages={tpl:1,asg:1,audit:1,grp:1,tgt:1,ld:1,lr:1};
-const pageSize={tpl:10,asg:10,audit:10,grp:5,tgt:10,ld:10,lr:10};
+const pageSize={tpl:10,asg:10,audit:10,grp:5,tgt:5,ld:10,lr:10};
 // ตัวเลือกจำนวนต่อหน้า — รายชื่อในป๊อปอัปกลุ่มเริ่มที่ 5 เพราะหน้าต่างเตี้ยกว่าหน้าเต็ม (เจ้าของสั่ง 8 ต.ค. 2569)
-const PAGE_CHOICES={grp:[5,10,15,20,50,100]};
+const PAGE_CHOICES={grp:[5,10,15,20,50,100],tgt:[5,10,15,20,50,100]};
 
 function paginate(name,rows){
  const size=pageSize[name];
@@ -2285,7 +2294,7 @@ $('bulkBtn').addEventListener('click',()=>{
 function clearShifts(){
  // ออกจากระบบแล้วต้องไม่เหลือรายชื่อพนักงานหรือกะของบัญชีก่อนหน้าค้างในหน้า
  shiftTemplates=[];shiftTargets=null;shiftAssignments=[];shiftGroups=[];shiftTabLoaded=false;
- editingTemplate=null;editingGroup=null;$('grpEditor').hidden=true;document.body.style.overflow='';pickedEmployees.clear();pickedGroup.clear();
+ editingTemplate=null;editingGroup=null;$('grpEditor').hidden=true;$('asgEditor').hidden=true;document.body.style.overflow='';pickedEmployees.clear();pickedGroup.clear();
  ['tplRows','asgRows','asgTargetBox','grpRows','grpList'].forEach(id=>$(id)&&$(id).replaceChildren());
 }
 // กติกากฎหมายอยู่ที่ backend (shift_rules.py) ที่เดียว หน้านี้เรียก /preview เพื่อแสดงผล
@@ -2778,7 +2787,7 @@ document.addEventListener('click',async event=>{
  if(!event.target.closest('#grpSave'))return;
  const name=$('grpName').value.trim();
  // ข้อความผิดพลาดต้องอยู่ในป๊อปอัป แถบด้านบนของหน้าถูกป๊อปอัปบังอยู่
- const fail=message=>{$('grpError').textContent=message;$('grpError').hidden=false;};
+ const fail=message=>{$('grpError').textContent=message;$('grpError').hidden=false;if(window.HRNGLang)HRNGLang.apply();};
  $('grpError').hidden=true;
  if(!name){fail('ตั้งชื่อกลุ่มก่อน');$('grpName').focus();return;}
  if(!pickedGroup.size){fail('เลือกพนักงานอย่างน้อย 1 คน');return;}
@@ -3101,6 +3110,23 @@ document.addEventListener('change',event=>{
  if(event.target.closest('#asgTargetBox'))renderAssignSummary();});
 document.addEventListener('click',event=>{
  if(event.target.closest('#targetAll,#targetNone'))setTimeout(renderAssignSummary,0);});
+/* ป๊อปอัปจัดกะ — เปิดด้วยปุ่มจัดกะ ปิดด้วย × Esc หรือเมื่อจัดสำเร็จ
+   ข้อความผิดพลาดอยู่ในป๊อปอัป เพราะแถบบนหน้าถูกป๊อปอัปบัง */
+function showAssignEditor(open){
+ $('asgEditor').hidden=!open;
+ $('asgAdd').setAttribute('aria-expanded',String(open));
+ document.body.style.overflow=open?'hidden':'';
+ $('asgError').hidden=true;
+ if(open){$('asgEditor').scrollTop=0;$('asgTemplate').focus();}
+ else $('asgAdd').focus();
+}
+function assignError(message){$('asgError').textContent=message;$('asgError').hidden=false;if(window.HRNGLang)HRNGLang.apply();}
+$('asgAdd').addEventListener('click',()=>{
+ pickedEmployees.clear();                    // เปิดใหม่ทุกครั้งเริ่มจากยังไม่ได้เลือกใคร
+ if($('asgVia').value==='employee')renderTargetList();
+ renderAssignSummary();showAssignEditor(true);});
+$('asgClose').addEventListener('click',()=>showAssignEditor(false));
+$('asgEditor').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();showAssignEditor(false);}});
 $('asgSearch').addEventListener('input',renderAssignments);
 $('asgClear').addEventListener('click',()=>{$('asgSearch').value='';renderAssignments();});
 document.addEventListener('click',async event=>{
@@ -3109,11 +3135,12 @@ document.addEventListener('click',async event=>{
  const body={template_id:Number($('asgTemplate').value),effective_from:$('asgFrom').value,
   effective_to:$('asgTo').value||null,weekdays:weekdayString(),via,
   replace_overlapping:$('asgReplace').checked};
- if(!body.template_id){banner('ยังไม่มีแบบกะให้เลือก',true);return;}
- if(!body.effective_from){banner('เลือกวันที่เริ่มใช้',true);return;}
+ $('asgError').hidden=true;
+ if(!body.template_id){assignError('ยังไม่มีแบบกะให้เลือก');return;}
+ if(!body.effective_from){assignError('เลือกวันที่เริ่มใช้');return;}
  // ม.28 ทักที่หน้าจอทันที server ยังตรวจซ้ำอยู่ดี แต่ผู้ใช้ไม่ต้องรอรอบเครือข่ายเพื่อรู้
- if(!body.weekdays.includes('0')){banner('ม.28 ต้องมีวันหยุดประจำสัปดาห์อย่างน้อย 1 วัน',true);return;}
- if(!body.weekdays.includes('1')){banner('เลือกวันที่เข้ากะอย่างน้อย 1 วัน',true);return;}
+ if(!body.weekdays.includes('0')){assignError('ม.28 ต้องมีวันหยุดประจำสัปดาห์อย่างน้อย 1 วัน');return;}
+ if(!body.weekdays.includes('1')){assignError('เลือกวันที่เข้ากะอย่างน้อย 1 วัน');return;}
  if(via==='employee')body.employee_ids=[...pickedEmployees];
  if(via==='branch')body.branch_id=Number($('asgBranch').value);
  if(via==='position')body.position_id=Number($('asgPosition').value)||null;
@@ -3124,10 +3151,10 @@ document.addEventListener('click',async event=>{
   const result=await api('/shifts/assignments',{method:'POST',body:JSON.stringify(body)});
   banner(`จัดกะให้ ${result.assigned} คนแล้ว`+(result.replaced?` แทนที่กะเดิม ${result.replaced} รายการ`:'')+
          ` · รวมสัปดาห์ละ ${hours(result.weekly_work_minutes)}`);
-  pickedEmployees.clear();$('asgReplace').checked=false;await loadShiftTab(true);
+  pickedEmployees.clear();$('asgReplace').checked=false;showAssignEditor(false);await loadShiftTab(true);
  }catch(error){
   // 409 คือมีกะทับซ้อน บอกให้ชัดว่าต้องติ๊กแทนที่ ไม่ใช่ปล่อยให้เดา
-  banner(error.status===409?error.message+' — ติ๊ก "แทนที่กะเดิมที่ทับกัน" ถ้าต้องการเขียนทับ':error.message,true);
+  assignError(error.status===409?error.message+' — ติ๊ก "แทนที่กะเดิมที่ทับกัน" ถ้าต้องการเขียนทับ':error.message);
  }finally{$('asgSave').disabled=false;}
 });
 $('asgRows').addEventListener('click',async event=>{
