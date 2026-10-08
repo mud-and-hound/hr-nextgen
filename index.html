@@ -596,7 +596,7 @@
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=ebdc1abb3da1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
 <script src="https://timemud.mobile1234.site/browser-compat.js?v=3e6b68f6b12d"></script>
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=061459f40690"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=057a2763f870"></script>
 <script src="https://timemud.mobile1234.site/i18n.js?v=54631cd2fd41"></script>
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-admin.css?v=79e69a58beda">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/planning-import.css?v=6daf54db0938">
@@ -858,6 +858,7 @@
     <section class="panel" id="panel-shift-groups">
       <div class="viewhead"><div style="flex:1"><h1>กลุ่มที่ตั้งชื่อเอง</h1>
         <p class="sub">รวมคนที่เข้ากะเดียวกันแต่ไม่ได้อยู่สาขาหรือตำแหน่งเดียวกัน</p></div>
+        <button class="btn solid" id="grpAdd" aria-expanded="false" aria-controls="grpEditor" data-central-only><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>เพิ่มกลุ่ม</button>
         <button class="helpbtn" type="button" data-help="grp" aria-expanded="false"
           aria-controls="help-grp" aria-label="วิธีใช้หัวข้อกลุ่มที่ตั้งชื่อเอง"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><path d="M9.7 9.4a2.35 2.35 0 1 1 3.1 2.3c-.6.25-.9.8-.9 1.45v.45"/><path d="M12 16.8h.01"/></svg></button></div>
       <div class="help" id="help-grp" hidden>
@@ -871,9 +872,12 @@
         <p><b>ข้อควรรู้</b> — ระบบอ่านรายชื่อในกลุ่ม ณ ตอนที่กดจัดกะ
         แก้รายชื่อทีหลังจะไม่ย้อนไปแก้กะที่จัดไปแล้ว คนที่เพิ่งเพิ่มเข้ากลุ่มต้องจัดกะให้ใหม่อีกครั้ง</p>
       </div>
+      <!-- ตัวแก้กลุ่มพับไว้ (เจ้าของบอก 8 ต.ค. 2569 ว่าช่อง "ตั้งชื่อกลุ่ม" ที่เปิดค้างทำให้งง)
+           เปิดด้วยปุ่มเพิ่มกลุ่ม หรือปุ่มแก้ไขของกลุ่ม แบบเดียวกับหน้าแบบกะ -->
+      <div id="grpEditor" hidden>
       <div class="split">
         <div>
-      <div class="card shift-form" data-central-only>
+      <div class="card shift-form">
         <div class="grid2">
           <label>ชื่อกลุ่ม <input id="grpName" maxlength="200" placeholder="ทีมเปิดร้าน"></label>
           <label>หมายเหตุ <input id="grpNote" maxlength="500" placeholder="ไม่บังคับ"></label>
@@ -902,6 +906,7 @@
       <div class="pager" id="grpPager"></div>
         </div>
         <div class="detailwrap"><div class="detailcard" id="grpSummary"></div></div>
+      </div>
       </div>
 
       <h3 class="shift-head">กลุ่มที่มี</h3>
@@ -2258,7 +2263,7 @@ $('bulkBtn').addEventListener('click',()=>{
 function clearShifts(){
  // ออกจากระบบแล้วต้องไม่เหลือรายชื่อพนักงานหรือกะของบัญชีก่อนหน้าค้างในหน้า
  shiftTemplates=[];shiftTargets=null;shiftAssignments=[];shiftGroups=[];shiftTabLoaded=false;
- editingTemplate=null;editingGroup=null;pickedEmployees.clear();pickedGroup.clear();
+ editingTemplate=null;editingGroup=null;$('grpEditor').hidden=true;pickedEmployees.clear();pickedGroup.clear();
  ['tplRows','asgRows','asgTargetBox','grpRows','grpList'].forEach(id=>$(id)&&$(id).replaceChildren());
 }
 // กติกากฎหมายอยู่ที่ backend (shift_rules.py) ที่เดียว หน้านี้เรียก /preview เพื่อแสดงผล
@@ -2717,8 +2722,14 @@ function renderGroups(){
      <span class="sub" translate="no">${esc(row.note||'—')}</span></span>
    <span class="val"><b>${row.members}</b><span>คน</span></span>
    <span class="rowact"><button class="btn" data-grp-edit="${row.id}" data-central-only>แก้ไข</button></span>
- </div>`).join('')||'<div class="empty">ยังไม่มีกลุ่ม</div>';
+ </div>`).join('')||'<div class="empty">ยังไม่มีกลุ่ม กดเพิ่มกลุ่มเพื่อสร้างกลุ่มแรก</div>';
 }
+function showGroupEditor(open){
+ $('grpEditor').hidden=!open;
+ $('grpAdd').setAttribute('aria-expanded',String(open));
+ if(open){$('grpEditor').scrollIntoView({block:'nearest'});$('grpName').focus();}
+}
+$('grpAdd').addEventListener('click',()=>{resetGroupForm();showGroupEditor(true);});
 function resetGroupForm(){
  editingGroup=null;pickedGroup.clear();grpChip='';pages.grp=1;
  $('grpName').value='';$('grpNote').value='';$('grpSearch').value='';
@@ -2731,11 +2742,11 @@ $('grpAll').addEventListener('click',()=>{
  renderGroupPicker();});
 $('grpNone').addEventListener('click',()=>{pickedGroup.clear();renderGroupPicker();});
 document.addEventListener('click',event=>{
- if(event.target.closest('#grpReset'))resetGroupForm();});
+ if(event.target.closest('#grpReset')){resetGroupForm();showGroupEditor(false);}});
 document.addEventListener('click',async event=>{
  if(!event.target.closest('#grpSave'))return;
  const name=$('grpName').value.trim();
- if(!name){banner('ตั้งชื่อกลุ่มก่อน',true);return;}
+ if(!name){banner('ตั้งชื่อกลุ่มก่อน',true);$('grpName').focus();return;}
  if(!pickedGroup.size){banner('เลือกพนักงานอย่างน้อย 1 คน',true);return;}
  const body={name,note:$('grpNote').value.trim(),employee_ids:[...pickedGroup]};
  $('grpSave').disabled=true;
@@ -2743,7 +2754,7 @@ document.addEventListener('click',async event=>{
   if(editingGroup)await api('/shifts/groups/'+editingGroup,{method:'PUT',body:JSON.stringify(body)});
   else await api('/shifts/groups',{method:'POST',body:JSON.stringify(body)});
   banner(`บันทึกกลุ่ม ${name} แล้ว (${pickedGroup.size} คน)`);
-  resetGroupForm();await loadShiftTab(true);
+  resetGroupForm();showGroupEditor(false);await loadShiftTab(true);
  }catch(error){banner(error.message,true);}
  finally{$('grpSave').disabled=false;}
 });
@@ -2757,7 +2768,7 @@ $('grpRows').addEventListener('click',async event=>{
   members.items.forEach(row=>pickedGroup.add(row.employee_id));
   $('grpName').value=group.name;$('grpNote').value=group.note||'';
   grpChip='';pages.grp=1;
-  renderGroupPicker();$('grpName').scrollIntoView({block:'nearest'});
+  renderGroupPicker();showGroupEditor(true);
  }catch(error){banner(error.message,true);}
 });
 
