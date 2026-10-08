@@ -611,7 +611,7 @@
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=ebdc1abb3da1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
 <script src="https://timemud.mobile1234.site/browser-compat.js?v=3e6b68f6b12d"></script>
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=8e65e1af9d37"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=dfa385664f59"></script>
 <script src="https://timemud.mobile1234.site/i18n.js?v=54631cd2fd41"></script>
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-admin.css?v=79e69a58beda">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/planning-import.css?v=6daf54db0938">
@@ -2205,7 +2205,11 @@ function openUser(id){
   +'</div>'
   +(placementReady?'':'<div class="note">โหลดผังองค์กรไม่ได้ ช่องนิติบุคคล แผนก และตำแหน่งจึงแก้ไม่ได้ตอนนี้ ค่าเดิมไม่เปลี่ยน</div>')
   +legacyNote(u)
-  +`<div class="note">เลขบัตรเดิม: ${esc(u.national_id_masked)||'ยังไม่มีข้อมูล'}<br>เว้นเลขบัตรว่างเพื่อคงค่าเดิม พนักงานต้องมีรหัสพนักงานและเลขบัตรในทะเบียน จึงจะยืนยันและผูก LINE ครั้งแรกได้</div><label class="inline-check"><input id="edit-clear_national_id" type="checkbox"> ลบเลขบัตรที่บันทึกไว้</label>`;
+  +`<div class="note">เลขบัตรเดิม: ${esc(u.national_id_masked)||'ยังไม่มีข้อมูล'}<br>เว้นเลขบัตรว่างเพื่อคงค่าเดิม พนักงานต้องมีรหัสพนักงานและเลขบัตรในทะเบียน จึงจะยืนยันและผูก LINE ครั้งแรกได้</div><label class="inline-check"><input id="edit-clear_national_id" type="checkbox"> ลบเลขบัตรที่บันทึกไว้</label>`
+  // รหัสผ่านพนักงาน (8 ต.ค. 2569): แอดมินเห็นแค่ว่าตั้งแล้วหรือยัง ไม่เห็นตัวรหัส ล้างได้เมื่อพนักงานลืม
+  +(id?`<div class="note">${u.password_set_at?`<span>ตั้งรหัสผ่านแล้วเมื่อ</span> <span translate="no">${esc(new Date(u.password_set_at).toLocaleDateString('th-TH',{timeZone:'Asia/Bangkok'}))}</span>`
+      :'<span>ยังไม่ได้ตั้งรหัสผ่าน พนักงานจะถูกให้ตั้งตอนเข้าแอป LINE ครั้งถัดไป</span>'}</div>`
+     +(u.password_set_at?'<label class="inline-check"><input id="edit-reset_password" type="checkbox"> ล้างรหัสผ่าน (พนักงานลืมรหัส จะต้องตั้งใหม่ตอนเข้าแอป LINE ครั้งถัดไป)</label>':''):'');
  openModal(async()=>{
   const body={employee_code:value('employee_code'),full_name:value('full_name'),full_name_en:value('full_name_en'),
    branch_id:Number(value('branch_id')),
@@ -2213,6 +2217,7 @@ function openUser(id){
    employment_type:value('employment_type'),
    holiday_calendar_id:value('holiday_calendar_id')===''?null:Number(value('holiday_calendar_id')),
    clear_national_id:$('edit-clear_national_id').checked,
+   reset_password:!!$('edit-reset_password')?.checked,
    // ตำแหน่งในองค์กร — ไม่ส่ง position/company แบบพิมพ์แล้ว ค่าเดิมยังเก็บไว้ในระบบ
    manager_employee_id:$('edit-is_top_level').checked?null:numberOrNull('manager_employee_id'),
    is_top_level:$('edit-is_top_level').checked,employment_start:value('employment_start')||null};
