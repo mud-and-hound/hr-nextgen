@@ -612,8 +612,8 @@
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=ebdc1abb3da1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
 <script src="https://timemud.mobile1234.site/browser-compat.js?v=3e6b68f6b12d"></script>
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=9f12c2b2c111"></script>
-<script src="https://timemud.mobile1234.site/i18n.js?v=54631cd2fd41"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=3d8717b11ce9"></script>
+<script src="https://timemud.mobile1234.site/i18n.js?v=4b48d9162572"></script>
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-admin.css?v=79e69a58beda">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/planning-import.css?v=6daf54db0938">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-permissions.css?v=13b271233c89">
@@ -1721,8 +1721,8 @@ function renderUsers(){
  }).join('')+footer||'<div class="empty">ไม่พบพนักงาน</div>';
  document.querySelectorAll('#userRows [data-profile-avatar]').forEach(el=>
    HRNGProfile.avatar(el,list.find(u=>String(u.id)===el.dataset.profileAvatar)));
- $('userCount').innerHTML=`<b>${rows.length}</b> คน`
-   +(rows.length<users.length?` จากทั้งหมด ${users.length}`:'');
+ $('userCount').innerHTML=`<b translate="no">${rows.length}</b> <span>คน</span>`
+   +(rows.length<users.length?` <span>จากทั้งหมด</span> <b translate="no">${users.length}</b>`:'');
  renderUserDetail();
 }
 
@@ -2226,7 +2226,7 @@ function openUser(id){
   +'</div>'
   +(placementReady?'':'<div class="note">โหลดผังองค์กรไม่ได้ ช่องนิติบุคคล แผนก และตำแหน่งจึงแก้ไม่ได้ตอนนี้ ค่าเดิมไม่เปลี่ยน</div>')
   +legacyNote(u)
-  +`<div class="note">เลขบัตรเดิม: ${esc(u.national_id_masked)||'ยังไม่มีข้อมูล'}<br>เว้นเลขบัตรว่างเพื่อคงค่าเดิม พนักงานต้องมีรหัสพนักงานและเลขบัตรในทะเบียน จึงจะยืนยันและผูก LINE ครั้งแรกได้</div><label class="inline-check"><input id="edit-clear_national_id" type="checkbox"> ลบเลขบัตรที่บันทึกไว้</label>`
+  +`<div class="note"><span>เลขบัตรเดิม</span>: ${u.national_id_masked?`<span translate="no">${esc(u.national_id_masked)}</span>`:'<span>ยังไม่มีข้อมูล</span>'}<br><span>เว้นเลขบัตรว่างเพื่อคงค่าเดิม พนักงานต้องมีรหัสพนักงานและเลขบัตรในทะเบียน จึงจะยืนยันและผูก LINE ครั้งแรกได้</span></div><label class="inline-check"><input id="edit-clear_national_id" type="checkbox"> ลบเลขบัตรที่บันทึกไว้</label>`
   // รหัสผ่านพนักงาน (8 ต.ค. 2569): แอดมินเห็นแค่ว่าตั้งแล้วหรือยัง ไม่เห็นตัวรหัส ล้างได้เมื่อพนักงานลืม
   +(id?`<div class="note">${u.password_set_at?`<span>ตั้งรหัสผ่านแล้วเมื่อ</span> <span translate="no">${esc(HRNGDate.date(u.password_set_at))}</span>`
       :'<span>ยังไม่ได้ตั้งรหัสผ่าน พนักงานจะถูกให้ตั้งตอนเข้าแอป LINE ครั้งถัดไป</span>'}</div>`
