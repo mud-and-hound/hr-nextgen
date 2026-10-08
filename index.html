@@ -611,7 +611,7 @@
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=ebdc1abb3da1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
 <script src="https://timemud.mobile1234.site/browser-compat.js?v=3e6b68f6b12d"></script>
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=54194c7afdc2"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=8e65e1af9d37"></script>
 <script src="https://timemud.mobile1234.site/i18n.js?v=54631cd2fd41"></script>
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-admin.css?v=79e69a58beda">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/planning-import.css?v=6daf54db0938">
@@ -2685,7 +2685,10 @@ function renderGroupSummary(){
     ${chosen.length>sample.length?`<div><span class="hrng-person-avatar more">…</span>
       <span>และอีก ${chosen.length-sample.length} คน</span></div>`:''}</div>`:''}
   <div class="bar" style="flex-direction:column;align-items:stretch">
-   <button class="btn solid" id="grpSave" style="justify-content:center;height:44px"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 4v5h7V4M8.5 20v-6h7v6"/></svg>บันทึกกลุ่ม</button>
+   <!-- กลุ่มใหม่ = "สร้างกลุ่ม" · กลุ่มที่มีอยู่แล้ว = "บันทึก" (เจ้าของสั่ง 8 ต.ค. 2569) -->
+   <button class="btn solid" id="grpSave" style="justify-content:center;height:44px">${editingGroup
+     ?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 4v5h7V4M8.5 20v-6h7v6"/></svg>บันทึก'
+     :'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>สร้างกลุ่ม'}</button>
    <button class="btn" id="grpReset" style="justify-content:center">ยกเลิก</button>
    <span class="count" id="grpEditing"></span>
   </div>`;
@@ -2784,7 +2787,7 @@ document.addEventListener('click',async event=>{
  try{
   if(editingGroup)await api('/shifts/groups/'+editingGroup,{method:'PUT',body:JSON.stringify(body)});
   else await api('/shifts/groups',{method:'POST',body:JSON.stringify(body)});
-  banner(`บันทึกกลุ่ม ${name} แล้ว (${pickedGroup.size} คน)`);
+  banner(`${editingGroup?'บันทึกกลุ่ม':'สร้างกลุ่ม'} ${name} แล้ว (${pickedGroup.size} คน)`);
   resetGroupForm();showGroupEditor(false);await loadShiftTab(true);
  }catch(error){fail(error.message);}
  finally{$('grpSave').disabled=false;}
