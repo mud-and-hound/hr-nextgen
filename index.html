@@ -488,6 +488,7 @@
   .pager{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s3);
     font-size:12.5px;color:var(--muted)}
   .pager .grow{flex:1}
+  .pager-top{margin:0 0 var(--s2)}
   .pager .pages{display:inline-flex;gap:var(--s1)}
   .pager .pages .btn{min-width:32px;height:32px;padding:0 var(--s2);justify-content:center}
   .pager .pages .btn[aria-current="page"]{background:var(--green);border-color:var(--green);
@@ -1972,8 +1973,24 @@ function paginate(name,rows){
  const from=(pages[name]-1)*size;
  return {slice:rows.slice(from,from+size),from,last,total:rows.length};
 }
+/* "รายการต่อหน้า" อยู่เหนือรายการเสมอ ทุกหน้า (เจ้าของสั่ง 8 ต.ค. 2569)
+   แถบบน = เลือกจำนวนต่อหน้า + แสดงกี่รายการจากเท่าไร · แถบล่าง = ปุ่มเลขหน้า
+   แถบบนสร้างเองหน้าตาราง/รายการที่อยู่ก่อนแถบเลขหน้า จึงไม่ต้องแก้ทีละหน้า และหน้าใหม่ได้ตามเอง */
+const PAGER_IDS={tpl:'tplPager',asg:'asgPager',audit:'auditPager',grp:'grpPager',tgt:'tgtPager',ld:'leaveDayPager',lr:'leaveRequestPager'};
+function pagerTop(name){
+ const bottom=$(PAGER_IDS[name]);
+ let top=document.querySelector(`[data-pager-top="${name}"]`);
+ if(!top&&bottom){
+  let list=bottom.previousElementSibling;
+  while(list&&!list.matches('.tablewrap,.list'))list=list.previousElementSibling;
+  top=document.createElement('div');top.className='pager pager-top';top.dataset.pagerTop=name;
+  (list||bottom).before(top);
+ }
+ return top;
+}
 function pagerHtml(name,info){
- if(!info.total)return '';
+ const top=pagerTop(name);
+ if(!info.total){if(top)top.innerHTML='';return '';}
  const page=pages[name];
  /* หน้าเยอะ ๆ ไม่แสดงปุ่มทุกหน้า แสดงรอบ ๆ หน้าปัจจุบัน ไม่งั้นแถวปุ่มจะยาวกว่าตาราง */
  const window_=[...Array(info.last).keys()].map(i=>i+1)
@@ -1985,11 +2002,15 @@ function pagerHtml(name,info){
     n===page?' aria-current="page"':''}>${n}</button>`;
   previous=n;
  }
- return `<label class="shown"><span class="sronly">จำนวนรายการที่แสดง</span>
+ if(top){
+  top.innerHTML=`<label class="shown"><span class="sronly">จำนวนรายการที่แสดง</span>
    <select data-size="${name}">${(PAGE_CHOICES[name]||[10,20,50,100]).map(v=>
      `<option value="${v}"${v===pageSize[name]?' selected':''}>${v}</option>`).join('')}</select>
    </label><span>รายการต่อหน้า</span><span class="grow"></span>
-  <span>${info.from+1} - ${info.from+info.slice.length} จาก ${info.total} รายการ</span>
+   <span>${info.from+1} - ${info.from+info.slice.length} จาก ${info.total} รายการ</span>`;
+  if(window.HRNGLang)HRNGLang.apply();
+ }
+ return `<span class="grow"></span>
   <span class="pages">
    <button class="btn icon" data-page="${name}:${page-1}" data-arrow="prev"${page===1?' disabled':''}
      aria-label="หน้าก่อนหน้า"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
