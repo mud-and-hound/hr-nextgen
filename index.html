@@ -612,11 +612,13 @@
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=ebdc1abb3da1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
 <script src="https://timemud.mobile1234.site/browser-compat.js?v=3e6b68f6b12d"></script>
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=f95e480f9ca1"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=9f12c2b2c111"></script>
 <script src="https://timemud.mobile1234.site/i18n.js?v=54631cd2fd41"></script>
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-admin.css?v=79e69a58beda">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/planning-import.css?v=6daf54db0938">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-permissions.css?v=13b271233c89">
+<link rel="stylesheet" href="https://timemud.mobile1234.site/hrng-dates.css?v=c5e6ffda5a5a">
+<script src="https://timemud.mobile1234.site/hrng-dates.js?v=9149e5f72eea"></script>
 </head>
 
 <body>
@@ -684,6 +686,7 @@
         <button type="button" data-lang-pick="th" aria-pressed="true" lang="th">ไทย</button>
         <button type="button" data-lang-pick="en" aria-pressed="false" lang="en">English</button>
       </div>
+      <label class="hrng-format-setting" for="adminDateFormat"><span>รูปแบบวันที่</span><select id="adminDateFormat" data-date-format-pick></select><small>จำรูปแบบไว้ในเบราว์เซอร์นี้</small></label>
       <div id="nameLanguageControl" style="padding:4px 8px"></div>
       <h2>บัญชี</h2>
       <button id="refreshBtn">
@@ -1243,7 +1246,7 @@ const branchName=u=>branches.find(b=>b.id===u.branch_id)?.name||'ยังไม
 // แบรนด์ของพนักงานมาจากสาขาที่สังกัด ไม่ได้เก็บซ้ำที่ตัวพนักงาน จึงขัดกันเองไม่ได้
 const brandOf=u=>branches.find(b=>b.id===u.branch_id)?.brand_name||'';
 const bangkokToday=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-const clockTime=value=>new Date(value).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
+const clockTime=value=>HRNGDate.time(value);
 const CLOCK_LABEL={in:'เข้างาน',out:'ออกงาน',break_start:'เริ่มพัก',break_end:'กลับเข้างาน'};
 
 async function loadData(){
@@ -1427,7 +1430,7 @@ async function loadDayShifts(day){
 }
 
 const minutesOf=iso=>{
- const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',hour12:false})
+ const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',hourCycle:'h23'})
    .formatToParts(new Date(iso));
  const get=t=>Number(p.find(x=>x.type===t).value);
  return get('hour')*60+get('minute');
@@ -1440,12 +1443,7 @@ const lateBy=row=>{
 };
 
 // ไทยใช้ พ.ศ. อังกฤษใช้ ค.ศ. ผ่านกลไกเดียวกับฝั่งพนักงาน
-const dayHeading=day=>{
- const [y,m,d]=day.split('-').map(Number);
- return new Date(Date.UTC(y,m-1,d)).toLocaleDateString(
-   window.HRNGLang?HRNGLang.locale():'th-TH-u-ca-buddhist',
-   {weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
-};
+const dayHeading=day=>HRNGDate.heading(day);
 
 async function loadDay(force){
  const day=$('dayPick').value||bangkokToday();
@@ -1735,6 +1733,7 @@ window.addEventListener('hrng:lang',()=>{
  if(dayKey)$('todayDate').textContent=dayHeading(dayKey);
  if(calMonth)renderMonth();
  if(auditItems.length)renderAudit();
+ if(shiftAssignments.length)renderAssignments();
 });
 
 /* ═══ สาขา ═══ */
@@ -1884,8 +1883,7 @@ function renderAudit(){
  renderAuditDetail();
  if(window.HRNGLang)HRNGLang.apply();
 }
-const auditWhen=value=>new Date(value).toLocaleString(
-  window.HRNGLang?HRNGLang.locale():'th-TH',{timeZone:'Asia/Bangkok'});
+const auditWhen=value=>HRNGDate.dateTime(value);
 
 /* ก่อน/หลังการแก้ไข: เทียบเฉพาะคีย์ที่เปลี่ยนจริง ถ้าโชว์ทุกคีย์จะหาจุดที่เปลี่ยนไม่เจอ
    คีย์ที่เป็นเวลาแก้ไขและเลขรุ่นเปลี่ยนทุกครั้งอยู่แล้ว จึงไม่นับว่าเป็นการเปลี่ยนแปลง */
@@ -2230,7 +2228,7 @@ function openUser(id){
   +legacyNote(u)
   +`<div class="note">เลขบัตรเดิม: ${esc(u.national_id_masked)||'ยังไม่มีข้อมูล'}<br>เว้นเลขบัตรว่างเพื่อคงค่าเดิม พนักงานต้องมีรหัสพนักงานและเลขบัตรในทะเบียน จึงจะยืนยันและผูก LINE ครั้งแรกได้</div><label class="inline-check"><input id="edit-clear_national_id" type="checkbox"> ลบเลขบัตรที่บันทึกไว้</label>`
   // รหัสผ่านพนักงาน (8 ต.ค. 2569): แอดมินเห็นแค่ว่าตั้งแล้วหรือยัง ไม่เห็นตัวรหัส ล้างได้เมื่อพนักงานลืม
-  +(id?`<div class="note">${u.password_set_at?`<span>ตั้งรหัสผ่านแล้วเมื่อ</span> <span translate="no">${esc(new Date(u.password_set_at).toLocaleDateString('th-TH',{timeZone:'Asia/Bangkok'}))}</span>`
+  +(id?`<div class="note">${u.password_set_at?`<span>ตั้งรหัสผ่านแล้วเมื่อ</span> <span translate="no">${esc(HRNGDate.date(u.password_set_at))}</span>`
       :'<span>ยังไม่ได้ตั้งรหัสผ่าน พนักงานจะถูกให้ตั้งตอนเข้าแอป LINE ครั้งถัดไป</span>'}</div>`
      +(u.password_set_at?'<label class="inline-check"><input id="edit-reset_password" type="checkbox"> ล้างรหัสผ่าน (พนักงานลืมรหัส จะต้องตั้งใหม่ตอนเข้าแอป LINE ครั้งถัดไป)</label>':''):'');
  openModal(async()=>{
@@ -2332,8 +2330,7 @@ let shiftTemplates=[], shiftTargets=null, shiftAssignments=[], editingTemplate=n
 let previewTimer=null, shiftTabLoaded=false;
 const hhmm=m=>String(Math.floor((((m%1440)+1440)%1440)/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const hours=m=>`${Math.floor(m/60)} ชม.${m%60?` ${m%60} น.`:''}`;
-const shortDate=iso=>{const [y,m,d]=iso.split('-');
- return window.HRNGLang&&HRNGLang.get()==='en'?`${d}/${m}/${y}`:`${d}/${m}/${Number(y)+543}`;};
+const shortDate=iso=>HRNGDate.date(iso);
 
 function slotOptions(from,to,step,label,chosen){
  let html='';
@@ -2565,9 +2562,9 @@ function renderAssignments(){
        <span class="sub" translate="no">${esc(row.employee_code||'—')}</span></span></span></td>
    <td data-label="กะ"><span translate="no">${esc(row.template_code)}</span>
      <span class="sub" translate="no">${esc(row.template_name)}</span></td>
-   <td data-label="วันที่เริ่ม" class="num">${shortDate(row.effective_from)}</td>
+   <td data-label="วันที่เริ่ม" class="num"><span translate="no">${shortDate(row.effective_from)}</span></td>
    <td data-label="วันสิ้นสุด" class="num">${
-     row.effective_to?shortDate(row.effective_to):'<span class="tag">ไม่มีกำหนด</span>'}</td>
+     row.effective_to?'<span translate="no">'+shortDate(row.effective_to)+'</span>':'<span class="tag">ไม่มีกำหนด</span>'}</td>
    <td data-label="วันทำงาน">${[...row.weekdays].map((flag,index)=>
        flag==='1'?`<span class="dow">${DOW[index]}</span>`:'').filter(Boolean).join('')}</td>
    <td data-label="สถานะ"><span class="tag ${state[0]}">${state[1]}</span></td>
@@ -2910,7 +2907,7 @@ function renderCalendars(){
      <span class="sub">${row.dates.length} วัน · ใช้อยู่ ${row.employees} คน</span></span>
    ${row.warnings.length?'<span class="tag warn">ยังไม่ครบตาม ม.29</span>':''}
   </button>`).join('')||'<div class="empty">ยังไม่มีปฏิทิน กดสร้างปฏิทินด้านบน</div>';
- if(!calMonth){const now=new Date();calMonth={year:now.getFullYear(),month:now.getMonth()};}
+ if(!calMonth){const [year,month]=bangkokToday().split('-').map(Number);calMonth={year,month:month-1};}
  renderMonth();
  if(window.HRNGLang)HRNGLang.apply();
 }
@@ -2977,13 +2974,9 @@ function renderCalendarDetail(){
  if(window.HRNGLang)HRNGLang.apply();
 }
 const uiLocale=()=>window.HRNGLang?HRNGLang.locale():'th-TH-u-ca-buddhist';
-const monthLabel=(year,month)=>new Date(Date.UTC(year,month,15)).toLocaleDateString(
-  uiLocale(),{month:'long',year:'numeric',timeZone:'UTC'});
-const shortDay=value=>new Date(value+'T00:00:00+07:00').toLocaleDateString(
-  uiLocale(),{day:'numeric',month:'short',timeZone:'Asia/Bangkok'});
-const longDate=value=>new Date(value+'T00:00:00+07:00').toLocaleDateString(
-  window.HRNGLang?HRNGLang.locale():'th-TH-u-ca-buddhist',
-  {weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Bangkok'});
+const monthLabel=(year,month)=>HRNGDate.monthTitle(year,month+1);
+const shortDay=value=>HRNGDate.date(value);
+const longDate=value=>HRNGDate.heading(value);
 
 $('calPicks').addEventListener('click',event=>{
  const button=event.target.closest('[data-cal-pick]');
@@ -3005,7 +2998,7 @@ $('calPrev').addEventListener('click',()=>{
 $('calNext').addEventListener('click',()=>{
  calMonth.month++;if(calMonth.month>11){calMonth.month=0;calMonth.year++;}renderMonth();});
 $('calToday').addEventListener('click',()=>{
- const now=new Date();calMonth={year:now.getFullYear(),month:now.getMonth()};renderMonth();});
+ const [year,month]=bangkokToday().split('-').map(Number);calMonth={year,month:month-1};renderMonth();});
 
 function showCalendarForm(open){
  $('calForm').hidden=!open;$('calFormHead').hidden=!open;
@@ -3077,7 +3070,7 @@ function openShiftsTab(){
   $('tplWork').innerHTML=slotOptions(SLOT,480,SLOT,hours);
   renderWeekdays();
   fillTemplateForm(null);
-  $('asgFrom').value=new Date().toISOString().slice(0,10);
+  $('asgFrom').value=bangkokToday();
  }
  loadShiftTab();
 }
@@ -3447,13 +3440,15 @@ window.HRNGAdminBridge={
  registerPanel:(name,handler)=>{PANEL_OPEN[name]=handler;}
 };
 </script>
-<script src="https://timemud.mobile1234.site/hr-admin.js?v=28b3dceeb830"></script>
+<script src="https://timemud.mobile1234.site/hr-admin.js?v=7afdc5f2d570"></script>
 <script src="https://timemud.mobile1234.site/dev-login.js?v=9e7bf6a49dbc"></script>
 <script>
 if(window.HRNGDevLogin)HRNGDevLogin.attach({baseUrl:API_BASE,kind:'admin',isLoggedIn:()=>Boolean(token),onSuccess:acceptAdminLogin,onError:message=>showError('loginAlert',message)});
 </script>
-<script src="https://timemud.mobile1234.site/hr-permissions.js?v=e1a54115f66b"></script>
-<script src="https://timemud.mobile1234.site/planning-import.js?v=c1a8eab67955"></script>
+<script src="https://timemud.mobile1234.site/hr-permissions.js?v=1bb04549bbe1"></script>
+<script src="https://timemud.mobile1234.site/planning-import.js?v=d9ace4b86de7"></script>
 <script src="https://timemud.mobile1234.site/admin-webmcp.js?v=957a84a9fd83"></script>
+<link rel="stylesheet" href="https://timemud.mobile1234.site/employee-web.css?v=875b9ed20964">
+<script src="https://timemud.mobile1234.site/employee-web-admin.js?v=a7b4a04a054c"></script>
 </body>
 </html>
