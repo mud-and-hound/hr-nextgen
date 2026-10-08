@@ -522,6 +522,21 @@
     .modal .actions{position:sticky;bottom:0;background:var(--paper);
       padding-top:var(--s3);margin-top:var(--s4)}
   }
+  /* ตัวแก้กลุ่มเป็นหน้าต่างป๊อปอัป (เจ้าของสั่ง 8 ต.ค. 2569) กว้างพอให้ตารางเลือกคนกับสรุปอยู่ข้างกัน */
+  #grpEditor{position:fixed;inset:0;background:rgba(15,20,25,.45);z-index:50;overflow:auto;
+    display:grid;place-items:center;padding:var(--s4)}
+  #grpEditor[hidden]{display:none}
+  .grp-modal{background:var(--paper);border-radius:var(--r);width:min(1180px,100%);padding:var(--s5);
+    margin:auto;box-shadow:0 12px 40px rgba(20,23,26,.2)}
+  .grp-modal-head{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s4)}
+  .grp-modal-head h2{flex:1;margin:0;font-size:20px}
+  .grp-close{width:40px;height:40px;padding:0;justify-content:center}
+  .grp-error{margin:0;color:var(--red);font-size:13px}
+  @media (max-width:700px){
+    #grpEditor{display:flex;align-items:flex-end;padding:0}
+    #grpEditor[hidden]{display:none}
+    .grp-modal{width:100%;max-height:94vh;overflow:auto;border-radius:var(--r) var(--r) 0 0;padding:var(--s4)}
+  }
   @keyframes sheet-up{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}
   @media (prefers-reduced-motion:reduce){.modal{animation:none}}
   .modal.branch-editor{width:min(760px,100%)}
@@ -596,7 +611,7 @@
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=ebdc1abb3da1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
 <script src="https://timemud.mobile1234.site/browser-compat.js?v=3e6b68f6b12d"></script>
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=057a2763f870"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=54194c7afdc2"></script>
 <script src="https://timemud.mobile1234.site/i18n.js?v=54631cd2fd41"></script>
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-admin.css?v=79e69a58beda">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/planning-import.css?v=6daf54db0938">
@@ -874,7 +889,11 @@
       </div>
       <!-- ตัวแก้กลุ่มพับไว้ (เจ้าของบอก 8 ต.ค. 2569 ว่าช่อง "ตั้งชื่อกลุ่ม" ที่เปิดค้างทำให้งง)
            เปิดด้วยปุ่มเพิ่มกลุ่ม หรือปุ่มแก้ไขของกลุ่ม แบบเดียวกับหน้าแบบกะ -->
-      <div id="grpEditor" hidden>
+      <div id="grpEditor" hidden role="dialog" aria-modal="true" aria-labelledby="grpModalTitle">
+      <div class="grp-modal">
+      <div class="grp-modal-head"><h2 id="grpModalTitle">เพิ่มกลุ่ม</h2>
+        <p class="grp-error" id="grpError" role="alert" hidden></p>
+        <button class="btn grp-close" type="button" id="grpClose" aria-label="ปิด"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
       <div class="split">
         <div>
       <div class="card shift-form">
@@ -906,6 +925,7 @@
       <div class="pager" id="grpPager"></div>
         </div>
         <div class="detailwrap"><div class="detailcard" id="grpSummary"></div></div>
+      </div>
       </div>
       </div>
 
@@ -1932,7 +1952,9 @@ function activeField(active){return `<div class="field"><label for="edit-is_acti
    ตารางใช้เลขหน้า ส่วนรายการแบบการ์ด (พนักงาน/สาขา) ใช้ปุ่ม "แสดงเพิ่ม"
    ต่างกันโดยตั้งใจ: ตารางคนมักอยากกระโดดไปหน้าท้าย ๆ ส่วนรายชื่อมักไล่ดูลงไปเรื่อย ๆ */
 const pages={tpl:1,asg:1,audit:1,grp:1,tgt:1,ld:1,lr:1};
-const pageSize={tpl:10,asg:10,audit:10,grp:10,tgt:10,ld:10,lr:10};
+const pageSize={tpl:10,asg:10,audit:10,grp:5,tgt:10,ld:10,lr:10};
+// ตัวเลือกจำนวนต่อหน้า — รายชื่อในป๊อปอัปกลุ่มเริ่มที่ 5 เพราะหน้าต่างเตี้ยกว่าหน้าเต็ม (เจ้าของสั่ง 8 ต.ค. 2569)
+const PAGE_CHOICES={grp:[5,10,15,20,50,100]};
 
 function paginate(name,rows){
  const size=pageSize[name];
@@ -1955,7 +1977,7 @@ function pagerHtml(name,info){
   previous=n;
  }
  return `<label class="shown"><span class="sronly">จำนวนรายการที่แสดง</span>
-   <select data-size="${name}">${[10,20,50,100].map(v=>
+   <select data-size="${name}">${(PAGE_CHOICES[name]||[10,20,50,100]).map(v=>
      `<option value="${v}"${v===pageSize[name]?' selected':''}>${v}</option>`).join('')}</select>
    </label><span>รายการต่อหน้า</span><span class="grow"></span>
   <span>${info.from+1} - ${info.from+info.slice.length} จาก ${info.total} รายการ</span>
@@ -2263,7 +2285,7 @@ $('bulkBtn').addEventListener('click',()=>{
 function clearShifts(){
  // ออกจากระบบแล้วต้องไม่เหลือรายชื่อพนักงานหรือกะของบัญชีก่อนหน้าค้างในหน้า
  shiftTemplates=[];shiftTargets=null;shiftAssignments=[];shiftGroups=[];shiftTabLoaded=false;
- editingTemplate=null;editingGroup=null;$('grpEditor').hidden=true;pickedEmployees.clear();pickedGroup.clear();
+ editingTemplate=null;editingGroup=null;$('grpEditor').hidden=true;document.body.style.overflow='';pickedEmployees.clear();pickedGroup.clear();
  ['tplRows','asgRows','asgTargetBox','grpRows','grpList'].forEach(id=>$(id)&&$(id).replaceChildren());
 }
 // กติกากฎหมายอยู่ที่ backend (shift_rules.py) ที่เดียว หน้านี้เรียก /preview เพื่อแสดงผล
@@ -2724,13 +2746,19 @@ function renderGroups(){
    <span class="rowact"><button class="btn" data-grp-edit="${row.id}" data-central-only>แก้ไข</button></span>
  </div>`).join('')||'<div class="empty">ยังไม่มีกลุ่ม กดเพิ่มกลุ่มเพื่อสร้างกลุ่มแรก</div>';
 }
-function showGroupEditor(open){
+function showGroupEditor(open,title='เพิ่มกลุ่ม'){
  $('grpEditor').hidden=!open;
  $('grpAdd').setAttribute('aria-expanded',String(open));
- if(open){$('grpEditor').scrollIntoView({block:'nearest'});$('grpName').focus();}
+ document.body.style.overflow=open?'hidden':'';          // หน้าข้างหลังไม่เลื่อนตามตอนเลื่อนในป๊อปอัป
+ if(open){$('grpModalTitle').textContent=title;if(window.HRNGLang)HRNGLang.apply();$('grpEditor').scrollTop=0;$('grpName').focus();}
+ else $('grpAdd').focus();
 }
 $('grpAdd').addEventListener('click',()=>{resetGroupForm();showGroupEditor(true);});
+$('grpClose').addEventListener('click',()=>{resetGroupForm();showGroupEditor(false);});
+$('grpEditor').addEventListener('keydown',event=>{
+ if(event.key==='Escape'){event.preventDefault();resetGroupForm();showGroupEditor(false);}});
 function resetGroupForm(){
+ $('grpError').hidden=true;
  editingGroup=null;pickedGroup.clear();grpChip='';pages.grp=1;
  $('grpName').value='';$('grpNote').value='';$('grpSearch').value='';
  renderGroupPicker();
@@ -2746,8 +2774,11 @@ document.addEventListener('click',event=>{
 document.addEventListener('click',async event=>{
  if(!event.target.closest('#grpSave'))return;
  const name=$('grpName').value.trim();
- if(!name){banner('ตั้งชื่อกลุ่มก่อน',true);$('grpName').focus();return;}
- if(!pickedGroup.size){banner('เลือกพนักงานอย่างน้อย 1 คน',true);return;}
+ // ข้อความผิดพลาดต้องอยู่ในป๊อปอัป แถบด้านบนของหน้าถูกป๊อปอัปบังอยู่
+ const fail=message=>{$('grpError').textContent=message;$('grpError').hidden=false;};
+ $('grpError').hidden=true;
+ if(!name){fail('ตั้งชื่อกลุ่มก่อน');$('grpName').focus();return;}
+ if(!pickedGroup.size){fail('เลือกพนักงานอย่างน้อย 1 คน');return;}
  const body={name,note:$('grpNote').value.trim(),employee_ids:[...pickedGroup]};
  $('grpSave').disabled=true;
  try{
@@ -2755,7 +2786,7 @@ document.addEventListener('click',async event=>{
   else await api('/shifts/groups',{method:'POST',body:JSON.stringify(body)});
   banner(`บันทึกกลุ่ม ${name} แล้ว (${pickedGroup.size} คน)`);
   resetGroupForm();showGroupEditor(false);await loadShiftTab(true);
- }catch(error){banner(error.message,true);}
+ }catch(error){fail(error.message);}
  finally{$('grpSave').disabled=false;}
 });
 $('grpRows').addEventListener('click',async event=>{
@@ -2768,7 +2799,7 @@ $('grpRows').addEventListener('click',async event=>{
   members.items.forEach(row=>pickedGroup.add(row.employee_id));
   $('grpName').value=group.name;$('grpNote').value=group.note||'';
   grpChip='';pages.grp=1;
-  renderGroupPicker();showGroupEditor(true);
+  renderGroupPicker();showGroupEditor(true,'แก้ไขกลุ่ม');
  }catch(error){banner(error.message,true);}
 });
 
