@@ -525,7 +525,9 @@
   }
   /* ตัวแก้กลุ่มเป็นหน้าต่างป๊อปอัป (เจ้าของสั่ง 8 ต.ค. 2569) กว้างพอให้ตารางเลือกคนกับสรุปอยู่ข้างกัน */
   #grpEditor,#asgEditor{position:fixed;inset:0;background:rgba(15,20,25,.45);z-index:50;overflow:auto;
-    display:grid;place-items:center;padding:var(--s4)}
+    display:grid;place-items:center;padding:var(--s4);margin:0;border:0;
+    width:100%;height:100%;max-width:none;max-height:none;color:inherit}
+  #grpEditor::backdrop,#asgEditor::backdrop{background:transparent}
   #grpEditor[hidden],#asgEditor[hidden]{display:none}
   .grp-modal{background:var(--paper);border-radius:var(--r);width:min(1180px,100%);padding:var(--s5);
     margin:auto;box-shadow:0 12px 40px rgba(20,23,26,.2)}
@@ -612,13 +614,13 @@
 <link rel="stylesheet" href="https://timemud.mobile1234.site/line-profile.css?v=ebdc1abb3da1">
 <!-- สองภาษา: พจนานุกรมต้องมาก่อนกลไก เสิร์ฟจากแอปเดียวกับ dev-login.js -->
 <script src="https://timemud.mobile1234.site/browser-compat.js?v=3e6b68f6b12d"></script>
-<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=3d8717b11ce9"></script>
-<script src="https://timemud.mobile1234.site/i18n.js?v=4b48d9162572"></script>
+<script src="https://timemud.mobile1234.site/i18n-admin-en.js?v=b39fbb2b12e8"></script>
+<script src="https://timemud.mobile1234.site/i18n.js?v=53c8043471b7"></script>
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-admin.css?v=79e69a58beda">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/planning-import.css?v=6daf54db0938">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hr-permissions.css?v=13b271233c89">
 <link rel="stylesheet" href="https://timemud.mobile1234.site/hrng-dates.css?v=c5e6ffda5a5a">
-<script src="https://timemud.mobile1234.site/hrng-dates.js?v=9149e5f72eea"></script>
+<script src="https://timemud.mobile1234.site/hrng-dates.js?v=f49fd0fe80f1"></script>
 </head>
 
 <body>
@@ -893,7 +895,7 @@
       </div>
       <!-- ตัวแก้กลุ่มพับไว้ (เจ้าของบอก 8 ต.ค. 2569 ว่าช่อง "ตั้งชื่อกลุ่ม" ที่เปิดค้างทำให้งง)
            เปิดด้วยปุ่มเพิ่มกลุ่ม หรือปุ่มแก้ไขของกลุ่ม แบบเดียวกับหน้าแบบกะ -->
-      <div id="grpEditor" hidden role="dialog" aria-modal="true" aria-labelledby="grpModalTitle">
+      <dialog id="grpEditor" hidden role="dialog" aria-modal="true" aria-labelledby="grpModalTitle">
       <div class="grp-modal">
       <div class="grp-modal-head"><h2 id="grpModalTitle">เพิ่มกลุ่ม</h2>
         <p class="grp-error" id="grpError" role="alert" hidden></p>
@@ -931,7 +933,7 @@
         <div class="detailwrap"><div class="detailcard" id="grpSummary"></div></div>
       </div>
       </div>
-      </div>
+      </dialog>
 
       <h3 class="shift-head">กลุ่มที่มี</h3>
       <div class="list" id="grpRows"></div>
@@ -960,7 +962,7 @@
         <p>จัดกะให้เฉพาะพนักงานที่เปิดใช้งานอยู่ คนที่ปิดใช้งานแล้วจะถูกข้าม</p>
       </div>
       <!-- ตัวจัดกะเป็นป๊อปอัปแบบเดียวกับกลุ่ม (เจ้าของสั่ง 8 ต.ค. 2569) -->
-      <div id="asgEditor" hidden role="dialog" aria-modal="true" aria-labelledby="asgModalTitle">
+      <dialog id="asgEditor" hidden role="dialog" aria-modal="true" aria-labelledby="asgModalTitle">
       <div class="grp-modal">
       <div class="grp-modal-head"><h2 id="asgModalTitle">จัดกะให้พนักงาน</h2>
         <p class="grp-error" id="asgError" role="alert" hidden></p>
@@ -1017,7 +1019,7 @@
         <div class="detailwrap"><div class="detailcard" id="asgSummary"></div></div>
       </div>
       </div>
-      </div>
+      </dialog>
 
       <h3 class="shift-head" style="flex-wrap:wrap">รายการจัดกะล่าสุด
         <input class="search" id="asgSearch" style="flex:1;max-width:340px"
@@ -1332,19 +1334,48 @@ $('refreshBtn').addEventListener('click',()=>{setDrawer(false);loadData().catch(
 const wideNav=()=>window.matchMedia('(min-width:980px)').matches;
 function navOpen(){return wideNav()?!$('shell').classList.contains('navoff')
                                    :$('drawer').classList.contains('on');}
+let drawerIsolation=[],drawerOverflow='';
+function syncDrawerModal(){
+ const modal=!wideNav()&&navOpen()&&$('shell').classList.contains('on');
+ if(modal&&!drawerIsolation.length){
+  drawerIsolation=[...$('shell').children].filter(el=>el!==$('drawer')).map(el=>[el,el.inert]);
+  drawerIsolation.forEach(([el])=>el.inert=true);
+  drawerOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
+  $('drawer').setAttribute('role','dialog');$('drawer').setAttribute('aria-modal','true');
+  $('drawer').setAttribute('aria-label',tl('เมนู'));
+  $('drawer').querySelector('button[data-close-drawer]').focus();
+ }else if(!modal&&drawerIsolation.length){
+  drawerIsolation.forEach(([el,inert])=>el.inert=inert);drawerIsolation=[];
+  document.body.style.overflow=drawerOverflow;
+  $('drawer').removeAttribute('role');$('drawer').removeAttribute('aria-modal');$('drawer').removeAttribute('aria-label');
+  if($('drawer').contains(document.activeElement))$('menuBtn').focus();
+ }
+}
+function containFocus(surface,event){
+ if(event.key!=='Tab')return;
+ const controls=[...surface.querySelectorAll('button,input,select,textarea,a[href],[tabindex]')]
+  .filter(el=>!el.disabled&&el.tabIndex>=0&&el.getClientRects().length);
+ if(!controls.length)return;
+ const first=controls[0],last=controls[controls.length-1],active=document.activeElement;
+ if(!surface.contains(active)||(event.shiftKey?active===first:active===last)){
+  event.preventDefault();(event.shiftKey?last:first).focus();
+ }
+}
 function setDrawer(open){
  if(wideNav())$('shell').classList.toggle('navoff',!open);
  else $('drawer').classList.toggle('on',open);
  $('menuBtn').setAttribute('aria-expanded',String(open));
+ syncDrawerModal();
 }
 /* ย้ายข้ามเส้นแบ่งจอแล้วสถานะต้องตรงกับที่ตาเห็น ไม่งั้นปุ่มจะกดแล้วไม่มีอะไรเกิดขึ้น */
-function syncNav(){$('menuBtn').setAttribute('aria-expanded',String(navOpen()));}
+function syncNav(){$('menuBtn').setAttribute('aria-expanded',String(navOpen()));syncDrawerModal();}
 window.addEventListener('resize',syncNav);
 syncNav();
 
 $('menuBtn').addEventListener('click',()=>setDrawer(!navOpen()));
 document.querySelectorAll('[data-close-drawer]').forEach(el=>el.addEventListener('click',()=>setDrawer(false)));
 document.addEventListener('keydown',e=>{
+ if(drawerIsolation.length)containFocus($('drawer'),e);
  if(e.key==='Escape'&&!$('backdrop').classList.contains('on')&&!wideNav())setDrawer(false);});
 
 /* หัวข้อย่อยพับได้ แต่ถ้ากำลังอยู่ในหน้าใต้หัวข้อนั้น ต้องกางค้างไว้
@@ -2320,7 +2351,9 @@ $('bulkBtn').addEventListener('click',()=>{
 function clearShifts(){
  // ออกจากระบบแล้วต้องไม่เหลือรายชื่อพนักงานหรือกะของบัญชีก่อนหน้าค้างในหน้า
  shiftTemplates=[];shiftTargets=null;shiftAssignments=[];shiftGroups=[];shiftTabLoaded=false;
- editingTemplate=null;editingGroup=null;$('grpEditor').hidden=true;$('asgEditor').hidden=true;document.body.style.overflow='';pickedEmployees.clear();pickedGroup.clear();
+ editingTemplate=null;editingGroup=null;
+ ['grpEditor','asgEditor'].forEach(id=>{$(id).close();$(id).hidden=true;});
+ document.body.style.overflow='';pickedEmployees.clear();pickedGroup.clear();
  ['tplRows','asgRows','asgTargetBox','grpRows','grpList'].forEach(id=>$(id)&&$(id).replaceChildren());
 }
 // กติกากฎหมายอยู่ที่ backend (shift_rules.py) ที่เดียว หน้านี้เรียก /preview เพื่อแสดงผล
@@ -2788,15 +2821,16 @@ function renderGroups(){
  </div>`).join('')||'<div class="empty">ยังไม่มีกลุ่ม กดเพิ่มกลุ่มเพื่อสร้างกลุ่มแรก</div>';
 }
 function showGroupEditor(open,title='เพิ่มกลุ่ม'){
+ if(!open)$('grpEditor').close();
  $('grpEditor').hidden=!open;
  $('grpAdd').setAttribute('aria-expanded',String(open));
  document.body.style.overflow=open?'hidden':'';          // หน้าข้างหลังไม่เลื่อนตามตอนเลื่อนในป๊อปอัป
- if(open){$('grpModalTitle').textContent=title;if(window.HRNGLang)HRNGLang.apply();$('grpEditor').scrollTop=0;$('grpName').focus();}
- else $('grpAdd').focus();
+ if(open){$('grpModalTitle').textContent=title;if(window.HRNGLang)HRNGLang.apply();$('grpEditor').showModal();$('grpEditor').scrollTop=0;$('grpName').focus();}
 }
 $('grpAdd').addEventListener('click',()=>{resetGroupForm();showGroupEditor(true);});
 $('grpClose').addEventListener('click',()=>{resetGroupForm();showGroupEditor(false);});
 $('grpEditor').addEventListener('keydown',event=>{
+ containFocus($('grpEditor'),event);
  if(event.key==='Escape'){event.preventDefault();resetGroupForm();showGroupEditor(false);}});
 function resetGroupForm(){
  $('grpError').hidden=true;
@@ -3159,12 +3193,12 @@ function setAssignMode(row){
  }
 }
 function showAssignEditor(open){
+ if(!open)$('asgEditor').close();
  $('asgEditor').hidden=!open;
  $('asgAdd').setAttribute('aria-expanded',String(open));
  document.body.style.overflow=open?'hidden':'';
  $('asgError').hidden=true;
- if(open){$('asgEditor').scrollTop=0;$('asgTemplate').focus();}
- else $('asgAdd').focus();
+ if(open){$('asgEditor').showModal();$('asgEditor').scrollTop=0;$('asgTemplate').focus();}
 }
 function assignError(message){$('asgError').textContent=message;$('asgError').hidden=false;if(window.HRNGLang)HRNGLang.apply();}
 $('asgAdd').addEventListener('click',()=>{
@@ -3173,7 +3207,7 @@ $('asgAdd').addEventListener('click',()=>{
  if($('asgVia').value==='employee')renderTargetList();
  renderAssignSummary();showAssignEditor(true);});
 $('asgClose').addEventListener('click',()=>showAssignEditor(false));
-$('asgEditor').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();showAssignEditor(false);}});
+$('asgEditor').addEventListener('keydown',event=>{containFocus($('asgEditor'),event);if(event.key==='Escape'){event.preventDefault();showAssignEditor(false);}});
 $('asgSearch').addEventListener('input',renderAssignments);
 $('asgClear').addEventListener('click',()=>{$('asgSearch').value='';renderAssignments();});
 document.addEventListener('click',async event=>{
@@ -3440,7 +3474,7 @@ window.HRNGAdminBridge={
  registerPanel:(name,handler)=>{PANEL_OPEN[name]=handler;}
 };
 </script>
-<script src="https://timemud.mobile1234.site/hr-admin.js?v=7afdc5f2d570"></script>
+<script src="https://timemud.mobile1234.site/hr-admin.js?v=67c36f1885cd"></script>
 <script src="https://timemud.mobile1234.site/dev-login.js?v=9e7bf6a49dbc"></script>
 <script>
 if(window.HRNGDevLogin)HRNGDevLogin.attach({baseUrl:API_BASE,kind:'admin',isLoggedIn:()=>Boolean(token),onSuccess:acceptAdminLogin,onError:message=>showError('loginAlert',message)});
